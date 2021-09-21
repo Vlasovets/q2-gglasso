@@ -10,6 +10,12 @@ class gglasso_problem:
         self.reg_params = reg_params
 
 
+    def test(self, n):
+        self.n = n
+
+        return np.arange(self.n)
+
+
     def derive_problem_formulation(self):
 
         self.conforming = False
