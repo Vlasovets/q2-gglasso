@@ -6,3 +6,6 @@ qiime2
 zarr
 gglasso
 pandas
+jupyterlab
+jupyter
+plotly
