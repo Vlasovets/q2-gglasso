@@ -9,6 +9,21 @@
 from setuptools import setup, find_packages
 #import versioneer
 
+import io
+import os
+
+# Package meta-data.
+NAME = 'q2-gglasso'
+DESCRIPTION = 'Algorithms for Single and Multiple Graphical Lasso problems.'
+URL = 'https://github.com/Vlasovets/q2-gglasso'
+EMAIL = 'otorrent@mail.ru'
+AUTHOR = 'Oleg Vlasovets'
+REQUIRES_PYTHON = '>=3.7.0'
+VERSION = "0.0.1"
+
+
+here = os.path.abspath(os.path.dirname("__file__"))
+
 setup(
       name="q2-gglasso",
       version='0.0.0.dev0',

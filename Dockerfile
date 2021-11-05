@@ -1,10 +1,7 @@
 # syntax=docker/dockerfile:1
-FROM 9510c66c89ef
-COPY . /app
+FROM quay.io/qiime2/core:2021.8
 
-RUN make /app
-
+COPY . ./
+WORKDIR .
 ADD requirements.txt ./
-RUN python3 -m pip install -r requirements.txt
-
-ADD . ./
+RUN python -m pip install -r requirements.txt
