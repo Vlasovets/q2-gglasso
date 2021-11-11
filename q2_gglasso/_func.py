@@ -91,6 +91,3 @@ def to_zarr(obj, name, root, first=True):
     else:
         to_zarr(obj.__dict__, name, root, first=first)
 
-
-
-to_zarr({0: 1, 1: 2}, "test_dict", "test")

@@ -1,88 +1,89 @@
+import qiime2
 import numpy as np
+import pandas as pd
+import zarr
 
-class gglasso_problem:
+from q2_types.feature_table import FeatureTable, Composition
+from q2_types.feature_data import FeatureData
 
-
-    def __init__(self, S, reg, reg_params, latent = False):
-        self.S = S
-        self.latent = latent
-        self.reg = reg
-        self.reg_params = reg_params
-
-
-    def test(self, n):
-        self.n = n
-
-        return np.arange(self.n)
+from gglasso.problem import glasso_problem
+from gglasso.helper.data_generation import generate_precision_matrix, group_power_network, sample_covariance_matrix
+from gglasso.helper.utils import normalize, log_transform
 
 
-    def derive_problem_formulation(self):
+from qiime2.plugin import (
+    SemanticType,
+    Plugin,
+    Int,
+    Float,
+    Range,
+    Metadata,
+    Str,
+    Bool,
+    Choices,
+    MetadataColumn,
+    Categorical,
+    List,
+    Citations,
+    TypeMatch,
+    Numeric,
+)
 
-        self.conforming = False
-        self.multiple = False
+from q2_types.feature_table import FeatureTable, Composition
+from q2_types.feature_data import FeatureData
 
-        if type(self.S) == np.ndarray:
+import pandas as pd
 
-            if len(self.S.shape) == 3:
-                self.conforming = True
-                self.multiple = True
-                self.check_covariance_3d()
+def transform_features(
+    features: pd.DataFrame, transformation: Str = "clr", coef: float = 0.5
+) -> pd.DataFrame:
+    if transformation == "clr":
+        X = features.values
+        null_set = X <= 0.0
+        X[null_set] = coef
+        X = np.log(X)
+        X = (X.T - np.mean(X, axis=1)).T
 
-            else:
-                assert len(self.S.shape) == 2, f"The specified covariance data has shape {self.S.shape}, " \
-                                               f"GGLasso can only handle 2 or 3dim-input"
-                self.conforming = True
-                self.check_covariance_2d()
+        return pd.DataFrame(
+            data=X, index=list(features.index), columns=list(features.columns)
+        )
+
+    else:
+        raise ValueError(
+            "Unknown transformation name, use clr and not %r" % transformation
+        )
 
 
-        elif type(self.S) == dict:
+def to_zarr(obj, name, root, first=True):
+    """
+    Function for converting a python object to a zarr file, a with tree structue.
+    """
+    if type(obj) == dict:
+        if first:
+            zz = root
+        else:
+            zz = root.create_group(name)
 
-            assert len(self.S.keys() > 1), "Covariance data is a dictionary with only one key. " \
-                                           "This is a Single Graphical Lasso problem. Specify S as 2d-array."
-            self.conforming = False
-            self.multiple = True
-            self.check_covariance_dict()
+        for key, value in obj.items():
+            to_zarr(value, key, zz, first=False)
 
+    elif type(obj) in [np.ndarray, pd.DataFrame]:
+        root.create_dataset(name, data=obj, shape=obj.shape)
 
-        def check_covariance_3d(self):
+    elif type(obj) == np.float64:
+        root.attrs[name] = float(obj)
 
-            assert self.S.shape[1] == self.S.shape[2], f"Dimensions are not correct, 2nd and 3rd dimension have to match" \
-                                                       f" but shape is {self.S.shape}. " \
-                                                       f"Specify covariance data in format(K,p,p)!"
+    elif type(obj) == np.int64:
+        root.attrs[name] = int(obj)
 
-            assert np.max(np.abs(self.S - trp(self.S))) <= assert_tol, "Covariance data is not symmetric."
+    elif type(obj) == list:
+        if name == "tree":
+            root.attrs[name] = obj
+        else:
+            to_zarr(np.array(obj), name, root, first=False)
 
-            (self.K, self.p, self.p) = self.S.shape
+    elif obj is None or type(obj) in [str, bool, float, int]:
+        root.attrs[name] = obj
 
-            return
-
-        def check_covariance_2d(self):
-
-            assert self.S.shape[0] == self.S.shape[1], f"Dimensions are not correct, 1st and 2nd dimension have to match" \
-                                                       f" but shape is {self.S.shape}. " \
-                                                       f"Specify covariance data in format(p,p)!"
-
-            assert np.max(np.abs(self.S - self.S.T)) <= assert_tol, "Covariance data is not symmetric."
-
-            (self.K, self.p) = self.S.shape
-
-            return
-
-        def check_covariance_dict(self):
-            self.K = len(self.S.keys())
-
-            # TODO: assert for keys being equal to 1..K
-
-            self.p = np.zeros(self.K, dtype=int)
-
-            for k in range(self.K):
-                assert self.S[k].shape[0] == self.S[k].shape[1], f"Dimensions are not correct, " \
-                                                                 f"1st and 2nd dimension have to match " \
-                                                                 f"but do not match for instance {k}."
-
-                assert np.max(np.abs(self.S[k] - self.S[k].T)) <= assert_tol, f"Covariance data for instance {k} " \
-                                                                              f"is not symmetric."
-
-                self.p[k] = self.S[k].shape[0]
-
-            return
+    else:
+        to_zarr(obj.__dict__, name, root, first=first)

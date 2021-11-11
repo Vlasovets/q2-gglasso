@@ -15,6 +15,9 @@ from q2_types.feature_table import FeatureTable, Composition, BIOMV210Format, BI
 from q2_types.feature_data import TSVTaxonomyFormat, FeatureData, Taxonomy
 
 
+import sys, os
+from os.path import join, dirname
+# make sure you are in the correct directory
 q2_gglasso_dir = dirname(os.getcwd())
 sys.path.append(q2_gglasso_dir)
 import q2_gglasso
