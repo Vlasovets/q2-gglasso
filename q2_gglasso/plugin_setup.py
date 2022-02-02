@@ -46,11 +46,11 @@ plugin = Plugin(
 # features_clr
 plugin.methods.register_function(
     function=q2_gglasso.transform_features,
-    inputs={"features": FeatureTable[Composition | Frequency | Design]},
-    parameters={"transformation": Str, "coef": Float},
-    outputs=[("x", FeatureTable[Design])],
+    inputs={"table": FeatureTable[Composition | Frequency]},
+    parameters={"transformation": Str, "pseudocount": Float},
+    outputs=[("transformed_table", FeatureTable[Frequency])],
     input_descriptions={
-        "features": (
+        "table": (
             "Matrix representing the compositional "
             "data of the problem, in order to clr transform it"
         )
@@ -60,17 +60,17 @@ plugin.methods.register_function(
             "String representing the name of the "
             "transformation we will use "
         ),
-        "coef": (
+        "pseudocount": (
             "Value that should be put instead of zeros"
             "in the feature table. Default value is 0.5"
         ),
     },
-    output_descriptions={"x": "Matrix representing the data of the problem"},
+    output_descriptions={"transformed_table": "Matrix representing the data of the problem"},
     name="transform-features",
     description=(
         "Perform transformation, "
-        "from FeatureTable[Composition/Frequency]"
-        " prior to regress or classify,"
+        "from FeatureTable[Frequency]"
+        " prior to network analysis"
         " default transformation is centered log ratio"
     ),
 )
