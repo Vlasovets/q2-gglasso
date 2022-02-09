@@ -1,8 +1,12 @@
 import qiime2
 import numpy as np
+from biom.table import Table
 import pandas as pd
 import zarr
 from scipy.stats import spearmanr
+import multiprocessing
+from functools import partial
+import warnings
 
 from q2_types.feature_table import FeatureTable, Composition
 from q2_types.feature_data import FeatureData
@@ -35,10 +39,39 @@ def transform_features(
         )
 
 
-def calculate_covariance(table: pd.DataFrame,
+def pairwise_iter_wo_metadata(pairwise_iter):
+    for (val_i, id_i, _), (val_j, id_j, _) in pairwise_iter:
+        yield ((val_i, id_i), (val_j, id_j))
+
+def calculate_correlation(data, corr_method=spearmanr):
+    (val_i, id_i), (val_j, id_j) = data
+    r, p = corr_method(val_i, val_j)
+    return (id_i, id_j), (r, p)
+
+
+def calculate_correlations(table: Table, corr_method=spearmanr, nprocs=1) -> pd.DataFrame:
+    if nprocs > multiprocessing.cpu_count():
+        warnings.warn("nprocs greater than CPU count, using all avaliable CPUs")
+        nprocs = multiprocessing.cpu_count()
+
+    pool = multiprocessing.Pool(nprocs)
+    cor = partial(calculate_correlation, corr_method=corr_method)
+    results = pool.map(cor, pairwise_iter_wo_metadata(table.iter_pairwise(axis='observation')))
+    index = [i[0] for i in results]
+    data = [i[1] for i in results]
+    pool.close()
+    pool.join()
+    correls = pd.DataFrame(data, index=index, columns=['r', 'p'])
+    # Turn tuple index into actual multiindex, now guaranteeing that correls index is sorted
+    correls.index = pd.MultiIndex.from_tuples([sorted(i) for i in correls.index])
+
+    return correls
+
+
+def calculate_covariance(table: Table,
                          method: str,
                          bias: bool = True,
-                         ) -> np.ndarray:
+                         ) -> pd.DataFrame:
 
     if method == "unscaled":
 
