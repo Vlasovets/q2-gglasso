@@ -2,6 +2,7 @@ import qiime2
 import numpy as np
 import pandas as pd
 import zarr
+from scipy.stats import spearmanr
 
 from q2_types.feature_table import FeatureTable, Composition
 from q2_types.feature_data import FeatureData
@@ -11,24 +12,6 @@ from gglasso.helper.data_generation import generate_precision_matrix, group_powe
 from gglasso.helper.utils import log_transform, zero_replacement
 
 
-from qiime2.plugin import (
-    SemanticType,
-    Plugin,
-    Int,
-    Float,
-    Range,
-    Metadata,
-    Str,
-    Bool,
-    Choices,
-    MetadataColumn,
-    Categorical,
-    List,
-    Citations,
-    TypeMatch,
-    Numeric,
-)
-
 from q2_types.feature_table import FeatureTable, Composition
 from q2_types.feature_data import FeatureData
 
@@ -36,7 +19,7 @@ import pandas as pd
 
 
 def transform_features(
-    table: pd.DataFrame, transformation: Str = "clr", pseudocount: float = 0.5
+    table: pd.DataFrame, transformation: str = "clr", pseudocount: float = 0.5
 ) -> pd.DataFrame:
     if transformation == "clr":
         X = zero_replacement(table, c=pseudocount)
@@ -50,6 +33,24 @@ def transform_features(
         raise ValueError(
             "Unknown transformation name, use clr and not %r" % transformation
         )
+
+
+def calculate_covariance(table: pd.DataFrame,
+                         method: str,
+                         bias: bool = True,
+                         ) -> np.ndarray:
+
+    if method == "unscaled":
+
+        print("Calculate {0} covariance matrices S".format(method))
+        S = np.cov(table, bias=bias)
+
+    # elif method is "correlation":
+    #     print("Calculate Spearman's {0} matrices C".format(method))
+    #     C = spearmanr(table)
+    else:
+        raise ValueError('Provided covariance calculation method is not supported.')
+    return S
 
 
 def to_zarr(obj, name, root, first=True):

@@ -1,32 +1,19 @@
-import numpy as np
-import pandas as pd
-import zarr
-import qiime2
-import biom
-import skbio
 import sys
-import os
-from os.path import join, dirname
+from os.path import dirname
 
-from qiime2.plugin import (Plugin, Int, Float, Range, Metadata, Str, Bool, Choices, MetadataColumn, Categorical, List,
-     Citations, TypeMatch, Numeric, SemanticType)
+import qiime2
+import q2_gglasso
+from q2_types.feature_table import FeatureTable, Composition, Frequency
+from q2_gglasso._type import PairwiseFeatureData
+from qiime2.plugin import (Plugin, Float, Str, Bool)
 
-from q2_types.feature_table import FeatureTable, Composition, BIOMV210Format, BIOMV210DirFmt, Frequency, Design
-from q2_types.feature_data import TSVTaxonomyFormat, FeatureData, Taxonomy
-
-
-import sys, os
-from os.path import join, dirname
 # make sure you are in the correct directory
 # q2_gglasso_dir = dirname(os.getcwd())
 q2_gglasso_dir = dirname('/opt/project/')
 sys.path.append(q2_gglasso_dir)
-import q2_gglasso
-
 
 
 version = qiime2.__version__
-
 
 plugin = Plugin(
     name="gglasso",
@@ -42,13 +29,12 @@ plugin = Plugin(
     ),
 )
 
-
 # features_clr
 plugin.methods.register_function(
     function=q2_gglasso.transform_features,
     inputs={"table": FeatureTable[Composition | Frequency]},
     parameters={"transformation": Str, "pseudocount": Float},
-    outputs=[("transformed_table", FeatureTable[Frequency])],
+    outputs=[("transformed_table", FeatureTable[Composition])],
     input_descriptions={
         "table": (
             "Matrix representing the compositional "
@@ -72,5 +58,37 @@ plugin.methods.register_function(
         "from FeatureTable[Frequency]"
         " prior to network analysis"
         " default transformation is centered log ratio"
+    ),
+)
+
+plugin.methods.register_function(
+    function=q2_gglasso.calculate_covariance,
+    inputs={"table": FeatureTable[Composition | Frequency]},
+    parameters={"method": Str, "bias": Bool},
+    outputs=[("covariance_matrix", PairwiseFeatureData)],
+    input_descriptions={
+        "table": (
+            "Matrix representing the microbiome data:"
+            "p x n matrix where OTUs - p rows, samples - n columns"
+        )
+    },
+    parameter_descriptions={
+        "method": (
+            "String if 'unscaled' calculates covariance"
+            "for more details check np.cov() documentaion"
+        ),
+        "bias": (
+            "Default value is True"
+            "If you derive the log likelihood of inverse covariance "
+            "you get out the empirical covariance matrix with normalization N"
+        ),
+    },
+    output_descriptions={"covariance_matrix": "p x p matrix with covariance entries"},
+    name="calculate_covariance",
+    description=(
+        "Perform empirical covariance estimation given the data p x N, "
+        "from FeatureTable[Composition | Frequency]"
+        "prior to network analysis"
+        "default transformation is centered log ratio"
     ),
 )

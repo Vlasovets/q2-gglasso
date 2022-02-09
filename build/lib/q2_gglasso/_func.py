@@ -8,7 +8,7 @@ from q2_types.feature_data import FeatureData
 
 from gglasso.problem import glasso_problem
 from gglasso.helper.data_generation import generate_precision_matrix, group_power_network, sample_covariance_matrix
-from gglasso.helper.utils import normalize, log_transform
+from gglasso.helper.utils import log_transform, zero_replacement
 
 
 from qiime2.plugin import (
@@ -34,18 +34,16 @@ from q2_types.feature_data import FeatureData
 
 import pandas as pd
 
+
 def transform_features(
-    features: pd.DataFrame, transformation: Str = "clr", coef: float = 0.5
+    table: pd.DataFrame, transformation: Str = "clr", pseudocount: float = 0.5
 ) -> pd.DataFrame:
     if transformation == "clr":
-        X = features.values
-        null_set = X <= 0.0
-        X[null_set] = coef
-        X = np.log(X)
-        X = (X.T - np.mean(X, axis=1)).T
+        X = zero_replacement(table, c=pseudocount)
+        X = log_transform(X)
 
         return pd.DataFrame(
-            data=X, index=list(features.index), columns=list(features.columns)
+            data=X, index=list(table.index), columns=list(table.columns)
         )
 
     else:
@@ -87,3 +85,4 @@ def to_zarr(obj, name, root, first=True):
 
     else:
         to_zarr(obj.__dict__, name, root, first=first)
+
