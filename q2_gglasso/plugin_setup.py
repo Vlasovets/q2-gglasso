@@ -1,19 +1,21 @@
 import sys
 from os.path import dirname
 
-import qiime2
-import q2_gglasso
-from q2_types.feature_table import FeatureTable, Composition, Frequency
-from q2_gglasso._type import PairwiseFeatureData
-from qiime2.plugin import (Plugin, Float, Str, Bool)
-
 # make sure you are in the correct directory
 # q2_gglasso_dir = dirname(os.getcwd())
 q2_gglasso_dir = dirname('/opt/project/')
 sys.path.append(q2_gglasso_dir)
 
+import importlib
+import qiime2
+import q2_gglasso
+from q2_types.feature_table import FeatureTable, Composition, Frequency
+from q2_gglasso._type import PairwiseFeatureData
+from q2_gglasso._format import GGLassoDataFormat, PairwiseFeatureDataDirectoryFormat
+from qiime2.plugin import (Plugin, Float, Str, Bool)
 
-version = qiime2.__version__
+
+
 
 plugin = Plugin(
     name="gglasso",
@@ -28,6 +30,16 @@ plugin = Plugin(
         "including single, multiple, as well as latent Graphical Lasso problems."
     ),
 )
+
+plugin.register_semantic_types(PairwiseFeatureData)
+
+plugin.register_formats(GGLassoDataFormat)
+plugin.register_formats(PairwiseFeatureDataDirectoryFormat)
+
+plugin.register_semantic_type_to_format(PairwiseFeatureData, artifact_format=PairwiseFeatureDataDirectoryFormat)
+
+# plugin.register_formats(PairwiseFeatureDataDirectoryFormat)
+# plugin.register_semantic_type_to_format(PairwiseFeatureData, artifact_format=PairwiseFeatureDataDirectoryFormat)
 
 # features_clr
 plugin.methods.register_function(
@@ -75,7 +87,8 @@ plugin.methods.register_function(
     parameter_descriptions={
         "method": (
             "String if 'unscaled' calculates covariance"
-            "for more details check np.cov() documentaion"
+            "if 'spearmanr' calculates Spearman correlation from scipy"
+            "for more details check np.cov() and scipy.stats() documentaion"
         ),
         "bias": (
             "Default value is True"
@@ -92,3 +105,5 @@ plugin.methods.register_function(
         "default transformation is centered log ratio"
     ),
 )
+
+importlib.import_module('q2_gglasso._transformer')
