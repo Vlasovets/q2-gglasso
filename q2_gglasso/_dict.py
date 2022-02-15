@@ -19,3 +19,5 @@ from qiime2.plugin import (
 from q2_types.feature_table import FeatureTable, Composition
 
 
+from qiime2.plugin import SemanticType
+from q2_types.feature_data import FeatureData
