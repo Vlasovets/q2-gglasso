@@ -14,12 +14,12 @@ from q2_types.feature_data import FeatureData
 from gglasso.problem import glasso_problem
 from gglasso.helper.data_generation import generate_precision_matrix, group_power_network, sample_covariance_matrix
 from gglasso.helper.utils import log_transform, zero_replacement
+from gglasso.helper.model_selection import aic, ebic, K_single_grid
 
 from q2_types.feature_table import FeatureTable, Composition
 from q2_types.feature_data import FeatureData
 
 import pandas as pd
-
 
 def to_zarr(obj, name, root, first=True):
     """
@@ -90,3 +90,28 @@ def calculate_covariance(table: pd.DataFrame,
         raise ValueError('Given covariance calculation method is not supported.')
 
     return pd.DataFrame(result)
+
+
+def solve_problem(covariance_matrix: pd.DataFrame,
+                 problem: str,
+                 lambda1: list,
+                 n_samples: int,
+                 method: str = 'eBIC',
+                 gamma: float = 0.3,
+                 latent: bool = False,
+                 use_block: bool = True
+                 ) -> pd.DataFrame:
+
+    if problem == "single":
+        print("Solve {0} Graphical Lasso problem".format(method))
+        est_uniform, est_indv, statistics = K_single_grid(covariance_matrix,
+                                                          lambda_range=lambda1,
+                                                          N=n_samples,
+                                                          method=method,
+                                                          gamma=gamma,
+                                                          latent=latent,
+                                                          use_block=use_block)
+    else:
+        raise ValueError('Given Graphical lasso problem is not supported.')
+
+    return pd.DataFrame(est_uniform)

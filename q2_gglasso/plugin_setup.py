@@ -6,13 +6,15 @@ from os.path import dirname
 q2_gglasso_dir = dirname('/opt/project/')
 sys.path.append(q2_gglasso_dir)
 
+print(sys.path)
+
 import importlib
 import qiime2
 import q2_gglasso
 from q2_types.feature_table import FeatureTable, Composition, Frequency
 from q2_gglasso._type import PairwiseFeatureData
 from q2_gglasso._format import GGLassoDataFormat, PairwiseFeatureDataDirectoryFormat
-from qiime2.plugin import (Plugin, Float, Str, Bool)
+from qiime2.plugin import (Plugin, Float, Str, Bool, List, Int)
 
 
 
@@ -73,6 +75,7 @@ plugin.methods.register_function(
     ),
 )
 
+
 plugin.methods.register_function(
     function=q2_gglasso.calculate_covariance,
     inputs={"table": FeatureTable[Composition | Frequency]},
@@ -103,6 +106,57 @@ plugin.methods.register_function(
         "from FeatureTable[Composition | Frequency]"
         "prior to network analysis"
         "default transformation is centered log ratio"
+    ),
+)
+
+
+plugin.methods.register_function(
+    function=q2_gglasso.solve_problem,
+    inputs={
+        "covariance_matrix": PairwiseFeatureData
+            },
+    parameters=q2_gglasso.glasso_parameters,
+    outputs=[("inverse_covariance_matrix", PairwiseFeatureData)],
+    input_descriptions={
+        "covariance_matrix": (
+            "p x p semi-positive definite covariance matrix."
+        )
+    },
+    parameter_descriptions={
+        "problem": (
+            "type of Graphical lasso problem."
+            "'single' - Single GLasso."
+        ),
+        "method": (
+            "Method for choosing the optimal grid point, either 'eBIC' or 'AIC'."
+            "The default is 'eBIC'."
+        ),
+        "lambda1": (
+            "List of regularization hyperparameters lambda."
+            "Note, sort lambda list in descending order."
+        ),
+        "n_samples": (
+            "Number of samples."
+        ),
+        "gamma": (
+            "Parameter for the eBIC, needs to be in [0,1]."
+            "The default is 0.3."
+        ),
+        "latent": (
+            "Choose to model latent variables or not. "
+            "The default is False."
+        ),
+        "use_block": (
+            "Choose to use ADMM on each connected component."
+            "Typically, for large and sparse graphs, this is a speedup. "
+            "Only possible for latent=False."
+        )
+    },
+    output_descriptions={"inverse_covariance_matrix": "p x p matrix with inverse covariance entries"},
+    name="solve_problem",
+    description=(
+        "Method for doing model selection for K single Graphical Lasso problems."
+        "Use grid search and AIC/eBIC."
     ),
 )
 
