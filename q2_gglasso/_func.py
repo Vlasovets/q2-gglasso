@@ -104,6 +104,10 @@ def solve_problem(covariance_matrix: pd.DataFrame,
 
     if problem == "single":
         print("Solve {0} Graphical Lasso problem".format(method))
+
+        covariance_matrix = np.array(covariance_matrix)
+        covariance_matrix = covariance_matrix.reshape(1, covariance_matrix.shape[0], covariance_matrix.shape[1])
+
         est_uniform, est_indv, statistics = K_single_grid(covariance_matrix,
                                                           lambda_range=lambda1,
                                                           N=n_samples,
