@@ -24,11 +24,14 @@ from q2_types.feature_data import FeatureData
 
 
 glasso_parameters = {
-    "problem": Str,
-    "method": Str,
-    "lambda1": List[Float],
-    "n_samples": Int,
-    "gamma": Float,
-    "latent": Bool,
-    "use_block": Bool
+    "lambda1": Float
 }
+
+# glasso_parameters = {
+#     "method": Str,
+#     "lambda1": List[Float],
+#     "n_samples": Int,
+#     "gamma": Float,
+#     "latent": Bool,
+#     "use_block": Bool
+# }

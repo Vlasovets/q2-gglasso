@@ -84,7 +84,7 @@ def calculate_covariance(table: pd.DataFrame,
         result = np.cov(table, bias=bias)
 
     elif method == "spearmanr":
-        result, pval = stats.spearmanr(table, table)
+        result, pval = stats.spearmanr(table, table)  # TODO Scaling function here
 
     else:
         raise ValueError('Given covariance calculation method is not supported.')
@@ -92,30 +92,66 @@ def calculate_covariance(table: pd.DataFrame,
     return pd.DataFrame(result)
 
 
-def solve_problem(covariance_matrix: pd.DataFrame,
-                 problem: str,
-                 lambda1: list,
-                 n_samples: int,
-                 method: str = 'eBIC',
-                 gamma: float = 0.3,
-                 latent: bool = False,
-                 use_block: bool = True
-                 ) -> pd.DataFrame:
 
-    if problem == "single":
-        print("Solve {0} Graphical Lasso problem".format(method))
 
-        covariance_matrix = np.array(covariance_matrix)
-        covariance_matrix = covariance_matrix.reshape(1, covariance_matrix.shape[0], covariance_matrix.shape[1])
 
-        est_uniform, est_indv, statistics = K_single_grid(covariance_matrix,
-                                                          lambda_range=lambda1,
-                                                          N=n_samples,
-                                                          method=method,
-                                                          gamma=gamma,
-                                                          latent=latent,
-                                                          use_block=use_block)
-    else:
-        raise ValueError('Given Graphical lasso problem is not supported.')
+# def solve_problem(covariance_matrix: pd.DataFrame,
+#                   lambda1: float = .05) -> pd.DataFrame:
+#
+#     S = covariance_matrix.values
+#
+#     P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1}, latent=False, do_scaling=False)
+#     P.solve()
+#     sol = P.solution.precision_
+#
+#     # if modelselect_params:
+#     #
+#     #     P.model_selection(modelselect_params=modelselect_params, method=method, gamma=gamma)
+#
+#     # else:
+#     #     P.solve()
+#     #     sol = P.solution.precision_
+#
+#     return pd.DataFrame(sol)
 
-    return pd.DataFrame(est_uniform)
+
+def solve_problem(covariance_matrix: pd.DataFrame, lambda1: float=0.05) -> pd.DataFrame:
+
+    S = covariance_matrix.values
+
+    P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1}, latent=False, do_scaling=False)
+    P.solve()
+    sol = P.solution.precision_
+
+    return pd.DataFrame(sol)
+
+# def solve_problem(covariance_matrix: pd.DataFrame,
+#                  problem: str,
+#                  lambda1: list,
+#                  n_samples: int,
+#                  method: str = 'eBIC',
+#                  gamma: float = 0.3,
+#                  latent: bool = False,
+#                  use_block: bool = True
+#                  ) -> pd.DataFrame:
+#
+#     if problem == "single":
+#         print("Solve {0} Graphical Lasso problem".format(method))
+#
+#         covariance_matrix = np.array(covariance_matrix)
+#         covariance_matrix = covariance_matrix.reshape(1, covariance_matrix.shape[0], covariance_matrix.shape[1])
+#
+#         est_uniform, est_indv, statistics = K_single_grid(covariance_matrix,
+#                                                           lambda_range=lambda1,
+#                                                           N=n_samples,
+#                                                           method=method,
+#                                                           gamma=gamma,
+#                                                           latent=latent,
+#                                                           use_block=use_block)
+#
+#         result = est_uniform["Theta"].reshape(covariance_matrix.shape[0], covariance_matrix.shape[1])
+#
+#     else:
+#         raise ValueError('Given Graphical lasso problem is not supported.')
+#
+#     return pd.DataFrame(result)

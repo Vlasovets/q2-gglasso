@@ -110,6 +110,28 @@ plugin.methods.register_function(
 )
 
 
+# plugin.methods.register_function(
+#     function=q2_gglasso.solve_problem,
+#     inputs={
+#         "covariance_matrix": PairwiseFeatureData
+#             },
+#     parameters=q2_gglasso.glasso_parameters,
+#     outputs=[("inverse_covariance_matrix", PairwiseFeatureData)],
+#     input_descriptions={
+#         "covariance_matrix": (
+#             "p x p semi-positive definite covariance matrix."
+#         )
+#     },
+#     output_descriptions={"inverse_covariance_matrix": "p x p matrix with inverse covariance entries"},
+#     name="solve_problem",
+#     description=(
+#         "Method for doing model selection for K single Graphical Lasso problems."
+#         "Use grid search and AIC/eBIC."
+#     ),
+# )
+
+
+
 plugin.methods.register_function(
     function=q2_gglasso.solve_problem,
     inputs={
@@ -123,33 +145,9 @@ plugin.methods.register_function(
         )
     },
     parameter_descriptions={
-        "problem": (
-            "type of Graphical lasso problem."
-            "'single' - Single GLasso."
-        ),
-        "method": (
-            "Method for choosing the optimal grid point, either 'eBIC' or 'AIC'."
-            "The default is 'eBIC'."
-        ),
         "lambda1": (
             "List of regularization hyperparameters lambda."
             "Note, sort lambda list in descending order."
-        ),
-        "n_samples": (
-            "Number of samples."
-        ),
-        "gamma": (
-            "Parameter for the eBIC, needs to be in [0,1]."
-            "The default is 0.3."
-        ),
-        "latent": (
-            "Choose to model latent variables or not. "
-            "The default is False."
-        ),
-        "use_block": (
-            "Choose to use ADMM on each connected component."
-            "Typically, for large and sparse graphs, this is a speedup. "
-            "Only possible for latent=False."
         )
     },
     output_descriptions={"inverse_covariance_matrix": "p x p matrix with inverse covariance entries"},
