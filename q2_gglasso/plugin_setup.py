@@ -47,22 +47,18 @@ plugin.register_semantic_type_to_format(PairwiseFeatureData, artifact_format=Pai
 plugin.methods.register_function(
     function=q2_gglasso.transform_features,
     inputs={"table": FeatureTable[Composition | Frequency]},
-    parameters={"transformation": Str, "pseudocount": Float},
+    parameters={"transformation": Str},
     outputs=[("transformed_table", FeatureTable[Composition])],
     input_descriptions={
         "table": (
             "Matrix representing the compositional "
             "data of the problem, in order to clr transform it"
-        )
+        ),
     },
     parameter_descriptions={
         "transformation": (
             "String representing the name of the "
             "transformation we will use "
-        ),
-        "pseudocount": (
-            "Value that should be put instead of zeros"
-            "in the feature table. Default value is 0.5"
         ),
     },
     output_descriptions={"transformed_table": "Matrix representing the data of the problem"},
@@ -108,28 +104,6 @@ plugin.methods.register_function(
         "default transformation is centered log ratio"
     ),
 )
-
-
-# plugin.methods.register_function(
-#     function=q2_gglasso.solve_problem,
-#     inputs={
-#         "covariance_matrix": PairwiseFeatureData
-#             },
-#     parameters=q2_gglasso.glasso_parameters,
-#     outputs=[("inverse_covariance_matrix", PairwiseFeatureData)],
-#     input_descriptions={
-#         "covariance_matrix": (
-#             "p x p semi-positive definite covariance matrix."
-#         )
-#     },
-#     output_descriptions={"inverse_covariance_matrix": "p x p matrix with inverse covariance entries"},
-#     name="solve_problem",
-#     description=(
-#         "Method for doing model selection for K single Graphical Lasso problems."
-#         "Use grid search and AIC/eBIC."
-#     ),
-# )
-
 
 
 plugin.methods.register_function(
