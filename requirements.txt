@@ -9,6 +9,5 @@ pandas
 jupyterlab
 jupyter
 plotly
-
 biom-format
-5py
+h5py
