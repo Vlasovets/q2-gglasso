@@ -74,7 +74,7 @@ plugin.methods.register_function(
 
 plugin.methods.register_function(
     function=q2_gglasso.calculate_covariance,
-    inputs={"table": FeatureTable[Composition | Frequency]},
+    inputs={"table": FeatureTable[Composition]},
     parameters={"method": Str, "bias": Bool},
     outputs=[("covariance_matrix", PairwiseFeatureData)],
     input_descriptions={
@@ -86,8 +86,7 @@ plugin.methods.register_function(
     parameter_descriptions={
         "method": (
             "String if 'unscaled' calculates covariance"
-            "if 'spearmanr' calculates Spearman correlation from scipy"
-            "for more details check np.cov() and scipy.stats() documentaion"
+            "if 'scaled' calculates correlation by scaling the entries with 1/sqrt(d) where d is a matrix diagonal"
         ),
         "bias": (
             "Default value is True"
