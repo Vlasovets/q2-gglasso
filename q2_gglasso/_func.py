@@ -99,13 +99,40 @@ def calculate_covariance(table: pd.DataFrame,
     return pd.DataFrame(result)
 
 
-def solve_problem(covariance_matrix: pd.DataFrame, lambda1: float = 0.05) -> pd.DataFrame:
+def solve_problem(covariance_matrix: pd.DataFrame, lambda1: float = 0.22758) -> pd.DataFrame:
 
     # optimal lambda 0.22758459260747887
     S = covariance_matrix.values
 
-    P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1}, latent=False, do_scaling=False)
+    P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": 6.60}, latent=True, do_scaling=False)
     P.solve()
-    sol = P.solution.precision_
+    sol = P.solution.lowrank_
 
     return pd.DataFrame(sol)
+
+
+def robust_PCA(X, L, inverse=True):
+    sig, V = np.linalg.eigh(L)
+
+    # sort eigenvalues in descending order
+    sig = sig[::-1]
+    V = V[:,::-1]
+
+    ind = np.argwhere(sig > 1e-9)
+
+    if inverse:
+        loadings = V[:,ind] @ np.diag(np.sqrt(1/sig[ind]))
+    else:
+        loadings = V[:,ind] @ np.diag(np.sqrt(sig[ind]))
+
+    # compute the projection
+    zu = X.values @ loadings
+
+    return zu, loadings, np.round(sig[ind].squeeze(),3)
+
+
+def remove_biom_header(file_path):
+    with open(str(file_path), 'r') as fin:
+        data = fin.read().splitlines(True)
+    with open(str(file_path), 'w') as fout:
+        fout.writelines(data[1:])
