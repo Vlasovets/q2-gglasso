@@ -8,6 +8,9 @@ import multiprocessing
 from functools import partial
 import warnings
 
+from biom.table import Table
+from biom import load_table
+
 from q2_types.feature_table import FeatureTable, Composition
 from q2_types.feature_data import FeatureData
 
@@ -58,12 +61,13 @@ def to_zarr(obj, name, root, first=True):
 
 
 def transform_features(
-        table: pd.DataFrame, transformation: str = "clr",
+        table: Table, transformation: str = "clr",
 ) -> pd.DataFrame:
 
     if transformation == "clr":
 
-        X = normalize(table)
+        X = table.to_dataframe()
+        X = normalize(X)
         X = log_transform(X)
 
         return pd.DataFrame(X)
@@ -97,6 +101,7 @@ def calculate_covariance(table: pd.DataFrame,
 
 def solve_problem(covariance_matrix: pd.DataFrame, lambda1: float = 0.05) -> pd.DataFrame:
 
+    # optimal lambda 0.22758459260747887
     S = covariance_matrix.values
 
     P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1}, latent=False, do_scaling=False)
