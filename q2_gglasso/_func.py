@@ -102,15 +102,15 @@ def solve_problem(covariance_matrix: pd.DataFrame, lambda1: list = None) -> (pd.
     # optimal lambda 0.22758459260747887
     S = covariance_matrix.values
 
-    P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": 6.60}, latent=True, do_scaling=False)
+    P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": 6.60}, latent=True)
 
     if len(lambda1) == 1:  # solve gglasso for one particular lambda
         lambda1 = np.array(lambda1).item()
-        P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": 6.60}, latent=True, do_scaling=False)
+        P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": 6.60}, latent=True)
         P.solve()
     else:  # do model selection
         modelselect_params = {'lambda1_range': lambda1}
-        P.model_selection(modelselect_params=modelselect_params, method='eBIC', gamma=0.1)
+        P.model_selection(modelselect_params=modelselect_params)
 
     sol = P.solution.precision_
     L = P.solution.lowrank_
