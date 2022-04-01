@@ -121,7 +121,11 @@ plugin.methods.register_function(
         "lambda1": (
             "List of regularization hyperparameters lambda."
             "Note, sort lambda list in descending order."
-        )
+        ),
+        "latent": ("Specify whether latent variables should be modeled."
+                   "The default is False."),
+        "mu1":  ("Low-rank regularization parameter."
+                 "Only needs to be specified if latent=True."),
     },
     output_descriptions={"inverse_covariance_matrix": "p x p matrix with inverse covariance entries",
                          "low_rank_solution": "p x p matrix with eigenvalues on the diagonal"},

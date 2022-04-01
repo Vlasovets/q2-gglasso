@@ -24,7 +24,9 @@ from q2_types.feature_data import FeatureData
 
 
 glasso_parameters = {
-    "lambda1": List[Float]
+    "lambda1": List[Float],
+    "latent": Bool,
+    "mu1": List[Float]
 }
 
 # glasso_parameters = {

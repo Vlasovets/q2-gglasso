@@ -98,22 +98,67 @@ def calculate_covariance(table: pd.DataFrame,
     return pd.DataFrame(result)
 
 
-def solve_problem(covariance_matrix: pd.DataFrame, lambda1: list = None) -> (pd.DataFrame, pd.DataFrame):
-    # optimal lambda 0.22758459260747887
+def solve_problem(covariance_matrix: pd.DataFrame, lambda1: list = None, latent: bool = None, mu1: list = None) \
+        -> (pd.DataFrame, pd.DataFrame):
     S = covariance_matrix.values
 
-    P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": 6.60}, latent=True)
+    model_selection = True
 
-    if len(lambda1) == 1:  # solve gglasso for one particular lambda
+    if mu1 is None:
+        mu1 = [None]
+
+    if (len(lambda1) == 1) and (len(mu1) == 1):
+        model_selection = False
         lambda1 = np.array(lambda1).item()
-        P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": 6.60}, latent=True)
-        P.solve()
-    else:  # do model selection
-        modelselect_params = {'lambda1_range': lambda1}
-        P.model_selection(modelselect_params=modelselect_params)
+        mu1 = np.array(mu1).item()
+
+    if latent:
+
+        if model_selection:
+            modelselect_params = {'lambda1_range': lambda1, 'mu1_range': mu1}
+            P = glasso_problem(S, N=1, latent=True)
+            P.model_selection(modelselect_params=modelselect_params)
+        else:
+            P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": mu1}, latent=True)
+            P.solve()
+
+    else:
+
+        if model_selection:
+            modelselect_params = {'lambda1_range': lambda1}
+            P = glasso_problem(S, N=1, latent=False)
+            P.model_selection(modelselect_params=modelselect_params)
+        else:
+            P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1}, latent=False)
+            P.solve()
 
     sol = P.solution.precision_
     L = P.solution.lowrank_
+
+    # if (len(lambda1) == 1) and (len(mu1) == 1):  # solve gglasso for one particular lambda
+    #     lambda1 = np.array(lambda1).item()
+    #
+    #     if latent:
+    #         mu1 = np.array(mu1).item()
+    #         P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": mu1}, latent=True)
+    #     else:
+    #         P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1}, latent=False)
+    #
+    #     P.solve()
+    #
+    # else:  # do model selection
+    #
+    #     if latent:
+    #         modelselect_params = {'lambda1_range': lambda1, 'mu1_range': mu1}
+    #         P = glasso_problem(S, N=1, latent=True)
+    #     else:
+    #         modelselect_params = {'lambda1_range': lambda1}
+    #         P = glasso_problem(S, N=1, latent=False)
+    #
+    #     P.model_selection(modelselect_params=modelselect_params)
+    #
+    # sol = P.solution.precision_
+    # L = P.solution.lowrank_
 
     return pd.DataFrame(sol), pd.DataFrame(L)
 
