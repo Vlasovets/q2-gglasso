@@ -99,19 +99,20 @@ def calculate_covariance(table: pd.DataFrame,
     return pd.DataFrame(result)
 
 
-def solve_problem(covariance_matrix: pd.DataFrame, lambda1: float = 0.22758) -> pd.DataFrame:
+def solve_problem(covariance_matrix: pd.DataFrame, lambda1: float = 0.22758) -> (pd.DataFrame, pd.DataFrame):
 
     # optimal lambda 0.22758459260747887
     S = covariance_matrix.values
 
     P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": 6.60}, latent=True, do_scaling=False)
     P.solve()
-    sol = P.solution.lowrank_
+    sol = P.solution.precision_
+    L = P.solution.lowrank_
 
-    return pd.DataFrame(sol)
+    return pd.DataFrame(sol), pd.DataFrame(L)
 
 
-def robust_PCA(X, L, inverse=True):
+def PCA(X, L, inverse=True):
     sig, V = np.linalg.eigh(L)
 
     # sort eigenvalues in descending order

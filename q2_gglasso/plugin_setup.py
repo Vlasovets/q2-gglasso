@@ -111,7 +111,7 @@ plugin.methods.register_function(
         "covariance_matrix": PairwiseFeatureData
             },
     parameters=q2_gglasso.glasso_parameters,
-    outputs=[("inverse_covariance_matrix", PairwiseFeatureData)],
+    outputs=[("inverse_covariance_matrix", PairwiseFeatureData), ("low_rank_solution", PairwiseFeatureData)],
     input_descriptions={
         "covariance_matrix": (
             "p x p semi-positive definite covariance matrix."
@@ -123,7 +123,8 @@ plugin.methods.register_function(
             "Note, sort lambda list in descending order."
         )
     },
-    output_descriptions={"inverse_covariance_matrix": "p x p matrix with inverse covariance entries"},
+    output_descriptions={"inverse_covariance_matrix": "p x p matrix with inverse covariance entries",
+                         "low_rank_solution": "p x p matrix with eigenvalues on the diagonal"},
     name="solve_problem",
     description=(
         "Method for doing model selection for K single Graphical Lasso problems."
