@@ -24,7 +24,7 @@ from q2_types.feature_data import FeatureData
 
 
 glasso_parameters = {
-    "lambda1": Float
+    "lambda1": List[Float]
 }
 
 # glasso_parameters = {

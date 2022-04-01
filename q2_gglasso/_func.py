@@ -25,6 +25,7 @@ from q2_types.feature_data import FeatureData
 
 import pandas as pd
 
+
 def to_zarr(obj, name, root, first=True):
     """
     Function for converting a python object to a zarr file, a with tree structue.
@@ -63,7 +64,6 @@ def to_zarr(obj, name, root, first=True):
 def transform_features(
         table: Table, transformation: str = "clr",
 ) -> pd.DataFrame:
-
     if transformation == "clr":
 
         X = table.to_dataframe()
@@ -82,7 +82,6 @@ def calculate_covariance(table: pd.DataFrame,
                          method: str,
                          bias: bool = True,
                          ) -> pd.DataFrame:
-
     S = np.cov(table.values, bias=bias)
 
     if method == "unscaled":
@@ -99,13 +98,20 @@ def calculate_covariance(table: pd.DataFrame,
     return pd.DataFrame(result)
 
 
-def solve_problem(covariance_matrix: pd.DataFrame, lambda1: float = 0.22758) -> (pd.DataFrame, pd.DataFrame):
-
+def solve_problem(covariance_matrix: pd.DataFrame, lambda1: list = None) -> (pd.DataFrame, pd.DataFrame):
     # optimal lambda 0.22758459260747887
     S = covariance_matrix.values
 
     P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": 6.60}, latent=True, do_scaling=False)
-    P.solve()
+
+    if len(lambda1) == 1:  # solve gglasso for one particular lambda
+        lambda1 = np.array(lambda1).item()
+        P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": 6.60}, latent=True, do_scaling=False)
+        P.solve()
+    else:  # do model selection
+        modelselect_params = {'lambda1_range': lambda1}
+        P.model_selection(modelselect_params=modelselect_params, method='eBIC', gamma=0.1)
+
     sol = P.solution.precision_
     L = P.solution.lowrank_
 
@@ -117,19 +123,19 @@ def PCA(X, L, inverse=True):
 
     # sort eigenvalues in descending order
     sig = sig[::-1]
-    V = V[:,::-1]
+    V = V[:, ::-1]
 
     ind = np.argwhere(sig > 1e-9)
 
     if inverse:
-        loadings = V[:,ind] @ np.diag(np.sqrt(1/sig[ind]))
+        loadings = V[:, ind] @ np.diag(np.sqrt(1 / sig[ind]))
     else:
-        loadings = V[:,ind] @ np.diag(np.sqrt(sig[ind]))
+        loadings = V[:, ind] @ np.diag(np.sqrt(sig[ind]))
 
     # compute the projection
     zu = X.values @ loadings
 
-    return zu, loadings, np.round(sig[ind].squeeze(),3)
+    return zu, loadings, np.round(sig[ind].squeeze(), 3)
 
 
 def remove_biom_header(file_path):
