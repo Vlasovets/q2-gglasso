@@ -16,6 +16,9 @@ from q2_gglasso._type import PairwiseFeatureData
 from q2_gglasso._format import GGLassoDataFormat, PairwiseFeatureDataDirectoryFormat
 from qiime2.plugin import (Plugin, Float, Str, Bool, List, Int)
 
+
+
+
 plugin = Plugin(
     name="gglasso",
     version="0.0.0.dev0",
@@ -68,6 +71,7 @@ plugin.methods.register_function(
     ),
 )
 
+
 plugin.methods.register_function(
     function=q2_gglasso.calculate_covariance,
     inputs={"table": FeatureTable[Composition]},
@@ -100,11 +104,12 @@ plugin.methods.register_function(
     ),
 )
 
+
 plugin.methods.register_function(
     function=q2_gglasso.solve_problem,
     inputs={
         "covariance_matrix": PairwiseFeatureData
-    },
+            },
     parameters=q2_gglasso.glasso_parameters,
     outputs=[("inverse_covariance_matrix", PairwiseFeatureData), ("low_rank_solution", PairwiseFeatureData)],
     input_descriptions={
@@ -119,8 +124,8 @@ plugin.methods.register_function(
         ),
         "latent": ("Specify whether latent variables should be modeled."
                    "The default is False."),
-        "mu1": ("Low-rank regularization parameter."
-                "Only needs to be specified if latent=True."),
+        "mu1":  ("Low-rank regularization parameter."
+                 "Only needs to be specified if latent=True."),
     },
     output_descriptions={"inverse_covariance_matrix": "p x p matrix with inverse covariance entries",
                          "low_rank_solution": "p x p matrix with eigenvalues on the diagonal"},
@@ -131,29 +136,25 @@ plugin.methods.register_function(
     ),
 )
 
+
 plugin.visualizers.register_function(
     function=q2_gglasso.heatmap,
     inputs={
         "covariance_matrix": PairwiseFeatureData
-    },
+            },
     parameters={
         'normalize': Bool,
     },
     name='Generate a heatmap representation of a feature table',
-    description='Generate a heatmap representation of a feature table with '
-                'optional clustering on both the sample and feature axes.\n\n'
-                'Tip: To generate a heatmap containing taxonomic annotations, '
-                'use `qiime taxa collapse` to collapse the feature table at '
-                'the desired taxonomic level.',
+    description='Generate a heatmap representation of a covariance matrix ',
     input_descriptions={
         "covariance_matrix": (
             "p x p semi-positive definite covariance matrix."
         )
     },
     parameter_descriptions={
-        'normalize': ('Normalize the feature table by adding a psuedocount '
-                      'of 1 and then taking the log10 of the table.'),
-    }
+        'normalize': 'Scale the covariance to correlation',
+    },
 )
 
 importlib.import_module('q2_gglasso._transformer')
