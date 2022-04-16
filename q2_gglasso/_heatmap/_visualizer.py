@@ -19,7 +19,7 @@ def heatmap(output_dir, covariance_matrix: pd.DataFrame, normalize: bool = True)
     fig = heatmap_plot.get_figure()
 
     for ext in ['png', 'svg']:
-        img_fp = os.path.join(output_dir, 'gglasso-heatmap.{0}'.format(ext))
+        img_fp = os.path.join(output_dir, 'q2-gglasso-heatmap.{0}'.format(ext))
         fig.savefig(img_fp)
 
     index_fp = os.path.join(TEMPLATES, 'index.html')
