@@ -145,8 +145,8 @@ plugin.visualizers.register_function(
     parameters={
         'normalize': Bool,
     },
-    name='Generate a heatmap representation of a feature table',
-    description='Generate a heatmap representation of a covariance matrix ',
+    name='Generate a heatmap',
+    description='Generate a heatmap representation of a symmetric matrix',
     input_descriptions={
         "covariance_matrix": (
             "p x p semi-positive definite covariance matrix."
