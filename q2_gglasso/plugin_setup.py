@@ -14,7 +14,7 @@ import q2_gglasso
 from q2_types.feature_table import FeatureTable, Composition, Frequency
 from q2_gglasso._type import PairwiseFeatureData
 from q2_gglasso._format import GGLassoDataFormat, PairwiseFeatureDataDirectoryFormat
-from qiime2.plugin import (Plugin, Float, Str, Bool, List, Int)
+from qiime2.plugin import (Plugin, Float, Str, Bool, List, Int, Choices)
 
 
 
@@ -140,20 +140,27 @@ plugin.methods.register_function(
 plugin.visualizers.register_function(
     function=q2_gglasso.heatmap,
     inputs={
-        "covariance_matrix": PairwiseFeatureData
+        "covariance": PairwiseFeatureData,
+        "precision": PairwiseFeatureData,
+        "low_rank": PairwiseFeatureData
             },
-    parameters={
-        'normalize': Bool,
-    },
     name='Generate a heatmap',
     description='Generate a heatmap representation of a symmetric matrix',
     input_descriptions={
-        "covariance_matrix": (
+        "covariance": (
             "p x p semi-positive definite covariance matrix."
-        )
+        ),
+    "precision": (
+            "p x p semi-positive definite inverse covariance matrix."
+        ),
+    "low_rank": (
+            "squared symmetric matrix of rank L."
+        ),
     },
+    parameters={'color_scheme': Str % Choices(q2_gglasso.heatmap_choices['color_scheme'])},
     parameter_descriptions={
-        'normalize': 'Scale the covariance to correlation',
+        'color_scheme': 'The matplotlib colorscheme to generate the heatmap '
+                        'with.',
     },
 )
 

@@ -3,6 +3,7 @@ import pkg_resources
 import q2templates
 import pandas as pd
 import seaborn as sns
+import matplotlib.pyplot as plt
 
 TEMPLATES = pkg_resources.resource_filename('q2_gglasso._heatmap', 'assets')
 
@@ -13,14 +14,36 @@ heatmap_choices = {
 }
 
 
-def heatmap(output_dir, covariance_matrix: pd.DataFrame, normalize: bool = True) -> None:
-    heatmap_plot = sns.heatmap(covariance_matrix, cmap="coolwarm", vmin=-0.5, vmax=0.5, linewidth=0.5,
-                               xticklabels=[], yticklabels=[], square=True, cbar=False)
-    fig = heatmap_plot.get_figure()
+def heatmap(output_dir, covariance: pd.DataFrame = None,
+            precision: pd.DataFrame = None,
+            low_rank: pd.DataFrame = None, color_scheme: str='coolwarm') -> None:
+
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(30, 10))
+
+    ax1.get_shared_y_axes().join(ax2, ax3)
+    g1 = sns.heatmap(covariance, cmap=color_scheme, cbar=False, ax=ax1)
+    g1.set_ylabel('')
+    g1.set_xlabel('Covariance')
+
+    g2 = sns.heatmap(precision, cmap=color_scheme, cbar=False, ax=ax2)
+    g2.set_ylabel('')
+    g2.set_xlabel('Inverse covariance')
+    g2.set_yticks([])
+
+    g3 = sns.heatmap(low_rank, cmap=color_scheme, ax=ax3, cbar=False)
+    g3.set_ylabel('')
+    g3.set_xlabel('Low-rank solution')
+    g3.set_yticks([])
+
+    for ax in [g1, g2, g3]:
+        tl = ax.get_xticklabels()
+        ax.set_xticklabels(tl, rotation=90)
+        tly = ax.get_yticklabels()
+        ax.set_yticklabels(tly, rotation=0)
 
     for ext in ['png', 'svg']:
         img_fp = os.path.join(output_dir, 'q2-gglasso-heatmap.{0}'.format(ext))
-        fig.savefig(img_fp)
+        plt.savefig(img_fp)
 
     index_fp = os.path.join(TEMPLATES, 'index.html')
-    q2templates.render(index_fp, output_dir, context={'normalize': normalize})
+    q2templates.render(index_fp, output_dir, context={})

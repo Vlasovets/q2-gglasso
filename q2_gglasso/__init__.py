@@ -16,5 +16,3 @@ from ._heatmap import (
     heatmap_choices
 )
 
-__all__ = ['heatmap', 'heatmap_choices']
-
