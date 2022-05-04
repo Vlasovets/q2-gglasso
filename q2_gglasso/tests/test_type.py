@@ -6,7 +6,7 @@ from q2_gglasso._format import PairwiseFeatureDataDirectoryFormat
 
 
 class TestTypes(TestPluginBase):
-    package = 'q2_gglasso'
+    package = 'q2-gglasso'
 
     def test_type_registration(self):
         self.assertRegisteredSemanticType(PairwiseFeatureData)
