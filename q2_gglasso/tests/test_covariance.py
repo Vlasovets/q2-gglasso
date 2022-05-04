@@ -1,7 +1,6 @@
 import unittest
 import pandas as pd
 import numpy as np
-import pandas.testing as pdt
 
 try:
     from q2_gglasso._func import calculate_covariance
