@@ -9,11 +9,9 @@ sys.path.append(q2_gglasso_dir)
 print(sys.path)
 
 import importlib
-import qiime2
-import q2_gglasso
+import q2_gglasso as q2g
+
 from q2_types.feature_table import FeatureTable, Composition, Frequency
-from q2_gglasso._type import PairwiseFeatureData
-from q2_gglasso._format import GGLassoDataFormat, PairwiseFeatureDataDirectoryFormat
 from qiime2.plugin import (Plugin, Float, Str, Bool, List, Int, Choices)
 
 
@@ -33,19 +31,30 @@ plugin = Plugin(
     ),
 )
 
-plugin.register_semantic_types(PairwiseFeatureData)
+plugin.register_semantic_types(
+    q2g.PairwiseFeatureData,
+    q2g.GGLassoProblem
+)
 
-plugin.register_formats(GGLassoDataFormat)
-plugin.register_formats(PairwiseFeatureDataDirectoryFormat)
+plugin.register_formats(
+    q2g.GGLassoDataFormat,
+    q2g.PairwiseFeatureDataDirectoryFormat,
+    q2g.ZarrProblemFormat,
+    q2g.GGLassoProblemDirectoryFormat,
 
-plugin.register_semantic_type_to_format(PairwiseFeatureData, artifact_format=PairwiseFeatureDataDirectoryFormat)
+)
 
-# plugin.register_formats(PairwiseFeatureDataDirectoryFormat)
-# plugin.register_semantic_type_to_format(PairwiseFeatureData, artifact_format=PairwiseFeatureDataDirectoryFormat)
+plugin.register_semantic_type_to_format(
+    q2g.PairwiseFeatureData, artifact_format=q2g.PairwiseFeatureDataDirectoryFormat,
+)
+plugin.register_semantic_type_to_format(
+    q2g.GGLassoProblem, artifact_format=q2g.GGLassoProblemDirectoryFormat
+)
+
 
 # features_clr
 plugin.methods.register_function(
-    function=q2_gglasso.transform_features,
+    function=q2g.transform_features,
     inputs={"table": FeatureTable[Composition | Frequency]},
     parameters={"transformation": Str},
     outputs=[("transformed_table", FeatureTable[Composition])],
@@ -73,10 +82,10 @@ plugin.methods.register_function(
 
 
 plugin.methods.register_function(
-    function=q2_gglasso.calculate_covariance,
+    function=q2g.calculate_covariance,
     inputs={"table": FeatureTable[Composition]},
     parameters={"method": Str, "bias": Bool},
-    outputs=[("covariance_matrix", PairwiseFeatureData)],
+    outputs=[("covariance_matrix", q2g.PairwiseFeatureData)],
     input_descriptions={
         "table": (
             "Matrix representing the microbiome data:"
@@ -106,12 +115,13 @@ plugin.methods.register_function(
 
 
 plugin.methods.register_function(
-    function=q2_gglasso.solve_problem,
+    function=q2g.solve_problem,
     inputs={
-        "covariance_matrix": PairwiseFeatureData
+        "covariance_matrix": q2g.PairwiseFeatureData
             },
-    parameters=q2_gglasso.glasso_parameters,
-    outputs=[("inverse_covariance_matrix", PairwiseFeatureData), ("low_rank_solution", PairwiseFeatureData)],
+    parameters=q2g.glasso_parameters,
+    outputs=[("inverse_covariance_matrix", q2g.PairwiseFeatureData),
+             ("low_rank_solution", q2g.PairwiseFeatureData)],
     input_descriptions={
         "covariance_matrix": (
             "p x p semi-positive definite covariance matrix."
@@ -138,11 +148,11 @@ plugin.methods.register_function(
 
 
 plugin.visualizers.register_function(
-    function=q2_gglasso.heatmap,
+    function=q2g.heatmap,
     inputs={
-        "covariance": PairwiseFeatureData,
-        "precision": PairwiseFeatureData,
-        "low_rank": PairwiseFeatureData
+        "covariance": q2g.PairwiseFeatureData,
+        "precision": q2g.PairwiseFeatureData,
+        "low_rank": q2g.PairwiseFeatureData
             },
     name='Generate a heatmap',
     description='Generate a heatmap representation of a symmetric matrix',
@@ -157,7 +167,7 @@ plugin.visualizers.register_function(
             "squared symmetric matrix of rank L."
         ),
     },
-    parameters={'color_scheme': Str % Choices(q2_gglasso.heatmap_choices['color_scheme'])},
+    parameters={'color_scheme': Str % Choices(q2g.heatmap_choices['color_scheme'])},
     parameter_descriptions={
         'color_scheme': 'The matplotlib colorscheme to generate the heatmap '
                         'with.',
