@@ -42,23 +42,14 @@ def to_zarr(obj, name, root, first=True):
     elif type(obj) in [np.ndarray, pd.DataFrame]:
         root.create_dataset(name, data=obj, shape=obj.shape)
 
-    elif type(obj) == np.float64:
-        root.attrs[name] = float(obj)
+    elif type(obj) in [int, float, bool]:
+        root.attrs[name] = obj
 
-    elif type(obj) == np.int64:
-        root.attrs[name] = int(obj)
-
-    elif type(obj) == list:
-        if name == "tree":
-            root.attrs[name] = obj
-        else:
-            to_zarr(np.array(obj), name, root, first=False)
-
-    elif obj is None or type(obj) in [str, bool, float, int]:
+    elif obj is None:
         root.attrs[name] = obj
 
     else:
-        to_zarr(obj.__dict__, name, root, first=first)
+        pass
 
 
 def transform_features(
