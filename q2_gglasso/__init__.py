@@ -11,6 +11,19 @@ from q2_gglasso._dict import (
     glasso_parameters
 )
 
+from q2_gglasso._format import (
+    ZarrProblemFormat,
+    GGLassoDataFormat,
+    PairwiseFeatureDataDirectoryFormat,
+    GGLassoProblemDirectoryFormat
+)
+
+from q2_gglasso._type import (
+    PairwiseFeatureData,
+    GGLassoProblem
+)
+
+
 from ._heatmap import (
     heatmap,
     heatmap_choices

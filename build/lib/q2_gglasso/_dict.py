@@ -19,3 +19,21 @@ from qiime2.plugin import (
 from q2_types.feature_table import FeatureTable, Composition
 
 
+from qiime2.plugin import SemanticType
+from q2_types.feature_data import FeatureData
+
+
+glasso_parameters = {
+    "lambda1": List[Float],
+    "latent": Bool,
+    "mu1": List[Float]
+}
+
+# glasso_parameters = {
+#     "method": Str,
+#     "lambda1": List[Float],
+#     "n_samples": Int,
+#     "gamma": Float,
+#     "latent": Bool,
+#     "use_block": Bool
+# }

@@ -15,11 +15,10 @@ PairwiseFeatureDataDirectoryFormat = model.SingleFileDirectoryFormat(
     'PairwiseFeatureDataDirectoryFormat', 'pairwise_comparisons.tsv', GGLassoDataFormat)
 
 
+class ZarrProblemFormat(model.BinaryFileFormat):
+    def validate(self, level):
+        pass
 
-# class ZarrProblemFormat(model.BinaryFileFormat):
-#     def validate(self, level):
-#         pass
-#
-#
-# CLASSOProblemDirectoryFormat = model.SingleFileDirectoryFormat('CLASSOProblemDirectoryFormat',
-#                                                                'problem.zip', format=ZarrProblemFormat)
+
+GGLassoProblemDirectoryFormat = model.SingleFileDirectoryFormat('GGLassoProblemDirectoryFormat',
+                                                               'problem.zip', format=ZarrProblemFormat)
