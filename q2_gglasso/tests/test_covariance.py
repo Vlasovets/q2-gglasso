@@ -21,7 +21,7 @@ class TestUtil(unittest.TestCase):
         tol_up = 10e-6
         tol_low = 10e-14
 
-        S = calculate_covariance(table, method='scaled', bias=True)  # covariance matrix S
+        S = calculate_covariance(table, method='unscaled')  # covariance matrix S
 
         I = np.eye(S.shape[0])  # identity matrix of the same shape as S
         eigenvalues = np.linalg.eigvals(S)
