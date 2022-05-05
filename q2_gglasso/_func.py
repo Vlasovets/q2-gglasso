@@ -28,7 +28,7 @@ import pandas as pd
 
 def to_zarr(obj, name, root, first=True):
     """
-    Function for converting a python object to a zarr file, a with tree structue.
+    Function for converting a GGLasso object to a zarr file, a with tree structue.
     """
     if type(obj) == dict:
         if first:
@@ -42,11 +42,8 @@ def to_zarr(obj, name, root, first=True):
     elif type(obj) in [np.ndarray, pd.DataFrame]:
         root.create_dataset(name, data=obj, shape=obj.shape)
 
-    elif type(obj) in [int, float, bool]:
-        root.attrs[name] = obj
-
-    elif obj is None:
-        root.attrs[name] = obj
+    elif type(obj) in [str, bool, float, int]:
+        to_zarr(np.array(obj), name, root, first=False)
 
     else:
         pass
