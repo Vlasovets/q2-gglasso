@@ -21,4 +21,4 @@ class ZarrProblemFormat(model.BinaryFileFormat):
 
 
 GGLassoProblemDirectoryFormat = model.SingleFileDirectoryFormat('GGLassoProblemDirectoryFormat',
-                                                               'problem.zip', format=ZarrProblemFormat)
+                                                                'problem.zip', format=ZarrProblemFormat)
