@@ -28,9 +28,13 @@ import pandas as pd
 
 def to_zarr(obj, name, root, first=True):
     """
-    Function for converting a python object to a zarr file, a with tree structue.
+    Function for converting a GGLasso object to a zarr file, a with tree structue.
     """
-    if type(obj) == dict:
+    # name 'S' is dedicated for some internal usage in zarr notation and cannot be accessed as a key while reading
+    if name == "S":
+        name = 'covariance'
+
+    if isinstance(obj, dict):
         if first:
             zz = root
         else:
@@ -39,24 +43,14 @@ def to_zarr(obj, name, root, first=True):
         for key, value in obj.items():
             to_zarr(value, key, zz, first=False)
 
-    elif type(obj) in [np.ndarray, pd.DataFrame]:
+    elif isinstance(obj, (np.ndarray, pd.DataFrame)):
         root.create_dataset(name, data=obj, shape=obj.shape)
 
-    elif type(obj) == np.float64:
-        root.attrs[name] = float(obj)
+    elif isinstance(obj, (str, bool, float, int)):
+        to_zarr(np.array(obj), name, root, first=False)
 
-    elif type(obj) == np.int64:
-        root.attrs[name] = int(obj)
-
-    elif type(obj) == list:
-        if name == "tree":
-            root.attrs[name] = obj
-        else:
-            to_zarr(np.array(obj), name, root, first=False)
-
-    elif obj is None or type(obj) in [str, bool, float, int]:
-        root.attrs[name] = obj
-
+    elif isinstance(obj, type(None)):
+        pass
     else:
         to_zarr(obj.__dict__, name, root, first=first)
 
@@ -99,7 +93,7 @@ def calculate_covariance(table: pd.DataFrame,
 
 
 def solve_problem(covariance_matrix: pd.DataFrame, lambda1: list = None, latent: bool = None, mu1: list = None) \
-        -> (pd.DataFrame, pd.DataFrame):
+        -> glasso_problem:
     S = covariance_matrix.values
 
     model_selection = True
@@ -107,6 +101,7 @@ def solve_problem(covariance_matrix: pd.DataFrame, lambda1: list = None, latent:
     if mu1 is None:
         mu1 = [None]
 
+    # method solve() is for solving GGLasso with particular lambda/mu value (just 1)
     if (len(lambda1) == 1) and (len(mu1) == 1):
         model_selection = False
         lambda1 = np.array(lambda1).item()
@@ -132,10 +127,9 @@ def solve_problem(covariance_matrix: pd.DataFrame, lambda1: list = None, latent:
             P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1}, latent=False)
             P.solve()
 
-    sol = P.solution.precision_
-    L = P.solution.lowrank_
+    return P
 
-    return pd.DataFrame(sol), pd.DataFrame(L)
+
 
 
 def PCA(X, L, inverse=True):

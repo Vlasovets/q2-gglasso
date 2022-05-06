@@ -14,9 +14,6 @@ import q2_gglasso as q2g
 from q2_types.feature_table import FeatureTable, Composition, Frequency
 from qiime2.plugin import (Plugin, Float, Str, Bool, List, Int, Choices)
 
-
-
-
 plugin = Plugin(
     name="gglasso",
     version="0.0.0.dev0",
@@ -51,7 +48,6 @@ plugin.register_semantic_type_to_format(
     q2g.GGLassoProblem, artifact_format=q2g.GGLassoProblemDirectoryFormat
 )
 
-
 # features_clr
 plugin.methods.register_function(
     function=q2g.transform_features,
@@ -79,7 +75,6 @@ plugin.methods.register_function(
         " default transformation is centered log ratio"
     ),
 )
-
 
 plugin.methods.register_function(
     function=q2g.calculate_covariance,
@@ -113,15 +108,13 @@ plugin.methods.register_function(
     ),
 )
 
-
 plugin.methods.register_function(
     function=q2g.solve_problem,
     inputs={
         "covariance_matrix": q2g.PairwiseFeatureData
-            },
+    },
     parameters=q2g.glasso_parameters,
-    outputs=[("inverse_covariance_matrix", q2g.PairwiseFeatureData),
-             ("low_rank_solution", q2g.PairwiseFeatureData)],
+    outputs=[("solution", q2g.GGLassoProblem)],
     input_descriptions={
         "covariance_matrix": (
             "p x p semi-positive definite covariance matrix."
@@ -134,11 +127,11 @@ plugin.methods.register_function(
         ),
         "latent": ("Specify whether latent variables should be modeled."
                    "The default is False."),
-        "mu1":  ("Low-rank regularization parameter."
-                 "Only needs to be specified if latent=True."),
+        "mu1": ("Low-rank regularization parameter."
+                "Only needs to be specified if latent=True."),
     },
-    output_descriptions={"inverse_covariance_matrix": "p x p matrix with inverse covariance entries",
-                         "low_rank_solution": "p x p matrix with eigenvalues on the diagonal"},
+    output_descriptions={"solution": "dictionary containing the solution and "
+                                     "hyper-/parameters of GGLasso problem"},
     name="solve_problem",
     description=(
         "Method for doing model selection for K single Graphical Lasso problems."
@@ -146,25 +139,16 @@ plugin.methods.register_function(
     ),
 )
 
-
 plugin.visualizers.register_function(
     function=q2g.heatmap,
     inputs={
-        "covariance": q2g.PairwiseFeatureData,
-        "precision": q2g.PairwiseFeatureData,
-        "low_rank": q2g.PairwiseFeatureData
-            },
+        "solution": q2g.GGLassoProblem,
+    },
     name='Generate a heatmap',
     description='Generate a heatmap representation of a symmetric matrix',
     input_descriptions={
-        "covariance": (
+        "solution": (
             "p x p semi-positive definite covariance matrix."
-        ),
-    "precision": (
-            "p x p semi-positive definite inverse covariance matrix."
-        ),
-    "low_rank": (
-            "squared symmetric matrix of rank L."
         ),
     },
     parameters={'color_scheme': Str % Choices(q2g.heatmap_choices['color_scheme'])},
@@ -173,5 +157,33 @@ plugin.visualizers.register_function(
                         'with.',
     },
 )
+
+
+# plugin.visualizers.register_function(
+#     function=q2g.heatmap,
+#     inputs={
+#         "covariance": q2g.PairwiseFeatureData,
+#         "precision": q2g.PairwiseFeatureData,
+#         "low_rank": q2g.PairwiseFeatureData
+#     },
+#     name='Generate a heatmap',
+#     description='Generate a heatmap representation of a symmetric matrix',
+#     input_descriptions={
+#         "covariance": (
+#             "p x p semi-positive definite covariance matrix."
+#         ),
+#         "precision": (
+#             "p x p semi-positive definite inverse covariance matrix."
+#         ),
+#         "low_rank": (
+#             "squared symmetric matrix of rank L."
+#         ),
+#     },
+#     parameters={'color_scheme': Str % Choices(q2g.heatmap_choices['color_scheme'])},
+#     parameter_descriptions={
+#         'color_scheme': 'The matplotlib colorscheme to generate the heatmap '
+#                         'with.',
+#     },
+# )
 
 importlib.import_module('q2_gglasso._transformer')

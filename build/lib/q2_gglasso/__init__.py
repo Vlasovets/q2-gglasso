@@ -29,3 +29,5 @@ from ._heatmap import (
     heatmap_choices
 )
 
+from gglasso.problem import glasso_problem
+
