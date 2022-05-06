@@ -93,46 +93,6 @@ def calculate_covariance(table: pd.DataFrame,
 
 
 def solve_problem(covariance_matrix: pd.DataFrame, lambda1: list = None, latent: bool = None, mu1: list = None) \
-        -> (pd.DataFrame, pd.DataFrame):
-    S = covariance_matrix.values
-
-    model_selection = True
-
-    if mu1 is None:
-        mu1 = [None]
-
-    if (len(lambda1) == 1) and (len(mu1) == 1):
-        model_selection = False
-        lambda1 = np.array(lambda1).item()
-        mu1 = np.array(mu1).item()
-
-    if latent:
-
-        if model_selection:
-            modelselect_params = {'lambda1_range': lambda1, 'mu1_range': mu1}
-            P = glasso_problem(S, N=1, latent=True)
-            P.model_selection(modelselect_params=modelselect_params)
-        else:
-            P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": mu1}, latent=True)
-            P.solve()
-
-    else:
-
-        if model_selection:
-            modelselect_params = {'lambda1_range': lambda1}
-            P = glasso_problem(S, N=1, latent=False)
-            P.model_selection(modelselect_params=modelselect_params)
-        else:
-            P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1}, latent=False)
-            P.solve()
-
-    sol = P.solution.precision_
-    L = P.solution.lowrank_
-
-    return pd.DataFrame(sol), pd.DataFrame(L)
-
-
-def solve_problem_new(covariance_matrix: pd.DataFrame, lambda1: list = None, latent: bool = None, mu1: list = None) \
         -> glasso_problem:
     S = covariance_matrix.values
 

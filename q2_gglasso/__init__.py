@@ -3,7 +3,6 @@ from q2_gglasso._func import (
     transform_features,
     calculate_covariance,
     solve_problem,
-    solve_problem_new,
     PCA,
     remove_biom_header
 )
