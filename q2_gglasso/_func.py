@@ -30,11 +30,11 @@ def to_zarr(obj, name, root, first=True):
     """
     Function for converting a GGLasso object to a zarr file, a with tree structue.
     """
-
+    # name 'S' is dedicated for some internal usage in zarr notation and cannot be accessed as a key while reading
     if name == "S":
         name = 'covariance'
 
-    if type(obj) == dict:
+    if isinstance(obj, dict):
         if first:
             zz = root
         else:
@@ -43,14 +43,16 @@ def to_zarr(obj, name, root, first=True):
         for key, value in obj.items():
             to_zarr(value, key, zz, first=False)
 
-    elif type(obj) in [np.ndarray, pd.DataFrame]:
+    elif isinstance(obj, (np.ndarray, pd.DataFrame)):
         root.create_dataset(name, data=obj, shape=obj.shape)
 
-    elif type(obj) in [str, bool, float, int]:
+    elif isinstance(obj, (str, bool, float, int)):
         to_zarr(np.array(obj), name, root, first=False)
 
-    else:
+    elif isinstance(obj, type(None)):
         pass
+    else:
+        to_zarr(obj.__dict__, name, root, first=first)
 
 
 def transform_features(
