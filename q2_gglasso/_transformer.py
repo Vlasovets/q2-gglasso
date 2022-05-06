@@ -21,12 +21,12 @@ def _1(ff: q2g.GGLassoDataFormat) -> pd.DataFrame:
 
 
 @plugin.register_transformer
-def _3(obj: q2g.solve_problem) -> q2g.GGLassoProblemDirectoryFormat:
+def _3(obj: q2g.glasso_problem) -> q2g.GGLassoProblemDirectoryFormat:
     ff = q2g.GGLassoProblemDirectoryFormat()
     zipfile = str(ff.path / "problem.zip")
     store = zarr.ZipStore(zipfile, mode="w")
     root = zarr.open(store=store)
-    q2g.to_zarr(obj, "problem", root)
+    q2g.to_zarr(obj.__dict__, "problem", root)
     store.close()
     return ff
 
