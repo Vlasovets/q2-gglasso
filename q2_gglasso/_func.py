@@ -43,10 +43,16 @@ def to_zarr(obj, name, root, first=True):
         for key, value in obj.items():
             to_zarr(value, key, zz, first=False)
 
+    elif isinstance(obj, (list, set)):
+        root.create_dataset(name, data=obj, shape=len(obj))
+
     elif isinstance(obj, (np.ndarray, pd.DataFrame)):
         root.create_dataset(name, data=obj, shape=obj.shape)
 
     elif isinstance(obj, (str, bool, float, int)):
+        to_zarr(np.array(obj), name, root, first=False)
+
+    elif isinstance(obj, (np.str_, np.bool_, np.int64, np.float64)):
         to_zarr(np.array(obj), name, root, first=False)
 
     elif isinstance(obj, type(None)):
@@ -126,6 +132,8 @@ def solve_problem(covariance_matrix: pd.DataFrame, lambda1: list = None, latent:
         else:
             P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1}, latent=False)
             P.solve()
+
+    print("test verbose")
 
     return P
 
