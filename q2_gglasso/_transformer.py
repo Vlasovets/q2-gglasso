@@ -1,9 +1,11 @@
 import pandas as pd
 import zarr
+import numpy as np
 
 from q2_gglasso.plugin_setup import plugin
 from biom import load_table, parse_table
 import q2_gglasso as q2g
+
 
 @plugin.register_transformer
 def _0(data: pd.DataFrame) -> q2g.GGLassoDataFormat:
@@ -14,14 +16,15 @@ def _0(data: pd.DataFrame) -> q2g.GGLassoDataFormat:
 
 
 @plugin.register_transformer
-def _1(ff: q2g.GGLassoDataFormat) -> pd.DataFrame:
+def _1(ff: q2g.GGLassoDataFormat) -> list:
     table = load_table(str(ff))
     df = table.to_dataframe()
-    return df
+    df_list = list(df.values)
+    return df_list
 
 
 @plugin.register_transformer
-def _3(obj: q2g.glasso_problem) -> q2g.GGLassoProblemDirectoryFormat:
+def _2(obj: q2g.glasso_problem) -> q2g.GGLassoProblemDirectoryFormat:
     ff = q2g.GGLassoProblemDirectoryFormat()
     zipfile = str(ff.path / "problem.zip")
     store = zarr.ZipStore(zipfile, mode="w")
@@ -32,7 +35,7 @@ def _3(obj: q2g.glasso_problem) -> q2g.GGLassoProblemDirectoryFormat:
 
 
 @plugin.register_transformer
-def _4(ff: q2g.ZarrProblemFormat) -> zarr.hierarchy.Group:
+def _3(ff: q2g.ZarrProblemFormat) -> zarr.hierarchy.Group:
     store = zarr.ZipStore(str(ff), mode="r")
     root = zarr.open(store=store)
     return root
@@ -45,4 +48,9 @@ def _4(ff: q2g.ZarrProblemFormat) -> zarr.hierarchy.Group:
 #     df.index = new_index
 #     return df
 
+# @plugin.register_transformer
+# def _1(ff: q2g.GGLassoDataFormat) -> pd.DataFrame:
+#     table = load_table(str(ff))
+#     df = table.to_dataframe()
+#     return df
 
