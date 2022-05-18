@@ -43,10 +43,16 @@ def to_zarr(obj, name, root, first=True):
         for key, value in obj.items():
             to_zarr(value, key, zz, first=False)
 
+    elif isinstance(obj, (list, set)):
+        root.create_dataset(name, data=obj, shape=len(obj))
+
     elif isinstance(obj, (np.ndarray, pd.DataFrame)):
         root.create_dataset(name, data=obj, shape=obj.shape)
 
     elif isinstance(obj, (str, bool, float, int)):
+        to_zarr(np.array(obj), name, root, first=False)
+
+    elif isinstance(obj, (np.str_, np.bool_, np.int64, np.float64)):
         to_zarr(np.array(obj), name, root, first=False)
 
     elif isinstance(obj, type(None)):
@@ -108,28 +114,32 @@ def solve_problem(covariance_matrix: pd.DataFrame, lambda1: list = None, latent:
         mu1 = np.array(mu1).item()
 
     if latent:
+        print("\n----SOLVING GRAPHICAL LASSO PROBLEM WITH LATENT VARIABLES-----")
 
         if model_selection:
+            print("\tDD MODEL SELECTION:")
             modelselect_params = {'lambda1_range': lambda1, 'mu1_range': mu1}
             P = glasso_problem(S, N=1, latent=True)
             P.model_selection(modelselect_params=modelselect_params)
         else:
+            print("\tWITH LAMBDA={0} and MU={1}".format(lambda1, mu1))
             P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": mu1}, latent=True)
             P.solve()
 
     else:
+        print("----SOLVING GRAPHICAL LASSO PROBLEM-----")
 
         if model_selection:
+            print("\tDD MODEL SELECTION:")
             modelselect_params = {'lambda1_range': lambda1}
             P = glasso_problem(S, N=1, latent=False)
             P.model_selection(modelselect_params=modelselect_params)
         else:
+            print("\tWITH LAMBDA={0}".format(lambda1))
             P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1}, latent=False)
             P.solve()
 
     return P
-
-
 
 
 def PCA(X, L, inverse=True):
