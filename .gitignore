@@ -1,4 +1,4 @@
 /.ipynb_checkpoints/
-build/
+q2-gglasso/build/
 /example/data/*.qza
 /example/data/*.biom
