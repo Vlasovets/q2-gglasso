@@ -88,7 +88,7 @@ def calculate_covariance(table: pd.DataFrame,
         print("Calculate {0} covariance matrices S".format(method))
         result = S
 
-    elif method == "scaled":
+    elif method == "scaled":  # TO DO: add doc string explaining that it is the same as Pearson's correlation
         print("Calculate {0} covariance (correlation) matrices S".format(method))
         result = scale_array_by_diagonal(S)
 
@@ -98,46 +98,139 @@ def calculate_covariance(table: pd.DataFrame,
     return pd.DataFrame(result)
 
 
-def solve_problem(covariance_matrix: pd.DataFrame, lambda1: list = None, latent: bool = None, mu1: list = None) \
+def solve_problem(covariance_matrix: list, lambda1: list = None, lambda2: list = None, latent: bool = None,
+                  mu1: list = None, reg: str = 'GGL') \
         -> glasso_problem:
-    S = covariance_matrix.values
 
-    model_selection = True
+    S = np.array(covariance_matrix)
 
     if mu1 is None:
         mu1 = [None]
 
-    # method solve() is for solving GGLasso with particular lambda/mu value (just 1)
-    if (len(lambda1) == 1) and (len(mu1) == 1):
-        model_selection = False
-        lambda1 = np.array(lambda1).item()
-        mu1 = np.array(mu1).item()
+    if lambda2 is None:
+        lambda2 = [None]
 
-    if latent:
+    if S.shape[0] == 1:
+        S = S[0, :]
 
-        if model_selection:
-            modelselect_params = {'lambda1_range': lambda1, 'mu1_range': mu1}
-            P = glasso_problem(S, N=1, latent=True)
-            P.model_selection(modelselect_params=modelselect_params)
+    print(S.shape)
+
+    if S.ndim == 2:
+        model_selection = True
+
+        # method solve() is for solving GGLasso with particular lambda/mu value (just 1)
+        if (len(lambda1) == 1) and (len(mu1) == 1):
+            model_selection = False
+            lambda1 = np.array(lambda1).item()
+            mu1 = np.array(mu1).item()
+
+        if latent:
+            print("\n----SOLVING SINGLE GRAPHICAL LASSO PROBLEM WITH LATENT VARIABLES-----")
+
+            if model_selection:
+                print("\tDD MODEL SELECTION:")
+                modelselect_params = {'lambda1_range': lambda1, 'mu1_range': mu1}
+                P = glasso_problem(S, N=1, latent=True)
+                P.model_selection(modelselect_params=modelselect_params)
+            else:
+                print("\tWITH LAMBDA={0} and MU={1}".format(lambda1, mu1))
+                P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": mu1}, latent=True)
+                P.solve()
+
         else:
-            P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": mu1}, latent=True)
-            P.solve()
+            print("----SOLVING SINGLE GRAPHICAL LASSO PROBLEM-----")
 
-    else:
+            if model_selection:
+                print("\tDD MODEL SELECTION:")
+                modelselect_params = {'lambda1_range': lambda1}
+                P = glasso_problem(S, N=1, latent=False)
+                P.model_selection(modelselect_params=modelselect_params)
+            else:
+                print("\tWITH LAMBDA={0}".format(lambda1))
+                P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1}, latent=False)
+                P.solve()
 
-        if model_selection:
-            modelselect_params = {'lambda1_range': lambda1}
-            P = glasso_problem(S, N=1, latent=False)
-            P.model_selection(modelselect_params=modelselect_params)
+    elif S.ndim == 3:
+        model_selection = True
+
+        # method solve() is for solving GGLasso with particular lambda/mu value (just 1)
+        if (len(lambda1) == 1) and len(lambda2) == 1 and (len(mu1) == 1):
+            model_selection = False
+            lambda1 = np.array(lambda1).item()
+            lambda2 = np.array(lambda2).item()
+            mu1 = np.array(mu1).item()
+
+        if latent:
+            print("\n----SOLVING GROUP GRAPHICAL LASSO PROBLEM WITH LATENT VARIABLES-----")
+
+            if model_selection:
+                print("\tDD MODEL SELECTION:")
+                modelselect_params = {'lambda1_range': lambda1, 'lambda2_range': lambda2, 'mu1_range': mu1}
+                P = glasso_problem(S, N=1, latent=True, reg=reg)
+                P.model_selection(modelselect_params=modelselect_params)
+            else:
+                print("\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(lambda1, lambda2, mu1))
+                P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, 'lambda2': lambda2, "mu1": mu1}, latent=True,
+                                   reg=reg)
+                P.solve()
+
         else:
-            P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1}, latent=False)
-            P.solve()
+            print("----SOLVING GROUP GRAPHICAL LASSO PROBLEM-----")
 
-    print("test verbose")
+            if model_selection:
+                print("\tDD MODEL SELECTION:")
+                modelselect_params = {'lambda1_range': lambda1, 'lambda2_range': lambda2}
+                P = glasso_problem(S, N=1, latent=False, reg=reg)
+                P.model_selection(modelselect_params=modelselect_params)
+            else:
+                print("\tWITH LAMBDA1={0} and LAMBDA2={1}".format(lambda1, lambda2))
+                P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, 'lambda2': lambda2}, latent=False, reg=reg)
+                P.solve()
 
     return P
 
-
+# def solve_problem(covariance_matrix: pd.DataFrame, lambda1: list = None, latent: bool = None, mu1: list = None) \
+#         -> glasso_problem:
+#     S = covariance_matrix.values
+#
+#     model_selection = True
+#
+#     if mu1 is None:
+#         mu1 = [None]
+#
+#     # method solve() is for solving GGLasso with particular lambda/mu value (just 1)
+#     if (len(lambda1) == 1) and (len(mu1) == 1):
+#         model_selection = False
+#         lambda1 = np.array(lambda1).item()
+#         mu1 = np.array(mu1).item()
+#
+#     if latent:
+#         print("\n----SOLVING GRAPHICAL LASSO PROBLEM WITH LATENT VARIABLES-----")
+#
+#         if model_selection:
+#             print("\tDD MODEL SELECTION:")
+#             modelselect_params = {'lambda1_range': lambda1, 'mu1_range': mu1}
+#             P = glasso_problem(S, N=1, latent=True)
+#             P.model_selection(modelselect_params=modelselect_params)
+#         else:
+#             print("\tWITH LAMBDA={0} and MU={1}".format(lambda1, mu1))
+#             P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": mu1}, latent=True)
+#             P.solve()
+#
+#     else:
+#         print("----SOLVING GRAPHICAL LASSO PROBLEM-----")
+#
+#         if model_selection:
+#             print("\tDD MODEL SELECTION:")
+#             modelselect_params = {'lambda1_range': lambda1}
+#             P = glasso_problem(S, N=1, latent=False)
+#             P.model_selection(modelselect_params=modelselect_params)
+#         else:
+#             print("\tWITH LAMBDA={0}".format(lambda1))
+#             P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1}, latent=False)
+#             P.solve()
+#
+#     return P
 
 
 def PCA(X, L, inverse=True):

@@ -111,7 +111,7 @@ plugin.methods.register_function(
 plugin.methods.register_function(
     function=q2g.solve_problem,
     inputs={
-        "covariance_matrix": q2g.PairwiseFeatureData
+        "covariance_matrix": List[q2g.PairwiseFeatureData]
     },
     parameters=q2g.glasso_parameters,
     outputs=[("solution", q2g.GGLassoProblem)],
@@ -122,13 +122,20 @@ plugin.methods.register_function(
     },
     parameter_descriptions={
         "lambda1": (
-            "List of regularization hyperparameters lambda."
+            "List of regularization hyperparameters lambda1."
+            "Note, sort lambda list in descending order."
+        ),
+        "lambda2": (
+            "List of regularization hyperparameters lambda2 for MGL."
             "Note, sort lambda list in descending order."
         ),
         "latent": ("Specify whether latent variables should be modeled."
                    "The default is False."),
         "mu1": ("Low-rank regularization parameter."
                 "Only needs to be specified if latent=True."),
+        "reg": ("Type of regularization for MGL problems."
+                "'FGL' = Fused Graphical Lasso, 'GGL' = Group Graphical Lasso."
+                "The default is 'GGL'."),
     },
     output_descriptions={"solution": "dictionary containing the solution and "
                                      "hyper-/parameters of GGLasso problem"},
