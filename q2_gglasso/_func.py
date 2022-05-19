@@ -23,7 +23,7 @@ from gglasso.helper.model_selection import aic, ebic, K_single_grid
 from q2_types.feature_table import FeatureTable, Composition
 from q2_types.feature_data import FeatureData
 
-from .utils import if_none_to_list, if_2d_array, to_zarr
+from .utils import if_none_to_list, if_2d_array, to_zarr, if_no_model_selection, single_hyperparameters
 
 
 def transform_features(
@@ -73,23 +73,17 @@ def solve_problem(covariance_matrix: list, lambda1: list = None, lambda2: list =
     mu1 = if_none_to_list(mu1)
     lambda2 = if_none_to_list(lambda2)
 
-    print(S.shape)
-
     if S.ndim == 2:  # 2d array => SGL
-        model_selection = True
-
-        # method solve() is for solving GGLasso with particular lambda/mu value (just 1)
-        if (len(lambda1) == 1) and (len(mu1) == 1):
-            model_selection = False
-            lambda1 = np.array(lambda1).item()
-            mu1 = np.array(mu1).item()
+        model_selection = if_no_model_selection(lambda1=lambda1, lambda2=lambda2, mu1=mu1)
+        lambda1, lambda2, mu1 = single_hyperparameters(model_selection=model_selection,
+                                                       lambda1=lambda1, lambda2=lambda2, mu1=mu1)
 
         if latent:
             print("\n----SOLVING SINGLE GRAPHICAL LASSO PROBLEM WITH LATENT VARIABLES-----")
 
             if model_selection:
                 print("\tDD MODEL SELECTION:")
-                modelselect_params = {'lambda1_range': lambda1, 'mu1_range': mu1}
+                modelselect_params = {'lambda_range': lambda1, 'mu1_range': mu1}
                 P = glasso_problem(S, N=1, latent=True)
                 P.model_selection(modelselect_params=modelselect_params)
             else:
@@ -111,21 +105,16 @@ def solve_problem(covariance_matrix: list, lambda1: list = None, lambda2: list =
                 P.solve()
 
     elif S.ndim == 3:  # 3d array => MGL
-        model_selection = True
-
-        # method solve() is for solving GGLasso with particular lambda/mu value (just 1)
-        if (len(lambda1) == 1) and len(lambda2) == 1 and (len(mu1) == 1):
-            model_selection = False
-            lambda1 = np.array(lambda1).item()
-            lambda2 = np.array(lambda2).item()
-            mu1 = np.array(mu1).item()
+        model_selection = if_no_model_selection(lambda1=lambda1, lambda2=lambda2, mu1=mu1)
+        lambda1, lambda2, mu1 = single_hyperparameters(model_selection=model_selection,
+                                                       lambda1=lambda1, lambda2=lambda2, mu1=mu1)
 
         if latent:
             print("\n----SOLVING GROUP GRAPHICAL LASSO PROBLEM WITH LATENT VARIABLES-----")
 
             if model_selection:
                 print("\tDD MODEL SELECTION:")
-                modelselect_params = {'lambda1_range': lambda1, 'lambda2_range': lambda2, 'mu1_range': mu1}
+                modelselect_params = {'lambda1_range': lambda1, 'lambda2_range': lambda2, 'mu_range': mu1}
                 P = glasso_problem(S, N=1, latent=True, reg=reg)
                 P.model_selection(modelselect_params=modelselect_params)
             else:

@@ -24,6 +24,25 @@ def remove_biom_header(file_path):
         fout.writelines(data[1:])
 
 
+def if_no_model_selection(lambda1, lambda2=None, mu1=None):
+    mu1 = if_none_to_list(mu1)
+    lambda2 = if_none_to_list(lambda2)
+
+    model_selection = True
+    if (len(lambda1) == 1) and len(lambda2) == 1 and (len(mu1) == 1):
+        model_selection = False
+
+    return model_selection
+
+
+def single_hyperparameters(model_selection, lambda1, lambda2=None, mu1=None):
+    if model_selection is False:
+        lambda1 = np.array(lambda1).item()
+        lambda2 = np.array(lambda2).item()
+        mu1 = np.array(mu1).item()
+    return lambda1, lambda2, mu1
+
+
 def to_zarr(obj, name, root, first=True):
     """
     Function for converting a GGLasso object to a zarr file, a with tree structue.

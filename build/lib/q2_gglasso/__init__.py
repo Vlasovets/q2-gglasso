@@ -1,10 +1,7 @@
 from q2_gglasso._func import (
-    to_zarr,
     transform_features,
     calculate_covariance,
-    solve_problem,
-    PCA,
-    remove_biom_header
+    solve_problem
 )
 
 from q2_gglasso._dict import (
@@ -23,11 +20,17 @@ from q2_gglasso._type import (
     GGLassoProblem
 )
 
-
 from ._heatmap import (
     heatmap,
     heatmap_choices
 )
 
+from .utils import(
+    if_none_to_list,
+    if_2d_array,
+    remove_biom_header,
+    to_zarr,
+    PCA,
+)
 from gglasso.problem import glasso_problem
 
