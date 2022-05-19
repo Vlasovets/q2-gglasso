@@ -23,42 +23,7 @@ from gglasso.helper.model_selection import aic, ebic, K_single_grid
 from q2_types.feature_table import FeatureTable, Composition
 from q2_types.feature_data import FeatureData
 
-import pandas as pd
-
-
-def to_zarr(obj, name, root, first=True):
-    """
-    Function for converting a GGLasso object to a zarr file, a with tree structue.
-    """
-    # name 'S' is dedicated for some internal usage in zarr notation and cannot be accessed as a key while reading
-    if name == "S":
-        name = 'covariance'
-
-    if isinstance(obj, dict):
-        if first:
-            zz = root
-        else:
-            zz = root.create_group(name)
-
-        for key, value in obj.items():
-            to_zarr(value, key, zz, first=False)
-
-    elif isinstance(obj, (list, set)):
-        root.create_dataset(name, data=obj, shape=len(obj))
-
-    elif isinstance(obj, (np.ndarray, pd.DataFrame)):
-        root.create_dataset(name, data=obj, shape=obj.shape)
-
-    elif isinstance(obj, (str, bool, float, int)):
-        to_zarr(np.array(obj), name, root, first=False)
-
-    elif isinstance(obj, (np.str_, np.bool_, np.int64, np.float64)):
-        to_zarr(np.array(obj), name, root, first=False)
-
-    elif isinstance(obj, type(None)):
-        pass
-    else:
-        to_zarr(obj.__dict__, name, root, first=first)
+from .utils import if_none_to_list, if_2d_array, to_zarr
 
 
 def transform_features(
@@ -104,18 +69,13 @@ def solve_problem(covariance_matrix: list, lambda1: list = None, lambda2: list =
 
     S = np.array(covariance_matrix)
 
-    if mu1 is None:
-        mu1 = [None]
-
-    if lambda2 is None:
-        lambda2 = [None]
-
-    if S.shape[0] == 1:
-        S = S[0, :]
+    S = if_2d_array(S)
+    mu1 = if_none_to_list(mu1)
+    lambda2 = if_none_to_list(lambda2)
 
     print(S.shape)
 
-    if S.ndim == 2:
+    if S.ndim == 2:  # 2d array => SGL
         model_selection = True
 
         # method solve() is for solving GGLasso with particular lambda/mu value (just 1)
@@ -150,7 +110,7 @@ def solve_problem(covariance_matrix: list, lambda1: list = None, lambda2: list =
                 P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1}, latent=False)
                 P.solve()
 
-    elif S.ndim == 3:
+    elif S.ndim == 3:  # 3d array => MGL
         model_selection = True
 
         # method solve() is for solving GGLasso with particular lambda/mu value (just 1)
@@ -231,30 +191,3 @@ def solve_problem(covariance_matrix: list, lambda1: list = None, lambda2: list =
 #             P.solve()
 #
 #     return P
-
-
-def PCA(X, L, inverse=True):
-    sig, V = np.linalg.eigh(L)
-
-    # sort eigenvalues in descending order
-    sig = sig[::-1]
-    V = V[:, ::-1]
-
-    ind = np.argwhere(sig > 1e-9)
-
-    if inverse:
-        loadings = V[:, ind] @ np.diag(np.sqrt(1 / sig[ind]))
-    else:
-        loadings = V[:, ind] @ np.diag(np.sqrt(sig[ind]))
-
-    # compute the projection
-    zu = X.values @ loadings
-
-    return zu, loadings, np.round(sig[ind].squeeze(), 3)
-
-
-def remove_biom_header(file_path):
-    with open(str(file_path), 'r') as fin:
-        data = fin.read().splitlines(True)
-    with open(str(file_path), 'w') as fout:
-        fout.writelines(data[1:])
