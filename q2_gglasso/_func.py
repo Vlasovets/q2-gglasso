@@ -16,24 +16,30 @@ from q2_types.feature_data import FeatureData
 
 from gglasso.problem import glasso_problem
 from gglasso.helper.data_generation import generate_precision_matrix, group_power_network, sample_covariance_matrix
-from gglasso.helper.utils import log_transform, normalize
 from gglasso.helper.basic_linalg import scale_array_by_diagonal
 from gglasso.helper.model_selection import aic, ebic, K_single_grid
 
 from q2_types.feature_table import FeatureTable, Composition
 from q2_types.feature_data import FeatureData
 
-from .utils import if_none_to_list, if_2d_array, to_zarr, if_no_model_selection, single_hyperparameters
+from .utils import if_none_to_list, if_2d_array, if_no_model_selection
+from .utils import normalize, single_hyperparameters, log_transform, to_zarr
 
 
 def transform_features(
         table: Table, transformation: str = "clr",
 ) -> pd.DataFrame:
     if transformation == "clr":
-
         X = table.to_dataframe()
         X = normalize(X)
-        X = log_transform(X)
+        X = log_transform(X, transformation=transformation)
+
+        return pd.DataFrame(X)
+
+    elif transformation == "mclr":
+        X = table.to_dataframe()
+        X = normalize(X)
+        X = log_transform(X, transformation=transformation)
 
         return pd.DataFrame(X)
 
@@ -66,7 +72,6 @@ def calculate_covariance(table: pd.DataFrame,
 def solve_problem(covariance_matrix: list, lambda1: list = None, lambda2: list = None, latent: bool = None,
                   mu1: list = None, reg: str = 'GGL') \
         -> glasso_problem:
-
     S = np.array(covariance_matrix)
 
     S = if_2d_array(S)

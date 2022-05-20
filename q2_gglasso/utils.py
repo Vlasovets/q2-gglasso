@@ -2,6 +2,9 @@ import numpy as np
 import zarr
 import pandas as pd
 
+from gglasso.helper.utils import normalize as norm
+from gglasso.helper.utils import log_transform as trans
+
 
 def if_none_to_list(x):
     if x is None:
@@ -15,6 +18,48 @@ def if_2d_array(x=np.ndarray):
     if x.shape[0] == 1:
         x = x[0, :]
     return x
+
+
+def normalize(X):
+    """
+    transforms to the simplex
+    X should be of a pd.DataFrame of form (p,N)
+    """
+    return X / X.sum(axis=0)
+
+
+def geometric_mean(x, positive=False):
+    """
+    calculates the geometric mean of a vector
+    """
+    assert not np.all(x == 0)
+
+    if positive:
+        x = x[x > 0]
+    a = np.log(x)
+    g = np.exp(a.sum() / len(a))
+    return g
+
+
+def log_transform(X, transformation=str, eps=0.1):
+    """
+    log transform, scaled with geometric mean
+    X should be a pd.DataFrame of form (p,N)
+    """
+    if transformation == "clr":
+        assert not np.any(X.values == 0), "Add pseudo count before using clr"
+        g = X.apply(geometric_mean)
+        Z = np.log(X / g)
+    elif transformation == "mclr":
+        # g = X.apply(geometric_mean, positive=True)
+        # Z = np.log(X / g)
+        # Z = Z + abs(np.amin(Z.values)) + eps
+        g = X.apply(geometric_mean, positive=True)
+        X_pos = X[X > 0]
+        Z = np.log(X_pos / g)
+        Z = Z + abs(np.nanmin(Z.values)) + eps
+        Z = Z.fillna(0)
+    return Z
 
 
 def remove_biom_header(file_path):
