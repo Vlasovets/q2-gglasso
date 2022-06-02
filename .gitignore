@@ -6,3 +6,4 @@
 /example/data/atacama/demux-subsample/
 /example/data/atacama/*.qza
 /example/data/atacama/*.qzv
+/example/data/atacama/.ipynb_checkpoints/
