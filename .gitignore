@@ -2,3 +2,7 @@
 /build/
 /example/data/*.qza
 /example/data/*.biom
+/example/data/atacama/emp-paired-end-sequences/
+/example/data/atacama/demux-subsample/
+/example/data/atacama/*.qza
+/example/data/atacama/*.qzv
