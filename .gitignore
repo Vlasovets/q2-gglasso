@@ -13,3 +13,5 @@ dist/
 q2_gglasso/test.py
 
 !*.png
+/example/88soil/soil_example.py
+/example/atacama/atacama_example.py
