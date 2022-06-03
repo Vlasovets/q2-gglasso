@@ -3,7 +3,7 @@ build/
 dist/
 *.egg-info/
 *__pycache__/
-*example/data/
+data/
 
 *.qza
 *.biom
@@ -11,7 +11,10 @@ dist/
 *.DS_Store
 
 q2_gglasso/test.py
-
-!*.png
 /example/88soil/soil_example.py
 /example/atacama/atacama_example.py
+
+!*.png
+!data/238_otu_table.biom
+!data/88soils_metadata.txt
+
