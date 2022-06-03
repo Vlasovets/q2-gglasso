@@ -1,5 +1,5 @@
 *.ipynb_checkpoints/
-q2_gglasso/build/*
+/build/
 dist/
 *.egg-info/
 *__pycache__/
