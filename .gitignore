@@ -15,6 +15,6 @@ q2_gglasso/test.py
 /example/atacama/atacama_example.py
 
 !*.png
-!data/238_otu_table.biom
-!data/88soils_metadata.txt
+!*238_otu_table.biom
+!88soils_metadata.txt
 
