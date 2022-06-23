@@ -6,6 +6,11 @@ from gglasso.helper.utils import normalize as norm
 from gglasso.helper.utils import log_transform as trans
 
 
+def flatten_array(x):
+    x = np.array(x)
+    x = x.flatten()
+    return x
+
 def if_none_to_list(x):
     if x is None:
         x = [x]
