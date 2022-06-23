@@ -25,7 +25,12 @@ from ._heatmap import (
     heatmap_choices
 )
 
+from ._summarize import (
+    summarize
+)
+
 from .utils import(
+    flatten_array,
     if_none_to_list,
     if_2d_array,
     remove_biom_header,

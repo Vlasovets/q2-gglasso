@@ -166,31 +166,20 @@ plugin.visualizers.register_function(
 )
 
 
-# plugin.visualizers.register_function(
-#     function=q2g.heatmap,
-#     inputs={
-#         "covariance": q2g.PairwiseFeatureData,
-#         "precision": q2g.PairwiseFeatureData,
-#         "low_rank": q2g.PairwiseFeatureData
-#     },
-#     name='Generate a heatmap',
-#     description='Generate a heatmap representation of a symmetric matrix',
-#     input_descriptions={
-#         "covariance": (
-#             "p x p semi-positive definite covariance matrix."
-#         ),
-#         "precision": (
-#             "p x p semi-positive definite inverse covariance matrix."
-#         ),
-#         "low_rank": (
-#             "squared symmetric matrix of rank L."
-#         ),
-#     },
-#     parameters={'color_scheme': Str % Choices(q2g.heatmap_choices['color_scheme'])},
-#     parameter_descriptions={
-#         'color_scheme': 'The matplotlib colorscheme to generate the heatmap '
-#                         'with.',
-#     },
-# )
+plugin.visualizers.register_function(
+    function=q2g.summarize,
+    inputs={
+        "solution": q2g.GGLassoProblem,
+    },
+    name='Summary table',
+    description='Summary table with sparsity level, lambda, mu path and rank of the solution',
+    input_descriptions={
+        "solution": (
+            "p x p semi-positive definite covariance matrix."
+        ),
+    },
+)
+
+
 
 importlib.import_module('q2_gglasso._transformer')
