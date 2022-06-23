@@ -1,0 +1,14 @@
+{% extends "tabbed.html" %}
+
+{% block tabcontent %}
+<div class="row">
+  <div class="col-lg-6">
+    <h1>Solution summary</h1>
+    {{ feature_summary_table }}
+    <p class="text-left">
+      Solution summary (<a href="stats.csv">csv</a> |
+      <a href="stats.html">html</a>)
+    </p>
+  </div>
+</div>
+{% endblock %}
