@@ -30,12 +30,3 @@ glasso_parameters = {
     "mu1": List[Float],
     "reg": Str
 }
-
-# glasso_parameters = {
-#     "method": Str,
-#     "lambda1": List[Float],
-#     "n_samples": Int,
-#     "gamma": Float,
-#     "latent": Bool,
-#     "use_block": Bool
-# }

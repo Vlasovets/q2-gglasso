@@ -115,7 +115,7 @@ def solve_problem(covariance_matrix: list, lambda1: list = None, lambda2: list =
                                                        lambda1=lambda1, lambda2=lambda2, mu1=mu1)
 
         if latent:
-            print("\n----SOLVING GROUP GRAPHICAL LASSO PROBLEM WITH LATENT VARIABLES-----")
+            print("\n----SOLVING {0} PROBLEM WITH LATENT VARIABLES-----".format(reg))
 
             if model_selection:
                 print("\tDD MODEL SELECTION:")
@@ -129,7 +129,7 @@ def solve_problem(covariance_matrix: list, lambda1: list = None, lambda2: list =
                 P.solve()
 
         else:
-            print("----SOLVING GROUP GRAPHICAL LASSO PROBLEM-----")
+            print("\n----SOLVING {0} PROBLEM-----".format(reg))
 
             if model_selection:
                 print("\tDD MODEL SELECTION:")
