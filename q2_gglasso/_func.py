@@ -22,8 +22,8 @@ from gglasso.helper.model_selection import aic, ebic, K_single_grid
 from q2_types.feature_table import FeatureTable, Composition
 from q2_types.feature_data import FeatureData
 
-from .utils import if_none_to_list, if_2d_array, if_no_model_selection
-from .utils import normalize, single_hyperparameters, log_transform, to_zarr
+from .utils import if_2d_array, if_model_selection, if_all_none
+from .utils import normalize, log_transform, to_zarr
 
 
 def transform_features(
@@ -69,19 +69,20 @@ def calculate_covariance(table: pd.DataFrame,
     return pd.DataFrame(result)
 
 
-def solve_problem(covariance_matrix: list, lambda1: list = None, lambda2: list = None, latent: bool = None,
-                  mu1: list = None, reg: str = 'GGL') \
+def solve_problem(covariance_matrix: list, n_samples: int, latent: bool = None,
+                  lambda1: list = None, lambda2: list = None, mu1: list = None, reg: str = 'GGL') \
         -> glasso_problem:
     S = np.array(covariance_matrix)
-
     S = if_2d_array(S)
-    mu1 = if_none_to_list(mu1)
-    lambda2 = if_none_to_list(lambda2)
+
+    # set default hyperparameters if not provided by the user
+    lambda1, lambda2, mu1 = if_all_none(lambda1, lambda2, mu1)
+
+    h_params = if_model_selection(lambda1, lambda2, mu1)
+    model_selection = h_params["model_selection"]
+    lambda1, lambda2, mu1 = h_params["lambda1"], h_params["lambda2"], h_params["mu1"]
 
     if S.ndim == 2:  # 2d array => SGL
-        model_selection = if_no_model_selection(lambda1=lambda1, lambda2=lambda2, mu1=mu1)
-        lambda1, lambda2, mu1 = single_hyperparameters(model_selection=model_selection,
-                                                       lambda1=lambda1, lambda2=lambda2, mu1=mu1)
 
         if latent:
             print("\n----SOLVING SINGLE GRAPHICAL LASSO PROBLEM WITH LATENT VARIABLES-----")
@@ -89,7 +90,7 @@ def solve_problem(covariance_matrix: list, lambda1: list = None, lambda2: list =
             if model_selection:
                 print("\tDD MODEL SELECTION:")
                 modelselect_params = {'lambda_range': lambda1, 'mu1_range': mu1}
-                P = glasso_problem(S, N=1, latent=True)
+                P = glasso_problem(S, N=n_samples, latent=True)
                 P.model_selection(modelselect_params=modelselect_params)
             else:
                 print("\tWITH LAMBDA={0} and MU={1}".format(lambda1, mu1))
@@ -102,17 +103,14 @@ def solve_problem(covariance_matrix: list, lambda1: list = None, lambda2: list =
             if model_selection:
                 print("\tDD MODEL SELECTION:")
                 modelselect_params = {'lambda1_range': lambda1}
-                P = glasso_problem(S, N=1, latent=False)
+                P = glasso_problem(S, N=n_samples, latent=False)
                 P.model_selection(modelselect_params=modelselect_params)
             else:
                 print("\tWITH LAMBDA={0}".format(lambda1))
-                P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1}, latent=False)
+                P = glasso_problem(S, N=n_samples, reg_params={'lambda1': lambda1}, latent=False)
                 P.solve()
 
     elif S.ndim == 3:  # 3d array => MGL
-        model_selection = if_no_model_selection(lambda1=lambda1, lambda2=lambda2, mu1=mu1)
-        lambda1, lambda2, mu1 = single_hyperparameters(model_selection=model_selection,
-                                                       lambda1=lambda1, lambda2=lambda2, mu1=mu1)
 
         if latent:
             print("\n----SOLVING {0} PROBLEM WITH LATENT VARIABLES-----".format(reg))
@@ -120,12 +118,12 @@ def solve_problem(covariance_matrix: list, lambda1: list = None, lambda2: list =
             if model_selection:
                 print("\tDD MODEL SELECTION:")
                 modelselect_params = {'lambda1_range': lambda1, 'lambda2_range': lambda2, 'mu_range': mu1}
-                P = glasso_problem(S, N=1, latent=True, reg=reg)
+                P = glasso_problem(S, N=n_samples, latent=True, reg=reg)
                 P.model_selection(modelselect_params=modelselect_params)
             else:
                 print("\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(lambda1, lambda2, mu1))
-                P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, 'lambda2': lambda2, "mu1": mu1}, latent=True,
-                                   reg=reg)
+                P = glasso_problem(S, N=n_samples, reg_params={'lambda1': lambda1, 'lambda2': lambda2, "mu1": mu1},
+                                   latent=True, reg=reg)
                 P.solve()
 
         else:
@@ -134,12 +132,12 @@ def solve_problem(covariance_matrix: list, lambda1: list = None, lambda2: list =
             if model_selection:
                 print("\tDD MODEL SELECTION:")
                 modelselect_params = {'lambda1_range': lambda1, 'lambda2_range': lambda2}
-                P = glasso_problem(S, N=1, latent=False, reg=reg)
+                P = glasso_problem(S, N=n_samples, latent=False, reg=reg)
                 P.model_selection(modelselect_params=modelselect_params)
             else:
                 print("\tWITH LAMBDA1={0} and LAMBDA2={1}".format(lambda1, lambda2))
-                P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, 'lambda2': lambda2}, latent=False, reg=reg)
+                P = glasso_problem(S, N=n_samples, reg_params={'lambda1': lambda1, 'lambda2': lambda2},
+                                   latent=False, reg=reg)
                 P.solve()
 
     return P
-

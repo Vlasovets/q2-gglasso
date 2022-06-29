@@ -12,7 +12,7 @@ import importlib
 import q2_gglasso as q2g
 
 from q2_types.feature_table import FeatureTable, Composition, Frequency
-from qiime2.plugin import (Plugin, Float, Str, Bool, List, Int, Choices)
+from qiime2.plugin import (Plugin, Float, Str, Bool, List, Int, Choices, Metadata)
 
 plugin = Plugin(
     name="gglasso",
@@ -121,6 +121,9 @@ plugin.methods.register_function(
         )
     },
     parameter_descriptions={
+        "n_samples": (
+            "List of number of samples for each instance k=1,..,K."
+        ),
         "lambda1": (
             "List of regularization hyperparameters lambda1."
             "Note, sort lambda list in descending order."
@@ -178,6 +181,8 @@ plugin.visualizers.register_function(
             "p x p semi-positive definite covariance matrix."
         ),
     },
+    parameters={'sample_metadata': Metadata},
+    parameter_descriptions={'sample_metadata': 'The sample metadata.'},
 )
 
 

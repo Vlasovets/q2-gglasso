@@ -11,6 +11,7 @@ def flatten_array(x):
     x = x.flatten()
     return x
 
+
 def if_none_to_list(x):
     if x is None:
         x = [x]
@@ -23,6 +24,45 @@ def if_2d_array(x=np.ndarray):
     if x.shape[0] == 1:
         x = x[0, :]
     return x
+
+
+def if_all_none(lambda1, lambda2, mu1):
+    if lambda1 is None and lambda2 is None and mu1 is None:
+        lambda1 = np.logspace(0, -3, 10)
+        lambda2 = np.logspace(-1, -4, 5)
+        mu1 = np.logspace(2, -1, 10)
+        print("Setting default hyperparameters:")
+        print('\tlambda1 range: [%s]' % ', '.join(map(str, lambda1)))
+        print('\tlambda2 range: [%s]' % ', '.join(map(str, lambda2)))
+        print('\tmu1 range: [%s]\n' % ', '.join(map(str, mu1)))
+    return lambda1, lambda2, mu1
+
+
+def if_model_selection(lambda1, lambda2, mu1):
+    lambda1 = if_none_to_list(lambda1)
+    lambda2 = if_none_to_list(lambda2)
+    mu1 = if_none_to_list(mu1)
+
+    model_selection = True
+    if (len(lambda1) == 1) and len(lambda2) == 1 and (len(mu1) == 1):
+        model_selection = False
+
+    if model_selection:
+        if None in lambda1:
+            lambda1 = np.logspace(0, -3, 10)
+        if None in lambda2:
+            lambda2 = np.logspace(-1, -4, 5)
+        if None in mu1:
+            mu1 = np.logspace(2, -1, 10)
+    else:
+        lambda1 = np.array(lambda1).item()
+        lambda2 = np.array(lambda2).item()
+        mu1 = np.array(mu1).item()
+
+    h_params = {"model_selection": model_selection, "lambda1": lambda1,
+               "lambda2": lambda2, "mu1": mu1}
+
+    return h_params
 
 
 def normalize(X):
