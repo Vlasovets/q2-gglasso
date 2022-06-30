@@ -89,9 +89,10 @@ def solve_problem(covariance_matrix: list, n_samples: int, latent: bool = None,
 
             if model_selection:
                 print("\tDD MODEL SELECTION:")
-                modelselect_params = {'lambda_range': lambda1, 'mu1_range': mu1}
+                modelselect_params = {'lambda1_range': lambda1, 'mu1_range': mu1}
                 P = glasso_problem(S, N=n_samples, latent=True)
                 P.model_selection(modelselect_params=modelselect_params)
+                print(P.__dict__["modelselect_params"])
             else:
                 print("\tWITH LAMBDA={0} and MU={1}".format(lambda1, mu1))
                 P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": mu1}, latent=True)
@@ -105,6 +106,7 @@ def solve_problem(covariance_matrix: list, n_samples: int, latent: bool = None,
                 modelselect_params = {'lambda1_range': lambda1}
                 P = glasso_problem(S, N=n_samples, latent=False)
                 P.model_selection(modelselect_params=modelselect_params)
+                print(P.__dict__["modelselect_params"])
             else:
                 print("\tWITH LAMBDA={0}".format(lambda1))
                 P = glasso_problem(S, N=n_samples, reg_params={'lambda1': lambda1}, latent=False)
@@ -117,9 +119,10 @@ def solve_problem(covariance_matrix: list, n_samples: int, latent: bool = None,
 
             if model_selection:
                 print("\tDD MODEL SELECTION:")
-                modelselect_params = {'lambda1_range': lambda1, 'lambda2_range': lambda2, 'mu_range': mu1}
+                modelselect_params = {'lambda1_range': lambda1, 'lambda2_range': lambda2, 'mu1_range': mu1}
                 P = glasso_problem(S, N=n_samples, latent=True, reg=reg)
                 P.model_selection(modelselect_params=modelselect_params)
+                print(P.__dict__["modelselect_params"])
             else:
                 print("\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(lambda1, lambda2, mu1))
                 P = glasso_problem(S, N=n_samples, reg_params={'lambda1': lambda1, 'lambda2': lambda2, "mu1": mu1},
@@ -134,6 +137,7 @@ def solve_problem(covariance_matrix: list, n_samples: int, latent: bool = None,
                 modelselect_params = {'lambda1_range': lambda1, 'lambda2_range': lambda2}
                 P = glasso_problem(S, N=n_samples, latent=False, reg=reg)
                 P.model_selection(modelselect_params=modelselect_params)
+                print(P.__dict__["modelselect_params"])
             else:
                 print("\tWITH LAMBDA1={0} and LAMBDA2={1}".format(lambda1, lambda2))
                 P = glasso_problem(S, N=n_samples, reg_params={'lambda1': lambda1, 'lambda2': lambda2},
