@@ -43,11 +43,16 @@ class TestUtil(unittest.TestCase):
         root_new = zarr.open(store=store_new)
 
         # check if these solutions are equal
-        for key, value in solution.__dict__.items():
-            if "solution" in root_new:
+        if "solution" in root_new:
+
+            for key, value in solution.__dict__.items():
                 if key in root_new["solution/"]:
                     zarr_value = np.array(root_new["solution/" + key])
-                    try:
-                        value == zarr_value
-                    except:
-                        self.assertNotEqual(value, zarr_value)
+
+                    x = True
+                    if zarr_value.all() == np.array(value).all():
+                        continue
+                    else:
+                        x = False
+
+        self.assertTrue(x, msg="The content of zarr file is not equal to GGLasso solution.")
