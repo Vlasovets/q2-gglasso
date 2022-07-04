@@ -99,7 +99,7 @@ def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None,
                 print(P.__dict__["modelselect_params"])
             else:
                 print("\tWITH LAMBDA={0} and MU={1}".format(lambda1, mu1))
-                P = glasso_problem(S, N=1, reg_params={'lambda1': lambda1, "mu1": mu1}, latent=True)
+                P = glasso_problem(S, N=n_samples, reg_params={'lambda1': lambda1, "mu1": mu1}, latent=True)
                 P.solve()
 
         else:
