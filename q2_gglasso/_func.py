@@ -53,6 +53,7 @@ def calculate_covariance(table: pd.DataFrame,
                          method: str,
                          bias: bool = True,
                          ) -> pd.DataFrame:
+    # normalize with N => bias = True
     S = np.cov(table.values, bias=bias)
 
     if method == "unscaled":
