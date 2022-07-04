@@ -18,6 +18,12 @@ def if_none_to_list(x):
     return x
 
 
+def list_to_array(x=list):
+    if isinstance(x, list):
+        x = np.array(x)
+    return x
+
+
 def if_2d_array(x=np.ndarray):
     #  if 3d array of shape (1,p,p),
     #  make it 2d array of shape (p,p).
@@ -31,10 +37,12 @@ def if_all_none(lambda1, lambda2, mu1):
         lambda1 = np.logspace(0, -3, 10)
         lambda2 = np.logspace(-1, -4, 5)
         mu1 = np.logspace(2, -1, 10)
+
         print("Setting default hyperparameters:")
         print('\tlambda1 range: [%s]' % ', '.join(map(str, lambda1)))
         print('\tlambda2 range: [%s]' % ', '.join(map(str, lambda2)))
         print('\tmu1 range: [%s]\n' % ', '.join(map(str, mu1)))
+
     return lambda1, lambda2, mu1
 
 
@@ -59,8 +67,10 @@ def if_model_selection(lambda1, lambda2, mu1):
         lambda2 = np.array(lambda2).item()
         mu1 = np.array(mu1).item()
 
-    h_params = {"model_selection": model_selection, "lambda1": lambda1,
-               "lambda2": lambda2, "mu1": mu1}
+    h_params = {"model_selection": model_selection,
+                "lambda1": lambda1,
+                "lambda2": lambda2,
+                "mu1": mu1}
 
     return h_params
 

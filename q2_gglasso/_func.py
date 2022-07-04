@@ -22,7 +22,7 @@ from gglasso.helper.model_selection import aic, ebic, K_single_grid
 from q2_types.feature_table import FeatureTable, Composition
 from q2_types.feature_data import FeatureData
 
-from .utils import if_2d_array, if_model_selection, if_all_none
+from .utils import if_2d_array, if_model_selection, if_all_none, list_to_array
 from .utils import normalize, log_transform, to_zarr
 
 
@@ -69,11 +69,13 @@ def calculate_covariance(table: pd.DataFrame,
     return pd.DataFrame(result)
 
 
-def solve_problem(covariance_matrix: list, n_samples: int, latent: bool = None,
+def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None,
                   lambda1: list = None, lambda2: list = None, mu1: list = None, reg: str = 'GGL') \
         -> glasso_problem:
     S = np.array(covariance_matrix)
     S = if_2d_array(S)
+
+    n_samples = list_to_array(n_samples)
 
     # set default hyperparameters if not provided by the user
     lambda1, lambda2, mu1 = if_all_none(lambda1, lambda2, mu1)
@@ -82,7 +84,8 @@ def solve_problem(covariance_matrix: list, n_samples: int, latent: bool = None,
     model_selection = h_params["model_selection"]
     lambda1, lambda2, mu1 = h_params["lambda1"], h_params["lambda2"], h_params["mu1"]
 
-    if S.ndim == 2:  # 2d array => SGL
+    # if 2d array => solve SGL
+    if S.ndim == 2:
 
         if latent:
             print("\n----SOLVING SINGLE GRAPHICAL LASSO PROBLEM WITH LATENT VARIABLES-----")
@@ -112,7 +115,8 @@ def solve_problem(covariance_matrix: list, n_samples: int, latent: bool = None,
                 P = glasso_problem(S, N=n_samples, reg_params={'lambda1': lambda1}, latent=False)
                 P.solve()
 
-    elif S.ndim == 3:  # 3d array => MGL
+    # if 3d array => solve MGL
+    elif S.ndim == 3:
 
         if latent:
             print("\n----SOLVING {0} PROBLEM WITH LATENT VARIABLES-----".format(reg))
