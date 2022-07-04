@@ -24,6 +24,16 @@ def list_to_array(x=list):
     return x
 
 
+def if_equal_dict(a, b):
+    x = True
+    for key in a.keys():
+        if a[key].all() == b[key].all():
+            continue
+        else:
+            x = False
+    return x
+
+
 def if_2d_array(x=np.ndarray):
     #  if 3d array of shape (1,p,p),
     #  make it 2d array of shape (p,p).
