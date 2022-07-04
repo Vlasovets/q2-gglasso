@@ -4,6 +4,7 @@ import pandas as pd
 
 from gglasso.helper.utils import normalize as norm
 from gglasso.helper.utils import log_transform as trans
+from gglasso.helper.data_generation import sample_covariance_matrix
 
 
 def flatten_array(x):
@@ -32,6 +33,19 @@ def if_equal_dict(a, b):
         else:
             x = False
     return x
+
+
+def if_non_conforming(Sigma, N, K, p, B):
+    all_obs = dict()
+    S = dict()
+    for k in np.arange(K):
+        _, obs = sample_covariance_matrix(Sigma, N, seed=456)
+
+        # drop the k-th block starting from the end
+        all_obs[k] = pd.DataFrame(obs).drop(np.arange(p - (k + 1) * B, p - k * B), axis=0)
+        S[k] = np.cov(all_obs[k], bias=True)
+
+    return all_obs, S
 
 
 def if_2d_array(x=np.ndarray):
