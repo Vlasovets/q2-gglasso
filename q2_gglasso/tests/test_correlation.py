@@ -22,3 +22,7 @@ class TestUtil(unittest.TestCase):
         S_values = np.round(S.values, decimals=10)
 
         self.assertFalse((abs(S_values) > 1).any())
+
+
+if __name__ == '__main__':
+    unittest.main()

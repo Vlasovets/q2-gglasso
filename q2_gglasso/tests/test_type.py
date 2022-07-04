@@ -13,3 +13,7 @@ class TestTypes(TestPluginBase):
 
     def test(self):
         self.assertSemanticTypeRegisteredToFormat(PairwiseFeatureData, PairwiseFeatureDataDirectoryFormat)
+
+
+if __name__ == '__main__':
+    TestTypes.main()

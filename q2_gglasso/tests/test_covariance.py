@@ -38,3 +38,7 @@ class TestUtil(unittest.TestCase):
             np.linalg.cholesky(S)
         except self.assertRaises(np.linalg.LinAlgError):
             np.linalg.cholesky(S)
+
+
+if __name__ == '__main__':
+    unittest.main()

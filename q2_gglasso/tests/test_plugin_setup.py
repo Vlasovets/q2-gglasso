@@ -7,3 +7,6 @@ class PluginSetupTests(unittest.TestCase):
 
     def test_plugin_setup(self):
         self.assertEqual(plugin.name, 'gglasso')
+
+if __name__ == '__main__':
+    unittest.main()

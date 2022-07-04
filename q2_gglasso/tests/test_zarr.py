@@ -56,3 +56,7 @@ class TestUtil(unittest.TestCase):
                         x = False
 
         self.assertTrue(x, msg="The content of zarr file is not equal to GGLasso solution.")
+
+
+if __name__ == '__main__':
+    unittest.main()
