@@ -22,6 +22,9 @@ def if_none_to_list(x):
 def list_to_array(x=list):
     if isinstance(x, list):
         x = np.array(x)
+
+        if len(x) == 1:
+            x = x.item()
     return x
 
 
