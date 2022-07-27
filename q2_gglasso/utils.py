@@ -5,6 +5,7 @@ import pandas as pd
 from gglasso.helper.utils import normalize as norm
 from gglasso.helper.utils import log_transform as trans
 from gglasso.helper.data_generation import sample_covariance_matrix
+from gglasso.helper.ext_admm_helper import create_group_array, construct_indexer
 
 
 def flatten_array(x):
@@ -38,17 +39,34 @@ def if_equal_dict(a, b):
     return x
 
 
-def if_non_conforming(Sigma, N, K, p, B):
-    all_obs = dict()
-    S = dict()
-    for k in np.arange(K):
-        _, obs = sample_covariance_matrix(Sigma, N, seed=456)
+def transpose_dataframes(datasets: list):
+    trans_list = list()
+    for df in datasets:
+        trans_list.append(df.T)
 
-        # drop the k-th block starting from the end
-        all_obs[k] = pd.DataFrame(obs).drop(np.arange(p - (k + 1) * B, p - k * B), axis=0)
-        S[k] = np.cov(all_obs[k], bias=True)
+    return trans_list
 
-    return all_obs, S
+
+def if_non_conforming(datasets: list):
+    columns_dict = dict()
+    i = 0
+    for df in datasets:
+        columns_dict[i] = df.columns
+        i += 1
+
+    for k in range(0, len(columns_dict) - 1):
+        non_conforming_case = set(columns_dict[k].difference(columns_dict[k + 1]))
+        if non_conforming_case:
+            datasets = transpose_dataframes(datasets)
+            # we transpose dataframes, so the shape of each dataframe becomes (n_variables, n_samples)
+            ix_exist, ix_location = construct_indexer(list(datasets))
+
+            G = create_group_array(ix_exist, ix_location)
+
+            return G
+
+        else:
+            print("All datasets have exactly the same features.")
 
 
 def if_2d_array(x=np.ndarray):
