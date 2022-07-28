@@ -30,7 +30,8 @@ plugin = Plugin(
 
 plugin.register_semantic_types(
     q2g.PairwiseFeatureData,
-    q2g.GGLassoProblem
+    q2g.GGLassoProblem,
+    q2g.TensorData
 )
 
 plugin.register_formats(
@@ -38,6 +39,8 @@ plugin.register_formats(
     q2g.PairwiseFeatureDataDirectoryFormat,
     q2g.ZarrProblemFormat,
     q2g.GGLassoProblemDirectoryFormat,
+    q2g.TensorDataFormat,
+    q2g.TensorDataDirectoryFormat
 
 )
 
@@ -46,6 +49,9 @@ plugin.register_semantic_type_to_format(
 )
 plugin.register_semantic_type_to_format(
     q2g.GGLassoProblem, artifact_format=q2g.GGLassoProblemDirectoryFormat
+)
+plugin.register_semantic_type_to_format(
+    q2g.TensorData, artifact_format=q2g.TensorDataDirectoryFormat
 )
 
 # features_clr
@@ -73,6 +79,29 @@ plugin.methods.register_function(
         "from FeatureTable[Frequency]"
         " prior to network analysis"
         " default transformation is centered log ratio"
+    ),
+)
+
+plugin.methods.register_function(
+    function=q2g.build_groups,
+    inputs={"tables": List[FeatureTable[Composition]]},
+    parameters={"check_groups": Bool},
+    outputs=[("group_array", q2g.TensorData)],
+    input_descriptions={
+        "tables": (
+            "Dataframes containing the transformed data "
+        ),
+    },
+    parameter_descriptions={
+        "check_groups": (
+            "String representing the name of the "
+            "transformation we will use "
+        ),
+    },
+    output_descriptions={"group_array": "a bookeeping array"},
+    name="build-groups",
+    description=(
+        "prior to network analysis"
     ),
 )
 
@@ -139,6 +168,8 @@ plugin.methods.register_function(
         "reg": ("Type of regularization for MGL problems."
                 "'FGL' = Fused Graphical Lasso, 'GGL' = Group Graphical Lasso."
                 "The default is 'GGL'."),
+        "non_conforming": ("Non-conforming MGL problems."),
+        "G": ("Bookeeping array"),
     },
     output_descriptions={"solution": "dictionary containing the solution and "
                                      "hyper-/parameters of GGLasso problem"},
