@@ -1,5 +1,6 @@
 from q2_gglasso._func import (
     transform_features,
+    build_groups,
     calculate_covariance,
     solve_problem
 )
@@ -11,13 +12,16 @@ from q2_gglasso._dict import (
 from q2_gglasso._format import (
     ZarrProblemFormat,
     GGLassoDataFormat,
+    TensorDataFormat,
     PairwiseFeatureDataDirectoryFormat,
-    GGLassoProblemDirectoryFormat
+    GGLassoProblemDirectoryFormat,
+    TensorDataDirectoryFormat
 )
 
 from q2_gglasso._type import (
     PairwiseFeatureData,
-    GGLassoProblem
+    GGLassoProblem,
+    TensorData
 )
 
 from ._heatmap import (
