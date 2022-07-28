@@ -6,6 +6,15 @@ import zarr
 import numpy as np
 
 
+class TensorDataFormat(model.BinaryFileFormat):
+    def validate(self, level):
+        pass
+
+
+TensorDataDirectoryFormat = model.SingleFileDirectoryFormat('TensorDataDirectoryFormat',
+                                                            'tensor.zip', format=TensorDataFormat)
+
+
 class GGLassoDataFormat(model.TextFileFormat):
     def validate(self, level):
         pass

@@ -28,6 +28,8 @@ glasso_parameters = {
     "lambda1": List[Float],
     "lambda2": List[Float],
     "latent": Bool,
+    "non_conforming": Bool,
+    "G": List[Int],
     "mu1": List[Float],
     "reg": Str
 }

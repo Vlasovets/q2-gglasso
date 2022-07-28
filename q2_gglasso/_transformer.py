@@ -40,6 +40,22 @@ def _3(ff: q2g.ZarrProblemFormat) -> zarr.hierarchy.Group:
     root = zarr.open(store=store)
     return root
 
+@plugin.register_transformer
+def _4(obj: np.ndarray) -> q2g.TensorDataDirectoryFormat:
+    ff = q2g.TensorDataDirectoryFormat()
+    zipfile = str(ff.path / "tensor.zip")
+    store = zarr.ZipStore(zipfile, mode="w")
+    root = zarr.open(store=store)
+    q2g.to_zarr(obj, "tensor", root)
+    store.close()
+    return ff
+
+@plugin.register_transformer
+def _5(ff: q2g.TensorDataFormat) -> zarr.hierarchy.Group:
+    store = zarr.ZipStore(str(ff), mode="r")
+    root = zarr.open(store=store)
+    return root
+
 # @plugin.register_transformer
 # def _2(ff: GGLassoDataFormat) -> pd.DataFrame:
 #     df = pd.read_csv(str(ff), index_col=0, sep='\t')
