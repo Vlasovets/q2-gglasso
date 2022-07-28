@@ -5,7 +5,6 @@ import pandas as pd
 from gglasso.helper.utils import normalize as norm
 from gglasso.helper.utils import log_transform as trans
 from gglasso.helper.data_generation import sample_covariance_matrix
-from gglasso.helper.ext_admm_helper import create_group_array, construct_indexer
 
 
 def flatten_array(x):
@@ -45,28 +44,6 @@ def transpose_dataframes(datasets: list):
         trans_list.append(df.T)
 
     return trans_list
-
-
-def if_non_conforming(datasets: list):
-    columns_dict = dict()
-    i = 0
-    for df in datasets:
-        columns_dict[i] = df.columns
-        i += 1
-
-    for k in range(0, len(columns_dict) - 1):
-        non_conforming_case = set(columns_dict[k].difference(columns_dict[k + 1]))
-        if non_conforming_case:
-            datasets = transpose_dataframes(datasets)
-            # we transpose dataframes, so the shape of each dataframe becomes (n_variables, n_samples)
-            ix_exist, ix_location = construct_indexer(list(datasets))
-
-            G = create_group_array(ix_exist, ix_location)
-
-            return G
-
-        else:
-            print("All datasets have exactly the same features.")
 
 
 def if_2d_array(x=np.ndarray):
@@ -167,17 +144,6 @@ def remove_biom_header(file_path):
         data = fin.read().splitlines(True)
     with open(str(file_path), 'w') as fout:
         fout.writelines(data[1:])
-
-
-def if_no_model_selection(lambda1, lambda2=None, mu1=None):
-    mu1 = if_none_to_list(mu1)
-    lambda2 = if_none_to_list(lambda2)
-
-    model_selection = True
-    if (len(lambda1) == 1) and len(lambda2) == 1 and (len(mu1) == 1):
-        model_selection = False
-
-    return model_selection
 
 
 def single_hyperparameters(model_selection, lambda1, lambda2=None, mu1=None):
