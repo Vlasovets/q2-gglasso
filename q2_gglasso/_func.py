@@ -60,9 +60,9 @@ def build_groups(tables: Table, check_groups: bool = True) -> np.ndarray:
     for table in tables:
         df = table.to_dataframe()
 
-        dataframes_p_N.append(df.T)  # (p_variables, N_samples) required shape of dataframe
-        p_arr.append(df.shape[1])  # number of variables
-        num_samples.append(df.shape[0])  # number of samples
+        dataframes_p_N.append(df)  # (p_variables, N_samples) required shape of dataframe
+        p_arr.append(df.shape[0])  # number of variables
+        num_samples.append(df.shape[1])  # number of samples
 
         columns_dict[i] = df.columns.values.tolist()
         i += 1
