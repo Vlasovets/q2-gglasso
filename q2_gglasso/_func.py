@@ -51,35 +51,51 @@ def transform_features(
 
 
 def build_groups(tables: Table, check_groups: bool = True) -> np.ndarray:
-
     columns_dict = dict()
     dataframes = list()
+    p_arr = list()
+    num_samples = list()
+
     i = 0
     for table in tables:
         df = table.to_dataframe()
+
         dataframes.append(df)
-        columns_dict[i] = df.columns
+        p_arr.append(df.shape[1])
+        num_samples.append(df.shape[0])
+
+        columns_dict[i] = df.columns.values.tolist()
         i += 1
 
-    for k in range(0, len(columns_dict) - 1):
-        non_conforming_problem = set(columns_dict[k].difference(columns_dict[k + 1]))
-        if non_conforming_problem:
-            tables_trans = transpose_dataframes(dataframes)
-            # we transpose dataframes, so the shape of each dataframe becomes (n_variables, n_samples)
-            ix_exist, ix_location = construct_indexer(list(tables_trans))
+    all_names = set()
+    for columns in columns_dict.values():
+        for name in columns:
+            all_names.add(name)
 
-            G = create_group_array(ix_exist, ix_location)
+    non_conforming_problem = False
 
-            # print("Dimensions p_k: ", p_arr)
-            # print("Sample sizes N_k: ", num_samples)
+    for k in range(0, len(columns_dict)):
+        diff = all_names.difference(columns_dict[k])
+        if len(diff) > 0:
+            non_conforming_problem = True
 
+    if non_conforming_problem:
+        tables_trans = transpose_dataframes(dataframes)
+        # we transpose dataframes, so the shape of each dataframe becomes (n_variables, n_samples)
+        ix_exist, ix_location = construct_indexer(list(tables_trans))
+
+        G = create_group_array(ix_exist, ix_location)
+
+        if check_groups:
+            check_G(G, p_arr)
+            print("Dimensions p_k: ", p_arr)
+            print("Sample sizes N_k: ", num_samples)
             print("Number of groups found: ", G.shape[1])
 
-            return G
+        return G
 
-        else:
-            print("All datasets have exactly the same number of features.")
-
+    else:
+        print("All datasets have exactly the same number of features.")
 
 
 def calculate_covariance(table: pd.DataFrame,

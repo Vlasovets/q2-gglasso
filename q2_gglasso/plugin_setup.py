@@ -94,14 +94,15 @@ plugin.methods.register_function(
     },
     parameter_descriptions={
         "check_groups": (
-            "String representing the name of the "
-            "transformation we will use "
+            "Check built groups of overlapping variables"
         ),
     },
-    output_descriptions={"group_array": "a bookeeping array"},
+    output_descriptions={"group_array": " (2,L,K)-shape array which contains the indices of a precision matrix entry "
+                                        "for every group of overlapping features (L) and every instance (K)"
+                         },
     name="build-groups",
     description=(
-        "prior to network analysis"
+        "G can be seen as a bookeeping array between instances having different number of features"
     ),
 )
 
@@ -161,15 +162,25 @@ plugin.methods.register_function(
             "List of regularization hyperparameters lambda2 for MGL."
             "Note, sort lambda list in descending order."
         ),
-        "latent": ("Specify whether latent variables should be modeled."
-                   "The default is False."),
-        "mu1": ("Low-rank regularization parameter."
-                "Only needs to be specified if latent=True."),
-        "reg": ("Type of regularization for MGL problems."
-                "'FGL' = Fused Graphical Lasso, 'GGL' = Group Graphical Lasso."
-                "The default is 'GGL'."),
-        "non_conforming": ("Non-conforming MGL problems."),
-        "G": ("Bookeeping array"),
+        "latent": (
+            "Specify whether latent variables should be modeled."
+            "The default is False."
+        ),
+        "mu1": (
+            "Low-rank regularization parameter."
+            "Only needs to be specified if latent=True."
+        ),
+        "reg": (
+            "Type of regularization for MGL problems."
+            "'FGL' = Fused Graphical Lasso, 'GGL' = Group Graphical Lasso."
+            "The default is 'GGL'."
+        ),
+        "non_conforming": (
+            "Non-conforming MGL problems."
+        ),
+        "G": (
+            "Bookeeping array"
+        ),
     },
     output_descriptions={"solution": "dictionary containing the solution and "
                                      "hyper-/parameters of GGLasso problem"},
@@ -199,7 +210,6 @@ plugin.visualizers.register_function(
     },
 )
 
-
 plugin.visualizers.register_function(
     function=q2g.summarize,
     inputs={
@@ -215,7 +225,5 @@ plugin.visualizers.register_function(
     parameters={'sample_metadata': Metadata},
     parameter_descriptions={'sample_metadata': 'The sample metadata.'},
 )
-
-
 
 importlib.import_module('q2_gglasso._transformer')
