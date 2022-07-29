@@ -38,14 +38,6 @@ def if_equal_dict(a, b):
     return x
 
 
-def transpose_dataframes(datasets: list):
-    trans_list = list()
-    for df in datasets:
-        trans_list.append(df.T)
-
-    return trans_list
-
-
 def if_2d_array(x=np.ndarray):
     #  if 3d array of shape (1,p,p),
     #  make it 2d array of shape (p,p).
