@@ -24,7 +24,7 @@ from q2_types.feature_table import FeatureTable, Composition
 from q2_types.feature_data import FeatureData
 
 from .utils import if_2d_array, if_model_selection, if_all_none, list_to_array
-from .utils import normalize, log_transform, to_zarr, transpose_dataframes
+from .utils import normalize, log_transform
 
 
 def transform_features(
@@ -52,7 +52,7 @@ def transform_features(
 
 def build_groups(tables: Table, check_groups: bool = True) -> np.ndarray:
     columns_dict = dict()
-    dataframes = list()
+    dataframes_p_N = list()
     p_arr = list()
     num_samples = list()
 
@@ -60,9 +60,9 @@ def build_groups(tables: Table, check_groups: bool = True) -> np.ndarray:
     for table in tables:
         df = table.to_dataframe()
 
-        dataframes.append(df)
-        p_arr.append(df.shape[1])
-        num_samples.append(df.shape[0])
+        dataframes_p_N.append(df.T)  # (p_variables, N_samples) required shape of dataframe
+        p_arr.append(df.shape[1])  # number of variables
+        num_samples.append(df.shape[0])  # number of samples
 
         columns_dict[i] = df.columns.values.tolist()
         i += 1
@@ -80,10 +80,8 @@ def build_groups(tables: Table, check_groups: bool = True) -> np.ndarray:
             non_conforming_problem = True
 
     if non_conforming_problem:
-        tables_trans = transpose_dataframes(dataframes)
-        # we transpose dataframes, so the shape of each dataframe becomes (n_variables, n_samples)
-        ix_exist, ix_location = construct_indexer(list(tables_trans))
 
+        ix_exist, ix_location = construct_indexer(dataframes_p_N)
         G = create_group_array(ix_exist, ix_location)
 
         if check_groups:
@@ -121,7 +119,6 @@ def calculate_covariance(table: pd.DataFrame,
 
 def solve_SGL(S: np.ndarray, N: list, latent: bool = None, model_selection: bool = None,
               lambda1: list = None, mu1: list = None):
-
     if model_selection:
         print("\tDD MODEL SELECTION:")
         modelselect_params = {'lambda1_range': lambda1, 'mu1_range': mu1}
@@ -138,7 +135,6 @@ def solve_SGL(S: np.ndarray, N: list, latent: bool = None, model_selection: bool
 
 def solve_MGL(S: np.ndarray, N: list, reg: str, latent: bool = None, model_selection: bool = None,
               lambda1: list = None, lambda2: list = None, mu1: list = None):
-
     if model_selection:
         print("\tDD MODEL SELECTION:")
         modelselect_params = {'lambda1_range': lambda1, 'lambda2_range': lambda2, 'mu1_range': mu1}
@@ -156,7 +152,6 @@ def solve_MGL(S: np.ndarray, N: list, reg: str, latent: bool = None, model_selec
 
 def solve_non_conforming(S: np.ndarray, N: list, G: list, latent: bool = None, model_selection: bool = None,
                          lambda1: list = None, lambda2: list = None, mu1: list = None):
-
     if model_selection:
         print("\tDD MODEL SELECTION:")
         modelselect_params = {'lambda1_range': lambda1, 'lambda2_range': lambda2, 'mu1_range': mu1}
@@ -174,7 +169,7 @@ def solve_non_conforming(S: np.ndarray, N: list, G: list, latent: bool = None, m
 
 
 def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None, non_conforming: bool = None,
-                  lambda1: list = None, lambda2: list = None, mu1: list = None,  G: list = None, reg: str = 'GGL') \
+                  lambda1: list = None, lambda2: list = None, mu1: list = None, G: list = None, reg: str = 'GGL') \
         -> glasso_problem:
     S = np.array(covariance_matrix)
     S = if_2d_array(S)
@@ -230,7 +225,6 @@ def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None,
                               lambda1=lambda1, lambda2=lambda2, mu1=mu1)
 
     return P
-
 
 #
 # def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None,
