@@ -14,7 +14,8 @@ except ImportError:
 
 class TestUtil(unittest.TestCase):
 
-    def test_build_blocks(self):
+    def test_build_blocks(self, equal=False):
+
         data1 = np.array([[0, 2], [1, 1], [2, 0], [7, 8]])
         sample_ids1 = ['S%d' % i for i in range(2)]
         observ_ids1 = ['OTU%d' % i for i in range(4)]
