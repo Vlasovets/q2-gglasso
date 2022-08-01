@@ -16,11 +16,11 @@ class TestUtil(unittest.TestCase):
 
     def test_build_blocks(self, equal=False):
 
-        data1 = np.array([[0, 2], [1, 1], [2, 0], [7, 8]])
+        data1 = np.random.rand(4, 2)
         sample_ids1 = ['S%d' % i for i in range(2)]
         observ_ids1 = ['OTU%d' % i for i in range(4)]
 
-        data2 = np.array([[0, 2, 1], [1, 1, 2], [2, 0, 7], [7, 0, 3], [2, 0, 7], [7, 0, 3]])
+        data2 = np.random.rand(6, 3)
         sample_ids2 = ['S%d' % i for i in range(3)]
         observ_ids2 = ['OTU%d' % i for i in range(6)]
 
