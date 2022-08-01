@@ -29,7 +29,7 @@ glasso_parameters = {
     "lambda2": List[Float],
     "latent": Bool,
     "non_conforming": Bool,
-    "G": List[Int],
+    "group_array": List[Int],
     "mu1": List[Float],
     "reg": Str
 }

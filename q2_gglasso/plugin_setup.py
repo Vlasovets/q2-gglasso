@@ -178,7 +178,7 @@ plugin.methods.register_function(
         "non_conforming": (
             "Non-conforming MGL problems."
         ),
-        "G": (
+        "group_array": (
             "Bookeeping array"
         ),
     },

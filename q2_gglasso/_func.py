@@ -169,7 +169,7 @@ def solve_non_conforming(S: np.ndarray, N: list, G: list, latent: bool = None, m
 
 
 def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None, non_conforming: bool = None,
-                  lambda1: list = None, lambda2: list = None, mu1: list = None, G: list = None, reg: str = 'GGL') \
+                  lambda1: list = None, lambda2: list = None, mu1: list = None, group_array: list = None, reg: str = 'GGL') \
         -> glasso_problem:
     S = np.array(covariance_matrix)
     S = if_2d_array(S)
@@ -204,12 +204,12 @@ def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None,
             if latent:
                 print("\n----SOLVING NON-CONFORMING PROBLEM WITH LATENT VARIABLES-----")
 
-                P = solve_non_conforming(S=S, N=n_samples, G=G, latent=latent, model_selection=model_selection,
+                P = solve_non_conforming(S=S, N=n_samples, G=group_array, latent=latent, model_selection=model_selection,
                                          lambda1=lambda1, lambda2=lambda2, mu1=mu1)
             else:
                 print("\n----SOLVING NON-CONFORMING PROBLEM-----")
 
-                P = solve_non_conforming(S=S, N=n_samples, G=G, latent=latent, model_selection=model_selection,
+                P = solve_non_conforming(S=S, N=n_samples, G=group_array, latent=latent, model_selection=model_selection,
                                          lambda1=lambda1, lambda2=lambda2, mu1=mu1)
 
         else:
