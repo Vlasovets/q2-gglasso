@@ -29,11 +29,6 @@ from._plot import (
     heatmap_choices
 )
 
-from ._heatmap import (
-    heatmap,
-    heatmap_choices
-)
-
 from ._summarize import (
     summarize
 )
@@ -44,7 +39,7 @@ from .utils import(
     if_2d_array,
     remove_biom_header,
     to_zarr,
-    PCA,
+    pca,
 )
 
 __all__ = ['heatmap', 'heatmap_choices']

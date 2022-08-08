@@ -181,7 +181,7 @@ def to_zarr(obj, name, root, first=True):
         to_zarr(obj.__dict__, name, root, first=first)
 
 
-def PCA(X, L, inverse=True):
+def pca(X, L, inverse=True):
     sig, V = np.linalg.eigh(L)
 
     # sort eigenvalues in descending order
