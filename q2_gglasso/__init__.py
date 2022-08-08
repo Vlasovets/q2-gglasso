@@ -24,6 +24,11 @@ from q2_gglasso._type import (
     TensorData
 )
 
+from._plot import (
+    heatmap,
+    heatmap_choices
+)
+
 from ._heatmap import (
     heatmap,
     heatmap_choices
@@ -41,5 +46,7 @@ from .utils import(
     to_zarr,
     PCA,
 )
+
+__all__ = ['heatmap', 'heatmap_choices']
 from gglasso.problem import glasso_problem
 
