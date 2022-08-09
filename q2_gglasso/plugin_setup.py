@@ -200,13 +200,38 @@ plugin.visualizers.register_function(
     description='Generate a heatmap representation of a symmetric matrix',
     input_descriptions={
         "solution": (
-            "p x p semi-positive definite covariance matrix."
+            "Solution artifact of Graphical Lasso problem."
         ),
     },
     parameters={'color_scheme': Str % Choices(q2g.heatmap_choices['color_scheme'])},
     parameter_descriptions={
         'color_scheme': 'The matplotlib colorscheme to generate the heatmap '
                         'with.',
+    },
+)
+
+plugin.visualizers.register_function(
+    function=q2g.pca,
+    inputs={
+        "table": FeatureTable[Composition],
+        "solution": q2g.GGLassoProblem,
+    },
+    name='Principal component analysis (PCA)',
+    description='Generate a scatter plot for PCA',
+    input_descriptions={
+        "table": (
+            "Matrix representing the microbiome data:"
+            "p x n matrix where OTUs - p rows, samples - n columns"
+        ),
+        "solution": (
+            "Solution artifact of Graphical Lasso problem with latent variables."
+        ),
+    },
+    parameters={'sample_metadata': Metadata, 'corr_bound': Float, 'alpha': Float},
+    parameter_descriptions={
+        'sample_metadata': "Metadata of the study.",
+        'corr_bound': 'Spearman correlation threshold.',
+        'alpha': 'Significance level for the test statistics.',
     },
 )
 

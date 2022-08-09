@@ -6,8 +6,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import zarr
 
-TEMPLATES = pkg_resources.resource_filename('q2_gglasso', 'assets')
-
+TEMPLATES = pkg_resources.resource_filename('q2_gglasso._heatmap', 'assets')
 
 # TO DO change the palette
 heatmap_choices = {
