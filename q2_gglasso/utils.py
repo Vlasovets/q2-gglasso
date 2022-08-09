@@ -1,6 +1,7 @@
 import numpy as np
 import zarr
 import pandas as pd
+from scipy import stats
 
 from gglasso.helper.utils import normalize as norm
 from gglasso.helper.utils import log_transform as trans
@@ -138,6 +139,13 @@ def remove_biom_header(file_path):
         fout.writelines(data[1:])
 
 
+def calculate_seq_depth(data=pd.DataFrame):
+    x = data.sum(axis=1)
+    x_scaled = (x - x.min()) / (x.max() - x.min())
+    seq_depth = pd.DataFrame(data=x_scaled, columns=["sequencing depth"])
+    return seq_depth
+
+
 def single_hyperparameters(model_selection, lambda1, lambda2=None, mu1=None):
     if model_selection is False:
         lambda1 = np.array(lambda1).item()
@@ -181,7 +189,7 @@ def to_zarr(obj, name, root, first=True):
         to_zarr(obj.__dict__, name, root, first=first)
 
 
-def pca(X, L, inverse=True):
+def PCA(X, L, inverse=True):
     sig, V = np.linalg.eigh(L)
 
     # sort eigenvalues in descending order
@@ -199,3 +207,34 @@ def pca(X, L, inverse=True):
     zu = X.values @ loadings
 
     return zu, loadings, np.round(sig[ind].squeeze(), 3)
+
+
+def correlated_PC(data=pd.DataFrame, metadata=pd.DataFrame, low_rank=np.ndarray,
+                  corr_bound=float, alpha: float = 0.05):
+    proj_dict = dict()
+    seq_depth = calculate_seq_depth(data)
+    r = np.linalg.matrix_rank(low_rank)
+
+    for col in metadata.columns:
+        df = data.join(metadata[col])
+        df = df.dropna()
+        print(col, ":", df.shape)
+
+        proj, loadings, eigv = PCA(df.iloc[:, :-1], low_rank, inverse=True)  # exclude feature column :-1
+
+        df = df.join(seq_depth)
+
+        for j in range(0, r):
+            spearman_corr = stats.spearmanr(df[col], proj[:, j])[0]
+            p_value = stats.spearmanr(df[col], proj[:, j])[1]
+            print("Spearman correlation between {0} and {1} component: "
+                  "{2}, p-value: {3}".format(col, j + 1, spearman_corr, p_value))
+
+            if (np.absolute(spearman_corr) > corr_bound) and (p_value < alpha):
+                proj_dict[col] = {"PC {0}".format(j+1): proj[:, j],
+                                  "data": df,
+                                  "eigenvalue": eigv[j],
+                                  "rho": spearman_corr,
+                                  "p_value": p_value}
+
+    return proj_dict
