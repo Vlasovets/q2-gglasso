@@ -24,9 +24,13 @@ from q2_gglasso._type import (
     TensorData
 )
 
-from._plot import (
+from._heatmap import (
     heatmap,
     heatmap_choices
+)
+
+from._pca import (
+    pca
 )
 
 from ._summarize import (
@@ -39,7 +43,9 @@ from .utils import(
     if_2d_array,
     remove_biom_header,
     to_zarr,
-    pca,
+    PCA,
+    correlated_PC,
+    calculate_seq_depth,
 )
 
 __all__ = ['heatmap', 'heatmap_choices']
