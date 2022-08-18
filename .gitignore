@@ -5,6 +5,9 @@ dist/
 *__pycache__/
 data/
 
+.DS_store
+*.idea/
+
 *.qza
 *.biom
 *.qzv
