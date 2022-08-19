@@ -8,6 +8,7 @@ gglasso~=0.1.9
 pandas~=1.2.5
 jupyterlab
 jupyter
+jupyter-book
 plotly~=5.6.0
 biom-format
 h5py
