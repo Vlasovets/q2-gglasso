@@ -171,7 +171,8 @@ plugin.methods.register_function(
             "Only needs to be specified if latent=True."
         ),
         "lambda1_mask": (
-            "For weighted version of SGL solver"
+            "Array (p,p), non-negative, symmetric."
+            "The lambda1 parameter is multiplied element-wise with this array, thus lambda1 has to be provided."
         ),
         "reg": (
             "Type of regularization for MGL problems."
