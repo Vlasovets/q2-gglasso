@@ -49,6 +49,7 @@ class TestUtil(unittest.TestCase):
     lambda1 = 0.05
     lambda2 = 0.1
     mu1 = 0.15
+    lambda1_mask = abs(S_SGL)
 
     # for model selection
     lambda1_range = np.logspace(0, -2, 5)
@@ -192,6 +193,41 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(equal_low, msg="Low-rank solutions from GGLasso and q2-gglasso are not identical.")
         self.assertEqual(ebic_org, ebic_q2, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver")
 
+    def test_SGL_mask(self, S=S_SGL, N=N, lambda1=lambda1, lambda1_mask=lambda1_mask, equal=False):
+        P_org = glasso_problem(S=S, reg_params={'lambda1': lambda1, 'lambda1_mask': lambda1_mask}, N=N, latent=False)
+        P_org.solve()
+        ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
+
+        P_q2 = solve_problem(covariance_matrix=S, n_samples=N, lambda1=[lambda1], lambda1_mask=lambda1_mask)
+        ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
+
+        if (P_org.solution.precision_ == P_q2.solution.precision_).all():
+            equal = True
+
+        self.assertTrue(equal, msg="Solutions from GGLasso and q2-gglasso are not identical")
+        self.assertEqual(ebic_org, ebic_q2, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver")
+
+    def test_SGL_mask_low(self, S=S_SGL, N=N, lambda1=lambda1, mu1=mu1, lambda1_mask=lambda1_mask,
+                          equal=False, equal_low=False):
+        P_org = glasso_problem(S=S, reg_params={'lambda1': lambda1, "mu1": mu1, "lambda1_mask": lambda1_mask},
+                               N=N, latent=True)
+        P_org.solve()
+        ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
+
+        P_q2 = solve_problem(covariance_matrix=S, n_samples=N, lambda1=[lambda1], mu1=[mu1],
+                             lambda1_mask=lambda1_mask, latent=True)
+        ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
+
+        if (P_org.solution.precision_ == P_q2.solution.precision_).all():
+            equal = True
+
+        if (P_org.solution.lowrank_ == P_q2.solution.lowrank_).all():
+            equal_low = True
+
+        self.assertTrue(equal, msg="Solutions from GGLasso and q2-gglasso are not identical.")
+        self.assertTrue(equal_low, msg="Low-rank solutions from GGLasso and q2-gglasso are not identical.")
+        self.assertEqual(ebic_org, ebic_q2, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver.")
+
     #  test for model selection
     def test_modelselect_SGL(self, S=S_SGL, N=N, lambda1_range=lambda1_range, equal=False, best_lambda=False):
 
@@ -222,7 +258,7 @@ class TestUtil(unittest.TestCase):
                                  equal=False, best_lambda=False, best_mu=False):
         modelselect_params = {'lambda1_range': lambda1_range, 'mu1_range': mu1_range}
 
-        P_org = glasso_problem(S=S, reg_params=modelselect_params, N=N, latent=True, reg='GGL')
+        P_org = glasso_problem(S=S, reg_params=modelselect_params, N=N, latent=True)
         P_org.model_selection(modelselect_params=modelselect_params, method='eBIC')
         ebic_org = P_org.modelselect_stats["BIC"]
 
@@ -478,6 +514,66 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(mu_equal, msg="mu1 trace from GGLasso and q2-gglasso are not identical")
         self.assertTrue(equal, msg="Solutions from GGLasso and q2-gglasso are not identical")
         self.assertTrue(x, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver")
+
+    def test_modelselect_SGL_mask(self, S=S_SGL, N=N, lambda1_range=lambda1_range, lambda1_mask=lambda1_mask,
+                                  equal=False, best_lambda=False):
+        modelselect_params = {'lambda1_range': lambda1_range, "lambda1_mask": lambda1_mask}
+        P_org = glasso_problem(S=S, reg_params=modelselect_params, N=N, latent=False)
+        P_org.model_selection(modelselect_params=modelselect_params, method='eBIC')
+        ebic_org = P_org.modelselect_stats["BIC"]
+
+        P_q2 = solve_problem(covariance_matrix=S, n_samples=N, lambda1=lambda1_range, lambda1_mask=lambda1_mask)
+        ebic_q2 = P_q2.modelselect_stats["BIC"]
+
+        x = if_equal_dict(ebic_org, ebic_q2)
+
+        best_lambda_org = P_org.modelselect_stats["BEST"]['lambda1']
+        best_lambda_q2 = P_q2.modelselect_stats["BEST"]['lambda1']
+
+        if best_lambda_org == best_lambda_q2:
+            best_lambda = True
+
+        if (P_org.solution.precision_ == P_q2.solution.precision_).all():
+            equal = True
+
+        self.assertTrue(best_lambda, msg="Best chosen lambda  from GGLasso and q2-gglasso are not the same")
+        self.assertTrue(equal, msg="Solutions from GGLasso and q2-gglasso are not identical")
+        self.assertTrue(x, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver")
+
+    def test_modelselect_SGL_mask_low(self, S=S_SGL, N=N, lambda1_range=lambda1_range, mu1_range=mu1_range,
+                                      lambda1_mask=lambda1_mask, equal=False, best_lambda=False, best_mu=False):
+        modelselect_params = {'lambda1_range': lambda1_range, 'mu1_range': mu1_range, "lambda1_mask": lambda1_mask}
+
+        P_org = glasso_problem(S=S, reg_params=modelselect_params, N=N, latent=True)
+        P_org.model_selection(modelselect_params=modelselect_params, method='eBIC')
+        ebic_org = P_org.modelselect_stats["BIC"]
+
+        P_q2 = solve_problem(covariance_matrix=S, n_samples=N, latent=True, lambda1=lambda1_range, mu1=mu1_range,
+                             lambda1_mask=lambda1_mask)
+        ebic_q2 = P_q2.modelselect_stats["BIC"]
+
+        x = if_equal_dict(ebic_org, ebic_q2)
+
+        best_lambda_org = P_org.modelselect_stats["BEST"]['lambda1']
+        best_lambda_q2 = P_q2.modelselect_stats["BEST"]['lambda1']
+
+        best_mu_org = P_org.modelselect_stats["BEST"]['mu1']
+        best_mu_q2 = P_q2.modelselect_stats["BEST"]['mu1']
+
+        if best_mu_org == best_mu_q2:
+            best_mu = True
+
+        if best_lambda_org == best_lambda_q2:
+            best_lambda = True
+
+        if (P_org.solution.precision_ == P_q2.solution.precision_).all():
+            equal = True
+
+        self.assertTrue(best_lambda, msg="Best chosen lambda  from GGLasso and q2-gglasso are not the same")
+        self.assertTrue(best_mu, msg="Best chosen mu  from GGLasso and q2-gglasso are not the same")
+        self.assertTrue(equal, msg="Solutions from GGLasso and q2-gglasso are not identical")
+        self.assertTrue(x, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver")
+
 
 
 if __name__ == '__main__':
