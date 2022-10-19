@@ -127,7 +127,8 @@ def solve_SGL(S: np.ndarray, N: list, latent: bool = None, model_selection: bool
         print(P.__dict__["modelselect_params"])
     else:
         print("\tWITH LAMBDA={0} and MU={1}".format(lambda1, mu1))
-        P = glasso_problem(S, N=N, reg_params={'lambda1': lambda1, "mu1": mu1, 'lambda1_mask': lambda1_mask}, latent=latent)
+        P = glasso_problem(S, N=N, reg_params={'lambda1': lambda1, "mu1": mu1, 'lambda1_mask': lambda1_mask},
+                           latent=latent)
         P.solve()
 
     return P
@@ -189,12 +190,14 @@ def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None,
         if latent:
             print("\n----SOLVING SINGLE GRAPHICAL LASSO PROBLEM WITH LATENT VARIABLES-----")
 
-            P = solve_SGL(S=S, N=n_samples, latent=latent, model_selection=model_selection, lambda1=lambda1, mu1=mu1)
+            P = solve_SGL(S=S, N=n_samples, latent=latent, model_selection=model_selection, lambda1=lambda1, mu1=mu1,
+                          lambda1_mask=lambda1_mask)
 
         else:
             print("----SOLVING SINGLE GRAPHICAL LASSO PROBLEM-----")
 
-            P = solve_SGL(S=S, N=n_samples, latent=latent, model_selection=model_selection, lambda1=lambda1, mu1=mu1)
+            P = solve_SGL(S=S, N=n_samples, latent=latent, model_selection=model_selection, lambda1=lambda1, mu1=mu1,
+                          lambda1_mask=lambda1_mask)
 
     # if 3d array => solve MGL
     elif S.ndim == 3:
@@ -204,12 +207,14 @@ def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None,
             if latent:
                 print("\n----SOLVING NON-CONFORMING PROBLEM WITH LATENT VARIABLES-----")
 
-                P = solve_non_conforming(S=S, N=n_samples, G=group_array, latent=latent, model_selection=model_selection,
+                P = solve_non_conforming(S=S, N=n_samples, G=group_array, latent=latent,
+                                         model_selection=model_selection,
                                          lambda1=lambda1, lambda2=lambda2, mu1=mu1)
             else:
                 print("\n----SOLVING NON-CONFORMING PROBLEM-----")
 
-                P = solve_non_conforming(S=S, N=n_samples, G=group_array, latent=latent, model_selection=model_selection,
+                P = solve_non_conforming(S=S, N=n_samples, G=group_array, latent=latent,
+                                         model_selection=model_selection,
                                          lambda1=lambda1, lambda2=lambda2, mu1=mu1)
 
         else:
@@ -225,4 +230,3 @@ def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None,
                               lambda1=lambda1, lambda2=lambda2, mu1=mu1)
 
     return P
-
