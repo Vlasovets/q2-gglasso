@@ -27,6 +27,7 @@ glasso_parameters = {
     "n_samples": List[Int],
     "lambda1": List[Float],
     "lambda2": List[Float],
+    "lambda1_mask": List[Float],
     "latent": Bool,
     "non_conforming": Bool,
     "group_array": List[Int],

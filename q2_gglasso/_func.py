@@ -118,16 +118,16 @@ def calculate_covariance(table: pd.DataFrame,
 
 
 def solve_SGL(S: np.ndarray, N: list, latent: bool = None, model_selection: bool = None,
-              lambda1: list = None, mu1: list = None):
+              lambda1: list = None, mu1: list = None, lambda1_mask: list = None):
     if model_selection:
         print("\tDD MODEL SELECTION:")
-        modelselect_params = {'lambda1_range': lambda1, 'mu1_range': mu1}
+        modelselect_params = {'lambda1_range': lambda1, 'mu1_range': mu1, 'lambda1_mask': lambda1_mask}
         P = glasso_problem(S, N=N, latent=latent)
         P.model_selection(modelselect_params=modelselect_params)
         print(P.__dict__["modelselect_params"])
     else:
         print("\tWITH LAMBDA={0} and MU={1}".format(lambda1, mu1))
-        P = glasso_problem(S, N=N, reg_params={'lambda1': lambda1, "mu1": mu1}, latent=latent)
+        P = glasso_problem(S, N=N, reg_params={'lambda1': lambda1, "mu1": mu1, 'lambda1_mask': lambda1_mask}, latent=latent)
         P.solve()
 
     return P
@@ -169,8 +169,8 @@ def solve_non_conforming(S: np.ndarray, N: list, G: list, latent: bool = None, m
 
 
 def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None, non_conforming: bool = None,
-                  lambda1: list = None, lambda2: list = None, mu1: list = None, group_array: list = None, reg: str = 'GGL') \
-        -> glasso_problem:
+                  lambda1: list = None, lambda2: list = None, mu1: list = None, lambda1_mask: list = None,
+                  group_array: list = None, reg: str = 'GGL') -> glasso_problem:
     S = np.array(covariance_matrix)
     S = if_2d_array(S)
 

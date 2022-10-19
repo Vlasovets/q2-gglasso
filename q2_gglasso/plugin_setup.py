@@ -170,6 +170,9 @@ plugin.methods.register_function(
             "Low-rank regularization parameter."
             "Only needs to be specified if latent=True."
         ),
+        "lambda1_mask": (
+            "For weighted version of SGL solver"
+        ),
         "reg": (
             "Type of regularization for MGL problems."
             "'FGL' = Fused Graphical Lasso, 'GGL' = Group Graphical Lasso."
