@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM quay.io/qiime2/core:2022.2
+FROM quay.io/qiime2/core:2022.8
 #FROM q2-gglasso-2022-2
 
 COPY . ./
