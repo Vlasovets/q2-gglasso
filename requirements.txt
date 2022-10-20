@@ -17,6 +17,8 @@ seaborn~=0.11.2
 matplotlib~=3.5.1
 setuptools~=59.8.0
 pytest~=7.0.1
+versioneer
+jinja2
 
 
 git+https://github.com/qiime2/sphinx-ext-qiime2
