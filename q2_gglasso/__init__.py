@@ -51,3 +51,6 @@ from .utils import(
 __all__ = ['heatmap', 'heatmap_choices']
 from gglasso.problem import glasso_problem
 
+
+from . import _version
+__version__ = _version.get_versions()['version']

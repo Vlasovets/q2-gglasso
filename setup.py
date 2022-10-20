@@ -8,6 +8,7 @@
 
 from setuptools import setup, find_packages
 import os
+import versioneer
 
 # Package meta-data.
 NAME = 'q2-gglasso'
@@ -22,8 +23,8 @@ here = os.path.abspath(os.path.dirname("__file__"))
 
 setup(
     name="q2-gglasso",
-    version='0.0.0.dev0',
-    # cmdclass=versioneer.get_cmdclass(),
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     packages=find_packages(),
     author="Oleg Vlasovets",
     author_email="otorrent@mail.ru",
