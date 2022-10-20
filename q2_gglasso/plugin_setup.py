@@ -251,8 +251,7 @@ plugin.visualizers.register_function(
             "p x p semi-positive definite covariance matrix."
         ),
     },
-    parameters={'sample_metadata': Metadata},
-    parameter_descriptions={'sample_metadata': 'The sample metadata.'},
+    parameters={},
 )
 
 importlib.import_module('q2_gglasso._transformer')

@@ -1,35 +1,36 @@
 import os
-import pkg_resources
-import qiime2
-import numpy as np
 import zarr
 import pandas as pd
-import q2templates
+import jinja2
 from q2_gglasso.utils import flatten_array
 
-TEMPLATES = pkg_resources.resource_filename('q2_gglasso', '_summarize')
 
-
-def summarize(output_dir, solution: zarr.hierarchy.Group,
-              sample_metadata: qiime2.Metadata = None) -> None:
-
+def summarize(output_dir: str, solution: zarr.hierarchy.Group):
     sparsity = flatten_array(solution['modelselect_stats/SP'])
     lambda_path = flatten_array(solution['modelselect_stats/LAMBDA'])
     mu_path = flatten_array(solution['modelselect_stats/MU'])
     ranks = flatten_array(solution['modelselect_stats/RANK'])
 
-    stats = {'sparsity': sparsity, "lambda_path": lambda_path,
-             'mu_path': mu_path, 'ranks': ranks}
+    stats = {'sparsity': sparsity, "lambda": lambda_path,
+             'mu': mu_path, 'rank': ranks}
 
-    stats_df = pd.DataFrame.from_dict(stats)
+    df = pd.DataFrame.from_dict(stats, orient='columns')
 
-    stats_df.to_csv(os.path.join(output_dir, 'stats.csv'))
+    html = df.to_html(index=False)
 
-    stats_table = q2templates.df_to_html(stats_df)
-    context = {'stats_table': stats_table}
+    table1 = (f'Graphical lasso model selection statistics.')
 
-    stats_table_template = os.path.join(TEMPLATES, 'assets', 'index.html')
-    index = os.path.join(TEMPLATES, 'assets', 'index.html')
+    J_ENV = jinja2.Environment(
+        loader=jinja2.PackageLoader('q2_gglasso._summarize', 'assets')
+    )
 
-    templates = [index, stats_table_template]
-    q2templates.render(templates, output_dir, context=context)
+    index = J_ENV.get_template('index.html')
+
+    with open(os.path.join(output_dir, 'index.html'), 'w') as fh:
+        fh.write(index.render(stats=html, table1=table1))
+
+
+# Theta = solution['solution/precision_']
+# total_edges = np.count_nonzero(Theta) / 2
+# total_positives = np.sum(np.sum(Theta > 0, axis=0)) / 2
+# pep_stat = total_positives / total_edges
