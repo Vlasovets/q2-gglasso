@@ -251,7 +251,7 @@ plugin.visualizers.register_function(
             "p x p semi-positive definite covariance matrix."
         ),
     },
-    parameters={},
+    parameters={'title': Str},
 )
 
 importlib.import_module('q2_gglasso._transformer')
