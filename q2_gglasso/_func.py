@@ -1,35 +1,32 @@
-import qiime2
 import numpy as np
-from biom.table import Table
 import pandas as pd
-import zarr
-from scipy import stats
-import multiprocessing
-from functools import partial
-import warnings
 
 from biom.table import Table
-from biom import load_table
-
-from q2_types.feature_table import FeatureTable, Composition
-from q2_types.feature_data import FeatureData
-
 from gglasso.problem import glasso_problem
-from gglasso.helper.data_generation import generate_precision_matrix, group_power_network, sample_covariance_matrix
 from gglasso.helper.basic_linalg import scale_array_by_diagonal
 from gglasso.helper.ext_admm_helper import create_group_array, construct_indexer, check_G
-from gglasso.helper.model_selection import aic, ebic, K_single_grid
-
-from q2_types.feature_table import FeatureTable, Composition
-from q2_types.feature_data import FeatureData
-
 from .utils import if_2d_array, if_model_selection, if_all_none, list_to_array
 from .utils import normalize, log_transform
 
 
-def transform_features(
-        table: Table, transformation: str = "clr",
-) -> pd.DataFrame:
+def transform_features( table: Table, transformation: str = "clr") -> pd.DataFrame:
+    """
+    Project compositional data to Euclidean space.
+
+    Parameters
+    ----------
+    table: biom.Table
+        A table with count microbiome data.
+    transformation: str
+        If 'clr' the data is transformed with center log-ratio method by Aitchison (1982).
+        If 'mclr' the data is transformed with modified center log-ratio method by Yoon et al. (2019).
+
+    Returns
+    -------
+    X: pd.Dataframe
+        Count data projected to Euclidean space.
+
+    """
     if transformation == "clr":
         X = table.to_dataframe()
         X = normalize(X)
@@ -51,6 +48,24 @@ def transform_features(
 
 
 def build_groups(tables: Table, check_groups: bool = True) -> np.ndarray:
+    """
+    Building groups for solving the Group Graphical Lasso problem
+    where not all instances have the same number of dimensions,
+    i.e. some variables are present in some instances and not in others.
+
+    Parameters
+    ----------
+    tables: list(biom.Table)
+        A list with tables of count microbiome data.
+    check_groups: bool
+        GGLasso function to check a bookkeeping group penalty matrix G.
+
+    Returns
+    -------
+    G: ndarray
+    A bookkeeping group penalty matrix G, see Non-conforming case in GGLasso docs.
+
+    """
     columns_dict = dict()
     dataframes_p_N = list()
     p_arr = list()
@@ -96,18 +111,36 @@ def build_groups(tables: Table, check_groups: bool = True) -> np.ndarray:
         print("All datasets have exactly the same number of features.")
 
 
-def calculate_covariance(table: pd.DataFrame,
-                         method: str,
-                         bias: bool = True,
-                         ) -> pd.DataFrame:
-    # normalize with N => bias = True
+def calculate_covariance(table: pd.DataFrame, method: str = "scaled", bias: bool = True) -> pd.DataFrame:
+    """
+    A function calculating covariance matrix.
+
+    Parameters
+    ----------
+    table: pd.Dataframe
+        A dataframe with transformed microbiome data.
+        See 'transform_features()' method for transformation options.
+    method: str
+        If 'unscaled', calculates covariance with "np.cov()", see Numpy documentation for details.
+        If 'scaled', scales covariance dataframe with the square root of its diagonal, i.e. X_ij/sqrt(d_i*d_j),
+        see (2.4) in https://fan.princeton.edu/papers/09/Covariance.pdf.
+    bias: boolean, optional
+        If 'True', normalize covariance estimation by the number of samples N,
+        if "False" - by N-1, see Numpy documentation for details.
+
+    Returns
+    -------
+    covariance matrix: pd.Dataframe
+        A squared positive semi-definite matrix required for solving Graphical Lasso problem.
+
+    """
     S = np.cov(table.values, bias=bias)
 
     if method == "unscaled":
         print("Calculate {0} covariance matrices S".format(method))
         result = S
 
-    elif method == "scaled":  # TO DO: add doc string explaining that it is the same as Pearson's correlation
+    elif method == "scaled":
         print("Calculate {0} covariance (correlation) matrices S".format(method))
         result = scale_array_by_diagonal(S)
 
@@ -119,6 +152,36 @@ def calculate_covariance(table: pd.DataFrame,
 
 def solve_SGL(S: np.ndarray, N: list, latent: bool = None, model_selection: bool = None,
               lambda1: list = None, mu1: list = None, lambda1_mask: list = None):
+    """
+    Solve Single Graphical Lasso (SGL) problem, see Friedman et al. (2007).
+
+    Parameters
+    ----------
+    S: np.ndarray
+        A squared positive semi-definite matrix.
+    N: list
+        A number of data samples.
+    latent: boolean, optional
+        If 'True', solve SGL accounting for latent variables, see Chandrasekaran et al. (2012).
+    model_selection: boolean, optional
+        If 'True', run a model selection procedure over a grid of hyperparameters, i.e., lambda, mu.
+        eBIC is used for selecting the best performing model, see Foygel and Drton (2010).
+    lambda1: list
+        A list of non-negative regularization hyperparameters 'lambda1',
+        'lambda1' accounts for sparsity level in SGL solution.
+    mu1: list
+        A list of non-negative regularization hyperparameters 'mu1',
+        'mu1' accounts for L component in SGL solution to be a low-rank.
+    lambda1_mask: list
+        A non-negative, symmetric matrix, 'lambda1' is multiplied element-wise with this matrix.
+
+    Returns
+    -------
+    solution: glasso_problem object
+        Contains the solution, i.e. Omega, Theta, X (and L if ``latent=True``) after termination.
+        All arrays are of shape (p,p).
+
+    """
     if model_selection:
         print("\tDD MODEL SELECTION:")
         modelselect_params = {'lambda1_range': lambda1, 'mu1_range': mu1, 'lambda1_mask': lambda1_mask}
@@ -136,6 +199,39 @@ def solve_SGL(S: np.ndarray, N: list, latent: bool = None, model_selection: bool
 
 def solve_MGL(S: np.ndarray, N: list, reg: str, latent: bool = None, model_selection: bool = None,
               lambda1: list = None, lambda2: list = None, mu1: list = None):
+    """
+    Solve Multiple  Graphical Lasso (MGL) problem, see Danaher et al. (2013).
+
+    Parameters
+    ----------
+    S: np.ndarray
+        Array of K squared positive semi-definite matrices.
+    N: list
+        A number of data samples.
+    reg: str
+        Choose either ’GGL’: Group Graphical Lasso or ’FGL’: Fused Graphical Lasso.
+    latent: boolean, optional
+        If 'True', solve MGL accounting for latent variables, see Tomasi et al. (2018).
+    model_selection: boolean, optional
+        If 'True', run a model selection procedure over a grid of hyperparameters, i.e., lambda, mu.
+        eBIC is used for selecting the best performing model, see Foygel and Drton (2010).
+    lambda1: list
+        A list of non-negative regularization hyperparameters 'lambda1',
+        'lambda1' accounts for sparsity level in within the groups.
+    lambda2: list
+        A list of non-negative regularization hyperparameters 'lambda2',
+        'lambda2' accounts for sparsity level in across the groups.
+    mu1: list
+        A list of non-negative low-rank regularization hyperparameters 'mu1',
+        Only needs to be specified if 'latent=True'.
+
+    Returns
+    -------
+    solution: glasso_problem object
+        Contains the solution, i.e. Omega, Theta, X (and L if ``latent=True``) after termination.
+        All arrays are of shape (K, p,p).
+
+    """
     if model_selection:
         print("\tDD MODEL SELECTION:")
         modelselect_params = {'lambda1_range': lambda1, 'lambda2_range': lambda2, 'mu1_range': mu1}
@@ -153,6 +249,41 @@ def solve_MGL(S: np.ndarray, N: list, reg: str, latent: bool = None, model_selec
 
 def solve_non_conforming(S: np.ndarray, N: list, G: list, latent: bool = None, model_selection: bool = None,
                          lambda1: list = None, lambda2: list = None, mu1: list = None):
+    """
+    Solve the Group Graphical Lasso problem where not all instances have the same number of dimensions,
+    i.e. some variables are present in some instances and not in others.
+    A group sparsity penalty is applied to all pairs of variables present in multiple instances.
+
+    Parameters
+    ----------
+    S: np.ndarray
+        Array of K squared positive semi-definite matrices.
+    N: list
+        A number of data samples.
+    G: list
+        Bookkeeping array containing information where the respective entries for each group can be found.
+    latent: boolean, optional
+        If 'True', solve MGL accounting for latent variables, see Tomasi et al. (2018).
+    model_selection: boolean, optional
+        If 'True', run a model selection procedure over a grid of hyperparameters, i.e., lambda, mu.
+        eBIC is used for selecting the best performing model, see Foygel and Drton (2010).
+    lambda1: list
+        A list of non-negative regularization hyperparameters 'lambda1',
+        'lambda1' accounts for sparsity level in within the groups.
+    lambda2: list
+        A list of non-negative regularization hyperparameters 'lambda2',
+        'lambda2' accounts for sparsity level in across the groups.
+    mu1: list
+        A list of non-negative low-rank regularization hyperparameters 'mu1',
+        Only needs to be specified if 'latent=True'.
+
+    Returns
+    -------
+    solution: glasso_problem object
+        Contains the solution, i.e. Omega, Theta, X (and L if ``latent=True``) after termination.
+        All elements are dictionaries with keys 1,...,K and (p_k,p_k)-arrays as values.
+
+    """
     if model_selection:
         print("\tDD MODEL SELECTION:")
         modelselect_params = {'lambda1_range': lambda1, 'lambda2_range': lambda2, 'mu1_range': mu1}
@@ -172,6 +303,44 @@ def solve_non_conforming(S: np.ndarray, N: list, G: list, latent: bool = None, m
 def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None, non_conforming: bool = None,
                   lambda1: list = None, lambda2: list = None, mu1: list = None, lambda1_mask: list = None,
                   group_array: list = None, reg: str = 'GGL') -> glasso_problem:
+    """
+    Solve Graphical Lasso problem.
+
+    Parameters
+    ----------
+    covariance_matrix: list
+        Array of K covariance matrices.
+    n_samples: list
+        A number of data samples.
+    latent: boolean, optional
+        If 'True', solve MGL accounting for latent variables, see Tomasi et al. (2018).
+    non_conforming: boolean, optional
+        Solve the Group Graphical Lasso problem where not all instances have the same number of dimensions,
+        i.e. some variables are present in some instances and not in others.
+    lambda1: list
+        A list of non-negative regularization hyperparameters 'lambda1';
+        'lambda1' accounts for sparsity level in within the groups.
+    lambda2: list
+        A list of non-negative regularization hyperparameters 'lambda2';
+        'lambda2' accounts for sparsity level in across the groups.
+    mu1: list
+        A list of non-negative low-rank regularization hyperparameters 'mu1';
+        Only needs to be specified if 'latent=True'.
+    lambda1_mask: list, optional
+        Non-negative, symmetric (p,p) matrix;
+        The 'lambda1' parameter is multiplied element-wise with this array. Only available for SGL.
+    group_array: list, optional
+        Bookkeeping array containing information where the respective entries for each group can be found.
+    reg: str
+        Choose either ’GGL’: Group Graphical Lasso or ’FGL’: Fused Graphical Lasso.
+
+    Returns
+    -------
+    solution: glasso_problem object
+        Contains the solution, i.e. Omega, Theta, X (and L if ``latent=True``) after termination.
+        All elements are dictionaries with keys 1,...,K and (p_k,p_k)-arrays as values.
+
+    """
     S = np.array(covariance_matrix)
     S = if_2d_array(S)
 
