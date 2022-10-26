@@ -1,65 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!-- Import Vega & Vega-Lite (does not have to be from CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/vega@5.22.1"></script>
-  <!-- Import vega-embed -->
-  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.20.8"></script>
-  <style>
-    body {
-      width: 50%;
-      box-sizing: border-box;
-      margin: 0px;
-      padding: 50px 212px 0px 50px;
-    }
-    #stats table {
-      margin-top: 50px;
-      width: 100%;
-      text-align: right;
-      border-collapse: collapse;
-      border: 0px;
-      font-family: monospace;
-    }
-
-    #stats thead tr {
-      border: none;
-    }
-
-    #stats tr th {
-      border: none;
-      padding-right: 10px;
-    }
-
-    #stats td {
-      border: none;
-      padding-right: 10px;
-    }
-
-    #stats tr {
-      border-top: 1px solid;
-    }
-  </style>
-</head>
+    <meta charset="utf-8">
+    <title>Bokeh Plot</title>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.min.js"></script>
+    <script type="text/javascript">
+        Bokeh.set_log_level("info");
+    </script>
+  </head>
 <body>
-
-<div class='row'>
-  <div class='col-md-12'>
-    <a href='./q2-gglasso-heatmap.svg' target="_blank" rel="noopener noreferrer" class='btn btn-default'>
-      Download SVG
-    </a>
-  </div>
-</div>
-<div class='row'>
-  <div class='col-md-12'>
-    <img src='./q2-gglasso-heatmap.png'>
-  </div>
-</div>
-
-{% if stats %}
-<div id='stats'>
-{{ stats }}
-</div>
-<p><strong>Table 1.</strong> {{ table1 }}</p>
-{% endif %}
+{{ plot_div|safe }} {{ plot_script|safe }}
 </body>
 </html>
