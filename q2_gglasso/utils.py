@@ -39,6 +39,14 @@ def if_equal_dict(a, b):
     return x
 
 
+def pep_metric(matrix: pd.DataFrame):
+    total_edges = np.count_nonzero(matrix) / 2
+    positive_edges = np.sum(matrix > 0, axis=0)
+    total_positives = np.sum(positive_edges) / 2
+    pep_stat = np.round(total_positives / total_edges, 2)
+    return pep_stat
+
+
 def if_2d_array(x=np.ndarray):
     #  if 3d array of shape (1,p,p),
     #  make it 2d array of shape (p,p).
