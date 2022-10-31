@@ -129,9 +129,6 @@ def log_transform(X, transformation=str, eps=0.1):
         g = X.apply(geometric_mean)
         Z = np.log(X / g)
     elif transformation == "mclr":
-        # g = X.apply(geometric_mean, positive=True)
-        # Z = np.log(X / g)
-        # Z = Z + abs(np.amin(Z.values)) + eps
         g = X.apply(geometric_mean, positive=True)
         X_pos = X[X > 0]
         Z = np.log(X_pos / g)
