@@ -5,7 +5,7 @@ scikit-learn>=0.24.1
 qiime2~=2022.8.0
 zarr~=2.11.1
 gglasso~=0.1.9
-pandas~=1.2.5
+pandas
 jupyterlab
 jupyter
 plotly~=5.6.0
