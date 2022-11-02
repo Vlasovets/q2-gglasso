@@ -137,6 +137,17 @@ def log_transform(X, transformation=str, eps=0.1):
     return Z
 
 
+def zero_imputation(X: pd.DataFrame, pseudo_count: int = 1):
+    original_sum = X.sum(axis=0)
+    for col in X.columns:
+        X[col].replace(to_replace=0, value=pseudo_count, inplace=True)
+    shifted_sum = X.sum(axis=0)
+    scaling_parameter = original_sum.div(shifted_sum)
+    X = X.mul(scaling_parameter)
+
+    return X
+
+
 def remove_biom_header(file_path):
     with open(str(file_path), 'r') as fin:
         data = fin.read().splitlines(True)
@@ -236,7 +247,7 @@ def correlated_PC(data=pd.DataFrame, metadata=pd.DataFrame, low_rank=np.ndarray,
                   "{2}, p-value: {3}".format(col, j + 1, spearman_corr, p_value))
 
             if (np.absolute(spearman_corr) > corr_bound) and (p_value < alpha):
-                proj_dict[col] = {"PC {0}".format(j+1): proj[:, j],
+                proj_dict[col] = {"PC {0}".format(j + 1): proj[:, j],
                                   "data": df,
                                   "eigenvalue": eigv[j],
                                   "rho": spearman_corr,
