@@ -58,7 +58,7 @@ plugin.register_semantic_type_to_format(
 plugin.methods.register_function(
     function=q2g.transform_features,
     inputs={"table": FeatureTable[Composition | Frequency]},
-    parameters={"transformation": Str},
+    parameters={"transformation": Str, "pseudo_count": Int},
     outputs=[("transformed_table", FeatureTable[Composition])],
     input_descriptions={
         "table": (
@@ -71,14 +71,17 @@ plugin.methods.register_function(
             "String representing the name of the "
             "transformation we will use "
         ),
+        "pseudo_count": (
+            "Add pseudo count, only necessary for clr-transformation."
+        ),
     },
     output_descriptions={"transformed_table": "Matrix representing the data of the problem"},
     name="transform-features",
     description=(
         "Perform transformation, "
         "from FeatureTable[Frequency]"
-        " prior to network analysis"
-        " default transformation is centered log ratio"
+        "prior to network analysis"
+        "default transformation is centered log ratio (CLR)"
     ),
 )
 
