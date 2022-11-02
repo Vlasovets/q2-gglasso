@@ -21,23 +21,24 @@ class TestUtil(unittest.TestCase):
         tol_up = 10e-6
         tol_low = 10e-14
 
-        S = calculate_covariance(table, method='unscaled')  # covariance matrix S
+        for method in ["scaled", "unscaled"]:
+            S = calculate_covariance(table, method=method)  # covariance matrix S
 
-        I = np.eye(S.shape[0])  # identity matrix of the same shape as S
-        eigenvalues = np.linalg.eigvals(S)
-        min_positive = np.select(eigenvalues > 0, eigenvalues)  # select the minimum positive eigenvalue
+            I = np.eye(S.shape[0])  # identity matrix of the same shape as S
+            eigenvalues = np.linalg.eigvals(S)
+            min_positive = np.select(eigenvalues > 0, eigenvalues)  # select the minimum positive eigenvalue
 
-        if min_positive > tol_up:
-            min_positive = tol_up
-        elif min_positive < tol_low:
-            min_positive = tol_low
+            if min_positive > tol_up:
+                min_positive = tol_up
+            elif min_positive < tol_low:
+                min_positive = tol_low
 
-        S = S + I * min_positive  # scale the diagonal preserving the variance
+            S = S + I * min_positive  # scale the diagonal preserving the variance
 
-        try:
-            np.linalg.cholesky(S)
-        except self.assertRaises(np.linalg.LinAlgError):
-            np.linalg.cholesky(S)
+            try:
+                np.linalg.cholesky(S)
+            except self.assertRaises(np.linalg.LinAlgError):
+                np.linalg.cholesky(S)
 
 
 if __name__ == '__main__':
