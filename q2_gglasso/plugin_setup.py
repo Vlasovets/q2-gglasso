@@ -12,6 +12,7 @@ import importlib
 import q2_gglasso as q2g
 
 from q2_types.feature_table import FeatureTable, Composition, Frequency
+from q2_types.feature_data import FeatureData, Taxonomy
 from qiime2.plugin import (Plugin, Float, Str, Bool, List, Int, Choices, Metadata)
 
 plugin = Plugin(
@@ -246,6 +247,8 @@ plugin.visualizers.register_function(
     function=q2g.summarize,
     inputs={
         "solution": q2g.GGLassoProblem,
+        "transformed_table": FeatureTable[Composition],
+        "taxonomy": FeatureData[Taxonomy],
     },
     name='Summary table',
     description='Summary table with sparsity level, lambda, mu path and rank of the solution',
@@ -254,7 +257,12 @@ plugin.visualizers.register_function(
             "p x p semi-positive definite covariance matrix."
         ),
     },
-    parameters={},
+    parameters={"width": Int, "height": Int, "label_size": Str},
+    parameter_descriptions={
+        'width': "The width you would like your plots to be, by default 1500.",
+        'height': 'The height you would like your plots to be, by default 1500',
+        'label_size': 'The font size of labels ticks in, by default "5pt".',
+    },
 )
 
 importlib.import_module('q2_gglasso._transformer')
