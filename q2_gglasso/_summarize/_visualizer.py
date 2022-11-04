@@ -70,12 +70,13 @@ def _get_labels(feature_data: Table, taxonomy: pd.Series):
     return labels_dict, labels_dict_reversed
 
 
-def _make_heatmap(df: pd.DataFrame(), labels_dict: dict = None, labels_dict_reversed: dict = None,  title: str = None,
-                  width: int = 1500, height: int = 1500, label_size: str = "5pt"):
+def _make_heatmap(df: pd.DataFrame(), labels_dict: dict = None, labels_dict_reversed: dict = None, title: str = None,
+                  width: int = 1500, height: int = 1500, label_size: str = "5pt", not_low_rank: bool = True):
     nlabels = df.shape[0]
     df = pd.DataFrame(df.stack(), columns=['covariance']).reset_index()
     df.columns = ["taxa_y", "taxa_x", "covariance"]
-    df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
+    if not_low_rank:
+        df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
 
     color_list, colors = _get_colors(df=df)
     mapper = LinearColorMapper(palette=colors, low=-1, high=1)
@@ -102,10 +103,11 @@ def _make_heatmap(df: pd.DataFrame(), labels_dict: dict = None, labels_dict_reve
 
     p.xaxis.ticker = list(range(0, nlabels))
     p.yaxis.ticker = list(range(0, nlabels))
-    p.xaxis.major_label_overrides = labels_dict
-    p.yaxis.major_label_overrides = labels_dict_reversed
-    p.xaxis.major_label_text_font_size = label_size  # turn off x-axis tick labels
-    p.yaxis.major_label_text_font_size = label_size  # turn off y-axis tick labels
+    if not_low_rank:
+        p.xaxis.major_label_overrides = labels_dict
+        p.yaxis.major_label_overrides = labels_dict_reversed
+    p.xaxis.major_label_text_font_size = label_size
+    p.yaxis.major_label_text_font_size = label_size
 
     hover = p.select(dict(type=HoverTool))
     hover.tooltips = [
@@ -153,26 +155,22 @@ def _solution_plot(solution: zarr.hierarchy.Group, transformed_table: Table, tax
 
     sample_covariance = pd.DataFrame(solution['covariance']).iloc[::-1]
     p1 = _make_heatmap(df=sample_covariance, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
-                       title="Sample covariance",
-                       width=width, height=height, label_size=label_size)
+                       title="Sample covariance", width=width, height=height, label_size=label_size)
     tab1 = Panel(child=row(p1), title="Sample covariance")
 
     precision = pd.DataFrame(solution['solution/precision_']).iloc[::-1]
     p3 = _make_heatmap(df=precision, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
-                       title="Negative inverse covariance",
-                       width=width, height=height, label_size=label_size)
+                       title="Negative inverse covariance", width=width, height=height, label_size=label_size)
     tab3 = Panel(child=row(p3), title="Negative inverse covariance")
 
     est_covariance = pd.DataFrame(np.linalg.pinv(precision.values), precision.columns, precision.index)
     p2 = _make_heatmap(df=est_covariance, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
-                       title="Estimated covariance",
-                       width=width, height=height, label_size=label_size)
+                       title="Estimated covariance", width=width, height=height, label_size=label_size)
     tab2 = Panel(child=row(p2), title="Estimated covariance")
 
     low_rank = pd.DataFrame(solution['solution/lowrank_']).iloc[::-1]
     p4 = _make_heatmap(df=low_rank, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
-                       title="Low-rank",
-                       width=width, height=height, label_size=label_size)
+                       title="Low-rank", not_low_rank=False, width=width, height=height, label_size=label_size)
     tab4 = Panel(child=row(p4), title="Low-rank")
 
     p5 = _make_stats(solution=solution)
