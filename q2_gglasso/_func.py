@@ -2,19 +2,23 @@ import numpy as np
 import pandas as pd
 
 from biom.table import Table
+
 from gglasso.problem import glasso_problem
 from gglasso.helper.basic_linalg import scale_array_by_diagonal
 from gglasso.helper.ext_admm_helper import create_group_array, construct_indexer, check_G
+
 from .utils import if_2d_array, if_model_selection, if_all_none, list_to_array
-from .utils import normalize, log_transform
+from .utils import normalize, log_transform, zero_imputation
 
 
-def transform_features( table: Table, transformation: str = "clr") -> pd.DataFrame:
+def transform_features(table: Table, transformation: str = "clr", pseudo_count: int = 1) -> pd.DataFrame:
     """
     Project compositional data to Euclidean space.
 
     Parameters
     ----------
+    pseudo_count: int, optional
+        Add pseudo count, only necessary for transformation = "clr".
     table: biom.Table
         A table with count microbiome data.
     transformation: str
@@ -27,24 +31,66 @@ def transform_features( table: Table, transformation: str = "clr") -> pd.DataFra
         Count data projected to Euclidean space.
 
     """
+    X = table.to_dataframe()
+    X = X.sparse.to_dense()
+    columns = X.columns
+
     if transformation == "clr":
-        X = table.to_dataframe()
+        X = zero_imputation(X, pseudo_count=pseudo_count)
         X = normalize(X)
         X = log_transform(X, transformation=transformation)
 
-        return pd.DataFrame(X)
+        return pd.DataFrame(X, columns=columns)
 
     elif transformation == "mclr":
-        X = table.to_dataframe()
         X = normalize(X)
         X = log_transform(X, transformation=transformation)
 
-        return pd.DataFrame(X)
+        return pd.DataFrame(X, columns=columns)
 
     else:
         raise ValueError(
             "Unknown transformation name, use clr and not %r" % transformation
         )
+
+
+def calculate_covariance(table: pd.DataFrame, method: str = "scaled", bias: bool = True) -> pd.DataFrame:
+    """
+    A function calculating covariance matrix.
+
+    Parameters
+    ----------
+    table: pd.Dataframe
+        A dataframe with transformed microbiome data.
+        See 'transform_features()' method for transformation options.
+    method: str
+        If 'unscaled', calculates covariance with "np.cov()", see Numpy documentation for details.
+        If 'scaled', scales covariance dataframe with the square root of its diagonal, i.e. X_ij/sqrt(d_i*d_j),
+        see (2.4) in https://fan.princeton.edu/papers/09/Covariance.pdf.
+    bias: boolean, optional
+        If 'True', normalize covariance estimation by the number of samples N,
+        if "False" - by N-1, see Numpy documentation for details.
+
+    Returns
+    -------
+    covariance matrix: pd.Dataframe
+        A squared positive semi-definite matrix required for solving Graphical Lasso problem.
+
+    """
+    S = np.cov(table.values, bias=bias)
+
+    if method == "unscaled":
+        print("Calculate {0} covariance matrices S".format(method))
+        result = S
+
+    elif method == "scaled":
+        print("Calculate {0} covariance (correlation) matrices S".format(method))
+        result = scale_array_by_diagonal(S)
+
+    else:
+        raise ValueError('Given covariance calculation method is not supported.')
+
+    return pd.DataFrame(result)
 
 
 def build_groups(tables: Table, check_groups: bool = True) -> np.ndarray:
@@ -109,45 +155,6 @@ def build_groups(tables: Table, check_groups: bool = True) -> np.ndarray:
 
     else:
         print("All datasets have exactly the same number of features.")
-
-
-def calculate_covariance(table: pd.DataFrame, method: str = "scaled", bias: bool = True) -> pd.DataFrame:
-    """
-    A function calculating covariance matrix.
-
-    Parameters
-    ----------
-    table: pd.Dataframe
-        A dataframe with transformed microbiome data.
-        See 'transform_features()' method for transformation options.
-    method: str
-        If 'unscaled', calculates covariance with "np.cov()", see Numpy documentation for details.
-        If 'scaled', scales covariance dataframe with the square root of its diagonal, i.e. X_ij/sqrt(d_i*d_j),
-        see (2.4) in https://fan.princeton.edu/papers/09/Covariance.pdf.
-    bias: boolean, optional
-        If 'True', normalize covariance estimation by the number of samples N,
-        if "False" - by N-1, see Numpy documentation for details.
-
-    Returns
-    -------
-    covariance matrix: pd.Dataframe
-        A squared positive semi-definite matrix required for solving Graphical Lasso problem.
-
-    """
-    S = np.cov(table.values, bias=bias)
-
-    if method == "unscaled":
-        print("Calculate {0} covariance matrices S".format(method))
-        result = S
-
-    elif method == "scaled":
-        print("Calculate {0} covariance (correlation) matrices S".format(method))
-        result = scale_array_by_diagonal(S)
-
-    else:
-        raise ValueError('Given covariance calculation method is not supported.')
-
-    return pd.DataFrame(result)
 
 
 def solve_SGL(S: np.ndarray, N: list, latent: bool = None, model_selection: bool = None,
