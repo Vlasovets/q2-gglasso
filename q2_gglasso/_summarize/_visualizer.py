@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from math import pi
+from biom.table import Table
 from itertools import chain
 from q2_gglasso.utils import flatten_array, pep_metric
 
@@ -48,12 +49,34 @@ def _get_colors(df: pd.DataFrame(), n_colors: int = 9):
     return color_list, colors
 
 
-def _make_heatmap(df: pd.DataFrame(), title: str = None, width: int = 1500, height: int = 1500):
-    df = pd.DataFrame(df.stack(), columns=['covariance']).reset_index()
-    df.columns = ["taxa_x", "taxa_y", "covariance"]
+def _get_labels(feature_data: Table, taxonomy: pd.Series):
+    taxa = pd.DataFrame(taxonomy.view(pd.Series))
 
-    labels = df.taxa_x.unique()
-    nlabels = len(labels)
+    df = feature_data.to_dataframe()
+    df = df.sparse.to_dense()
+    ASVs = df.columns.values
+
+    labels = []
+    for i in ASVs:
+        if i in taxa.index:
+            name = taxa.loc[i, "Taxon"]
+            labels.append(name)
+        else:
+            labels.append(i)
+
+    labels_dict = dict(zip(range(len(labels)), labels))
+    labels_dict_reversed = dict(zip(range(len(labels)), reversed(labels)))
+
+    return labels_dict, labels_dict_reversed
+
+
+def _make_heatmap(df: pd.DataFrame(), labels_dict: dict = None, labels_dict_reversed: dict = None,  title: str = None,
+                  width: int = 1500, height: int = 1500, label_size: str = "5pt"):
+    nlabels = df.shape[0]
+    df = pd.DataFrame(df.stack(), columns=['covariance']).reset_index()
+    df.columns = ["taxa_y", "taxa_x", "covariance"]
+    df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
+
     color_list, colors = _get_colors(df=df)
     mapper = LinearColorMapper(palette=colors, low=-1, high=1)
     color_bar = ColorBar(color_mapper=mapper, location=(0, 0))
@@ -66,16 +89,23 @@ def _make_heatmap(df: pd.DataFrame(), title: str = None, width: int = 1500, heig
     bokeh_tools = ["save, zoom_in, zoom_out, wheel_zoom, box_zoom, crosshair, reset, hover"]
 
     p = figure(plot_width=width, plot_height=height, x_range=(0, nlabels), y_range=(0, nlabels),
-               title=title, title_location='above', x_axis_location="above",
+               title=title, title_location='above', x_axis_location="below",
                tools=bokeh_tools, toolbar_location='left')
 
-    p.quad(top="top", bottom="bottom", left="left", right="right", line_color='white',
-           color="color_list", source=source)
+    p.quad(top="top", bottom="bottom", left="left", right="right", line_color='white', color="color_list",
+           source=source)
     p.xaxis.major_label_orientation = pi / 4
     p.yaxis.major_label_orientation = "horizontal"
-    p.title.text_font_size = '24pt'
+    p.title.text_font_size = "24pt"
     p.add_layout(color_bar, 'right')
     p.toolbar.autohide = True
+
+    p.xaxis.ticker = list(range(0, nlabels))
+    p.yaxis.ticker = list(range(0, nlabels))
+    p.xaxis.major_label_overrides = labels_dict
+    p.yaxis.major_label_overrides = labels_dict_reversed
+    p.xaxis.major_label_text_font_size = label_size  # turn off x-axis tick labels
+    p.yaxis.major_label_text_font_size = label_size  # turn off y-axis tick labels
 
     hover = p.select(dict(type=HoverTool))
     hover.tooltips = [
@@ -117,30 +147,46 @@ def _make_stats(solution: zarr.hierarchy.Group):
     return l1
 
 
-def _solution_plot(solution: zarr.hierarchy.Group):
-    covariance = pd.DataFrame(solution['covariance']).iloc[::-1]
-    p1 = _make_heatmap(df=covariance, title="Covariance")
-    tab1 = Panel(child=row(p1), title="Covariance")
+def _solution_plot(solution: zarr.hierarchy.Group, transformed_table: Table, taxonomy: pd.Series,
+                   width: int, height: int, label_size: str):
+    labels_dict, labels_dict_reversed = _get_labels(feature_data=transformed_table, taxonomy=taxonomy)
+
+    sample_covariance = pd.DataFrame(solution['covariance']).iloc[::-1]
+    p1 = _make_heatmap(df=sample_covariance, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
+                       title="Sample covariance",
+                       width=width, height=height, label_size=label_size)
+    tab1 = Panel(child=row(p1), title="Sample covariance")
 
     precision = pd.DataFrame(solution['solution/precision_']).iloc[::-1]
-    p2 = _make_heatmap(df=precision, title="Precision")
-    tab2 = Panel(child=row(p2), title="Precision")
+    p3 = _make_heatmap(df=precision, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
+                       title="Negative inverse covariance",
+                       width=width, height=height, label_size=label_size)
+    tab3 = Panel(child=row(p3), title="Negative inverse covariance")
+
+    est_covariance = pd.DataFrame(np.linalg.pinv(precision.values), precision.columns, precision.index)
+    p2 = _make_heatmap(df=est_covariance, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
+                       title="Estimated covariance",
+                       width=width, height=height, label_size=label_size)
+    tab2 = Panel(child=row(p2), title="Estimated covariance")
 
     low_rank = pd.DataFrame(solution['solution/lowrank_']).iloc[::-1]
-    p3 = _make_heatmap(df=low_rank, title="Low-rank")
-    tab3 = Panel(child=row(p3), title="Low-rank")
+    p4 = _make_heatmap(df=low_rank, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
+                       title="Low-rank",
+                       width=width, height=height, label_size=label_size)
+    tab4 = Panel(child=row(p4), title="Low-rank")
 
-    p4 = _make_stats(solution=solution)
-    tab4 = Panel(child=p4, title="Statistics")
+    p5 = _make_stats(solution=solution)
+    tab5 = Panel(child=p5, title="Statistics")
 
-    tabs = [tab1, tab2, tab3, tab4]
+    tabs = [tab1, tab2, tab3, tab4, tab5]
     p = Tabs(tabs=tabs)
     script, div = components(p, INLINE)
 
     return script, div
 
 
-def summarize(output_dir: str, solution: zarr.hierarchy.Group):
+def summarize(output_dir: str, solution: zarr.hierarchy.Group, transformed_table: Table, taxonomy: pd.Series,
+              width: int = 1500, height: int = 1500, label_size: str = "5pt"):
     J_ENV = jinja2.Environment(
         loader=jinja2.PackageLoader('q2_gglasso._summarize', 'assets')
     )
@@ -148,7 +194,8 @@ def summarize(output_dir: str, solution: zarr.hierarchy.Group):
     template = J_ENV.get_template('index.html')
     print(template.render())
 
-    script, div = _solution_plot(solution=solution)
+    script, div = _solution_plot(solution=solution, transformed_table=transformed_table, taxonomy=taxonomy,
+                                 width=width, height=height, label_size=label_size)
 
     output_from_parsed_template = template.render(plot_script=script, plot_div=div)
 
