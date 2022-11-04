@@ -16,7 +16,7 @@ from bokeh.models import ColumnDataSource, TableColumn, DataTable
 from bokeh.embed import components
 from bokeh.resources import INLINE
 from bokeh.palettes import RdBu
-from bokeh.layouts import row
+from bokeh.layouts import row, column, gridplot
 
 
 def _get_bounds(nlabels: int):
@@ -119,7 +119,7 @@ def _make_heatmap(df: pd.DataFrame(), labels_dict: dict = None, labels_dict_reve
     return p
 
 
-def _make_stats(solution: zarr.hierarchy.Group):
+def _make_stats(solution: zarr.hierarchy.Group, labels_dict: dict = None):
     sparsity = flatten_array(solution['modelselect_stats/SP'])
     lambda_path = flatten_array(solution['modelselect_stats/LAMBDA'])
     mu_path = flatten_array(solution['modelselect_stats/MU'])
@@ -144,7 +144,15 @@ def _make_stats(solution: zarr.hierarchy.Group):
     columns_best = [TableColumn(field=col_ix, title=col_ix) for col_ix in df_best.columns]
     best_stats = DataTable(columns=columns_best, source=source_best)
 
-    l1 = row([model_selection_stats, best_stats], sizing_mode='fixed')
+    df = pd.DataFrame(precision.stack(), columns=['covariance']).reset_index()
+    df.columns = ["taxa_y", "taxa_x", "covariance"]
+    df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
+    source_taxa = ColumnDataSource(df)
+    columns_taxa = [TableColumn(field=col_ix, title=col_ix) for col_ix in df.columns]
+    taxa = DataTable(columns=columns_taxa, source=source_taxa)
+
+    stats_column = column([model_selection_stats, best_stats])
+    l1 = row([stats_column, taxa], sizing_mode='fixed')
 
     return l1
 
@@ -173,7 +181,7 @@ def _solution_plot(solution: zarr.hierarchy.Group, transformed_table: Table, tax
                        title="Low-rank", not_low_rank=False, width=width, height=height, label_size=label_size)
     tab4 = Panel(child=row(p4), title="Low-rank")
 
-    p5 = _make_stats(solution=solution)
+    p5 = _make_stats(solution=solution, labels_dict=labels_dict)
     tab5 = Panel(child=p5, title="Statistics")
 
     tabs = [tab1, tab2, tab3, tab4, tab5]
