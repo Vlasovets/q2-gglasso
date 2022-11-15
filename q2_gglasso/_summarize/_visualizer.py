@@ -16,7 +16,7 @@ from bokeh.models import ColumnDataSource, TableColumn, DataTable
 from bokeh.embed import components
 from bokeh.resources import INLINE
 from bokeh.palettes import RdBu
-from bokeh.layouts import row, column, gridplot
+from bokeh.layouts import row, column
 
 
 def _get_bounds(nlabels: int):
@@ -198,7 +198,6 @@ def summarize(output_dir: str, solution: zarr.hierarchy.Group, transformed_table
     )
 
     template = J_ENV.get_template('index.html')
-    print(template.render())
 
     script, div = _solution_plot(solution=solution, transformed_table=transformed_table, taxonomy=taxonomy,
                                  width=width, height=height, label_size=label_size)
