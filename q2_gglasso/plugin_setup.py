@@ -10,10 +10,11 @@ print(sys.path)
 
 import importlib
 import q2_gglasso as q2g
+import qiime2
 
 from q2_types.feature_table import FeatureTable, Composition, Frequency
 from q2_types.feature_data import FeatureData, Taxonomy
-from qiime2.plugin import (Plugin, Float, Str, Bool, List, Int, Choices, Metadata)
+from qiime2.plugin import Plugin, Float, Str, Bool, List, Int, Choices, Metadata
 
 plugin = Plugin(
     name="gglasso",
@@ -235,11 +236,10 @@ plugin.visualizers.register_function(
             "Solution artifact of Graphical Lasso problem with latent variables."
         ),
     },
-    parameters={'sample_metadata': Metadata, 'corr_bound': Float, 'alpha': Float},
+    parameters={'sample_metadata': Metadata, "n_components": Int},
     parameter_descriptions={
         'sample_metadata': "Metadata of the study.",
-        'corr_bound': 'Spearman correlation threshold.',
-        'alpha': 'Significance level for the test statistics.',
+        'n_components': "Number of PCs to be printed"
     },
 )
 

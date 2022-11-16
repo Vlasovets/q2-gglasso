@@ -24,12 +24,12 @@ from q2_gglasso._type import (
     TensorData
 )
 
-from._heatmap import (
+from ._heatmap import (
     heatmap,
     heatmap_choices
 )
 
-from._pca import (
+from ._pca import (
     pca
 )
 
@@ -37,7 +37,7 @@ from ._summarize import (
     summarize
 )
 
-from .utils import(
+from .utils import (
     flatten_array,
     if_none_to_list,
     if_2d_array,
@@ -48,9 +48,7 @@ from .utils import(
     calculate_seq_depth,
 )
 
-__all__ = ['heatmap', 'heatmap_choices']
 from gglasso.problem import glasso_problem
-
-
 from . import _version
+
 __version__ = _version.get_versions()['version']

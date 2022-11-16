@@ -1,55 +1,115 @@
+import zarr
+import itertools
+import numpy as np
+import pandas as pd
 import qiime2
 import os
-import pkg_resources
-import q2templates
-import matplotlib.pyplot as plt
+import jinja2
+from bokeh.embed import components
+from bokeh.resources import INLINE
+from bokeh.layouts import gridplot
+from biom.table import Table
+from bokeh.plotting import figure
 import zarr
 from biom.table import Table
-from q2_gglasso.utils import correlated_PC
+from q2_gglasso.utils import PCA
+from bokeh.models import ColumnDataSource
+from bokeh.models import LinearColorMapper, ColorBar
 
-TEMPLATES = pkg_resources.resource_filename('q2_gglasso._pca', 'assets')
 
 
-def pca(output_dir, table: Table, solution: zarr.hierarchy.Group, corr_bound: float = 0.7, alpha: float = 0.05,
-        sample_metadata: qiime2.Metadata = None) -> None:
+# solution = zarr.load("data/atacama_low/problem.zip")
+# # # mapping = pd.read_csv("data/atacama-sample-metadata.tsv", sep='\t', index_col=0)
+# # # df = pd.read_csv(str("data/atacama-table_clr_small/small_clr_feature-table.tsv"), index_col=0, sep='\t')
+#
+# from qiime2 import Artifact, sdk
+#
+# # # # # taxonomy = Artifact.load('data/classification.qza')
+# table = Artifact.load('data/atacama-table_clr.qza')
+# table = table.view(Table)
+#
+# sample_metadata = qiime2.Metadata.load("data/atacama-sample-metadata.tsv")
+
+def add_color_bar(color_map: LinearColorMapper, title: str = None):
+    color_bar_plot = figure(title=title, title_location="right",
+                            height=50, width=50, toolbar_location=None, min_border=0,
+                            outline_line_color=None)
+
+    bar = ColorBar(color_mapper=color_map, location=(1, 1))
+
+    color_bar_plot.add_layout(bar, 'right')
+    color_bar_plot.title.align = "center"
+    color_bar_plot.title.text_font_size = '12pt'
+
+    return color_bar_plot
+
+
+def make_plots(df: pd.DataFrame, col_name: str = None, n_components: int = None, proj=np.ndarray, eigv=np.ndarray):
+    t = np.arange(n_components)
+    comb = list(itertools.combinations(t, 2))
+
+    bokeh_tools = ["save, zoom_in, zoom_out, wheel_zoom, box_zoom, reset, hover"]
+
+    grid = np.empty([n_components, n_components], dtype=object)
+
+    for i, j in comb:
+        p = figure(tools=bokeh_tools, toolbar_location='above')
+
+        source = ColumnDataSource({'x': proj[:, i],
+                                   'y': proj[:, j],
+                                   'col': df[col_name].values})
+
+        exp_cmap = LinearColorMapper(palette="Viridis256",
+                                     low=min(df[col_name].values),
+                                     high=max(df[col_name].values))
+
+        p.circle("x", "y", size=5, source=source, line_color=None,
+                 fill_color={"field": "col", "transform": exp_cmap})
+
+        p.xaxis.axis_label = 'PC{0} with eigenvalue {1}'.format(i + 1, eigv[i])
+        p.yaxis.axis_label = 'PC{0} with eigenvalue {1}'.format(j + 1, eigv[j])
+
+        grid[i][j] = p
+
+        grid[-1][-1] = add_color_bar(color_map=exp_cmap, title=col_name)
+
+    x = np.transpose(grid)
+    x = x.flatten()
+    pair_plot = gridplot(children=list(x), ncols=int(n_components), width=250, height=250)
+
+    return pair_plot
+
+
+def pca(output_dir: str, table: Table, solution: zarr.hierarchy.Group, n_components: int,
+        sample_metadata: qiime2.Metadata = None):
+    J_ENV = jinja2.Environment(
+        loader=jinja2.PackageLoader('q2_gglasso._pca', 'assets')
+    )
+
+    template = J_ENV.get_template('index.html')
 
     df = table.to_dataframe()
+    L = solution['solution/lowrank_']
 
     numeric_md_cols = sample_metadata.filter_columns(column_type='numeric')
     md = numeric_md_cols.to_dataframe()
     md = md.reindex(df.index)
 
-    L = solution['solution/lowrank_']
+    # TO DO: Add widget for columns selection
 
-    proj_dict = correlated_PC(data=df, metadata=md, low_rank=L, corr_bound=corr_bound, alpha=alpha)
+    for col in md.columns:
+        plot_df = df.join(md[col])
+        plot_df = plot_df.dropna()
 
-    fig, ax = plt.subplots(len(proj_dict.keys()), 1, figsize=(5, 50))
+        proj, loadings, eigv = PCA(plot_df.iloc[:, :-1], L, inverse=True)
+        r = np.linalg.matrix_rank(L)
 
-    i = 0
-    for col, proj in proj_dict.items():
-        for key in proj.keys():
+        assert n_components < r, f"n_components is greater than the rank, got: {n_components}"
 
-            plot_df = proj['data']
-            textstr = '\n'.join((r'$\rho=%.2f$' % (proj['rho'],),
-                                 r'$\mathrm{p_{value}}=%.2f$' % (proj['p_value'],),
-                                 r'$eig_{value}=%.3f$' % (proj['eigenvalue'],)))
+        pca_plot = make_plots(df=plot_df, col_name=col, n_components=n_components, proj=proj, eigv=eigv)
 
-            if "PC" in key:
-                im = ax[i].scatter(proj[key], plot_df[col], c=plot_df['sequencing depth'], cmap=plt.cm.Blues, vmin=0)
-                ax[i].set_xlabel(key)
-                ax[i].set_ylabel(col)
-                cbar = plt.colorbar(im, ax=ax[i])
-                cbar.set_label("Sampling depth")
+        script, div = components(pca_plot, INLINE)
+        output_from_parsed_template = template.render(plot_script=script, plot_div=div)
 
-                props = dict(boxstyle='round', facecolor='wheat', alpha=0.2)
-                ax[i].text(0.05, 0.95, textstr, transform=ax[i].transAxes, fontsize=7, verticalalignment='top',
-                           bbox=props)
-
-        i += 1
-
-    for ext in ['png', 'svg']:
-        img_fp = os.path.join(output_dir, 'q2-gglasso-pca.{0}'.format(ext))
-        plt.savefig(img_fp)
-
-    index_fp = os.path.join(TEMPLATES, 'index.html')
-    q2templates.render(index_fp, output_dir, context={})
+        with open(os.path.join(output_dir, 'index.html'), 'w') as fh:
+            fh.write(output_from_parsed_template)
