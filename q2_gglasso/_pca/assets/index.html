@@ -1,22 +1,15 @@
-{% extends 'base.html' %}
-
-{% block content %}
-
-<h1>
-  PCA
-</h1>
-
-<div class='row'>
-  <div class='col-md-12'>
-    <a href='./q2-gglasso-pca.svg' target="_blank" rel="noopener noreferrer" class='btn btn-default'>
-      Download SVG
-    </a>
-  </div>
-</div>
-<div class='row'>
-  <div class='col-md-12'>
-    <img src='./q2-gglasso-pca.png'>
-  </div>
-</div>
-
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Bokeh Plot</title>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.3.min.js"></script>
+    <script type="text/javascript">
+        Bokeh.set_log_level("info");
+    </script>
+  </head>
+<body>
+{{ plot_div|safe }} {{ plot_script|safe }}
+</body>
+</html>
