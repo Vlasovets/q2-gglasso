@@ -159,11 +159,27 @@ plugin.methods.register_function(
         "n_samples": (
             "List of number of samples for each instance k=1,..,K."
         ),
-        "lambda1": (
+        "lambda1_min": (
             "List of regularization hyperparameters lambda1."
             "Note, sort lambda list in descending order."
         ),
-        "lambda2": (
+        "lambda2_min": (
+            "List of regularization hyperparameters lambda2 for MGL."
+            "Note, sort lambda list in descending order."
+        ),
+        "lambda1_max": (
+            "List of regularization hyperparameters lambda1."
+            "Note, sort lambda list in descending order."
+        ),
+        "lambda2_max": (
+            "List of regularization hyperparameters lambda2 for MGL."
+            "Note, sort lambda list in descending order."
+        ),
+        "n_lambda1": (
+            "List of regularization hyperparameters lambda1."
+            "Note, sort lambda list in descending order."
+        ),
+        "n_lambda2": (
             "List of regularization hyperparameters lambda2 for MGL."
             "Note, sort lambda list in descending order."
         ),

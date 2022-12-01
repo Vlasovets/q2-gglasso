@@ -25,8 +25,12 @@ from q2_types.feature_data import FeatureData
 
 glasso_parameters = {
     "n_samples": List[Int],
-    "lambda1": List[Float],
-    "lambda2": List[Float],
+    "lambda1_min": List[Float],
+    "lambda1_max": List[Float],
+    "lambda2_min": List[Float],
+    "lambda2_max": List[Float],
+    "n_lambda1": Int,
+    "n_lambda2": Int,
     "lambda1_mask": List[Float],
     "latent": Bool,
     "non_conforming": Bool,

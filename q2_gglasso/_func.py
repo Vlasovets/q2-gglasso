@@ -308,13 +308,21 @@ def solve_non_conforming(S: np.ndarray, N: list, G: list, latent: bool = None, m
 
 
 def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None, non_conforming: bool = None,
-                  lambda1: list = None, lambda2: list = None, mu1: list = None, lambda1_mask: list = None,
+                  lambda1_min: float = None, lambda1_max: float = None, n_lambda1: int = 1,
+                  lambda2_min: float = None, lambda2_max: float = None, n_lambda2: int = 1,
+                  mu1: list = None, lambda1_mask: list = None,
                   group_array: list = None, reg: str = 'GGL') -> glasso_problem:
     """
     Solve Graphical Lasso problem.
 
     Parameters
     ----------
+    n_lambda2
+    lambda2_max
+    lambda2_min
+    n_lambda1
+    lambda1_max
+    lambda1_min
     covariance_matrix: list
         Array of K covariance matrices.
     n_samples: list
@@ -354,7 +362,18 @@ def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None,
     n_samples = list_to_array(n_samples)
 
     # set default hyperparameters if not provided by the user
-    lambda1, lambda2, mu1 = if_all_none(lambda1, lambda2, mu1)
+    if lambda1_min is None or lambda1_max is None:
+        lambda1 = np.logspace(0, -3, 10)
+    else:
+        lambda1 = np.linspace(lambda1_min, lambda1_max, n_lambda1)
+    if lambda2_min is None or lambda2_max is None:
+        lambda2 = np.logspace(-1, -4, 5)
+    else:
+        lambda2 = np.linspace(lambda2_min, lambda2_max, n_lambda2)
+    if mu1 is None:
+        mu1 = np.logspace(2, -1, 10)
+
+    # lambda1, lambda2, mu1 = if_all_none(lambda1, lambda2, mu1)
 
     h_params = if_model_selection(lambda1, lambda2, mu1)
     model_selection = h_params["model_selection"]
