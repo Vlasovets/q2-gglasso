@@ -7,7 +7,7 @@ from gglasso.problem import glasso_problem
 from gglasso.helper.basic_linalg import scale_array_by_diagonal
 from gglasso.helper.ext_admm_helper import create_group_array, construct_indexer, check_G
 
-from .utils import if_2d_array, if_model_selection, if_all_none, list_to_array
+from .utils import if_2d_array, get_hyperparameters, list_to_array
 from .utils import normalize, log_transform, zero_imputation
 
 
@@ -361,21 +361,9 @@ def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None,
 
     n_samples = list_to_array(n_samples)
 
-    # set default hyperparameters if not provided by the user
-    if lambda1_min is None or lambda1_max is None:
-        lambda1 = np.logspace(0, -3, 10)
-    else:
-        lambda1 = np.linspace(lambda1_min, lambda1_max, n_lambda1)
-    if lambda2_min is None or lambda2_max is None:
-        lambda2 = np.logspace(-1, -4, 5)
-    else:
-        lambda2 = np.linspace(lambda2_min, lambda2_max, n_lambda2)
-    if mu1 is None:
-        mu1 = np.logspace(2, -1, 10)
-
-    # lambda1, lambda2, mu1 = if_all_none(lambda1, lambda2, mu1)
-
-    h_params = if_model_selection(lambda1, lambda2, mu1)
+    h_params = get_hyperparameters(lambda1_min=lambda1_min, lambda1_max=lambda1_max, n_lambda1=n_lambda1,
+                                   lambda2_min=lambda2_min, lambda2_max=lambda2_max, n_lambda2=n_lambda2,
+                                   mu1=mu1)
     model_selection = h_params["model_selection"]
     lambda1, lambda2, mu1 = h_params["lambda1"], h_params["lambda2"], h_params["mu1"]
 

@@ -39,13 +39,13 @@ from ._summarize import (
 
 from .utils import (
     flatten_array,
-    if_none_to_list,
     if_2d_array,
     remove_biom_header,
     to_zarr,
     PCA,
     correlated_PC,
     calculate_seq_depth,
+    get_hyperparameters
 )
 
 from gglasso.problem import glasso_problem
