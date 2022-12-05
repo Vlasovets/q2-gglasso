@@ -19,6 +19,11 @@ def list_to_array(x=list):
     return x
 
 
+def numeric_to_list(x):
+    if (isinstance(x, (int, float))) or (x is None):
+        x = [x]
+    return x
+
 def if_equal_dict(a, b):
     x = True
     for key in a.keys():
@@ -60,12 +65,13 @@ def if_all_none(lambda1, lambda2, mu1):
 
 
 def if_model_selection(lambda1, lambda2, mu1):
+    lambda1 = numeric_to_list(lambda1)
+    lambda2 = numeric_to_list(lambda2)
+    mu1 = numeric_to_list(mu1)
+
     model_selection = True
-    if all(isinstance(x, (float, int)) for x in [lambda1, lambda2, mu1]):
+    if (len(lambda1) == 1) and len(lambda2) == 1 and (len(mu1) == 1):
         model_selection = False
-    else:
-        if (len(lambda1) == 1) and len(lambda2) == 1 and (len(mu1) == 1):
-            model_selection = False
 
     return model_selection
 
@@ -83,6 +89,10 @@ def get_lambda_range(la_min, la_max, n):
 
 
 def set_default_hyperpameters(model_selection: bool, lambda1: list, lambda2: list, mu1: list):
+    lambda1 = numeric_to_list(lambda1)
+    lambda2 = numeric_to_list(lambda2)
+    mu1 = numeric_to_list(mu1)
+
     if model_selection:
         if None in lambda1:
             lambda1 = np.logspace(0, -3, 10)
@@ -104,14 +114,15 @@ def set_default_hyperpameters(model_selection: bool, lambda1: list, lambda2: lis
 def get_hyperparameters(lambda1_min, lambda1_max, lambda2_min, lambda2_max, mu1, n_lambda1: int = 1, n_lambda2: int = 1):
     lambda1 = get_lambda_range(la_min=lambda1_min, la_max=lambda1_max, n=n_lambda1)
     lambda2 = get_lambda_range(la_min=lambda2_min, la_max=lambda2_max, n=n_lambda2)
-    mu1 = [mu1]
     model_selection = if_model_selection(lambda1, lambda2, mu1)
 
     lambda1, lambda2, mu1 = set_default_hyperpameters(model_selection=model_selection,
                                                       lambda1=lambda1, lambda2=lambda2, mu1=mu1)
 
     lambda1, lambda2, mu1 = if_all_none(lambda1, lambda2, mu1)
-    model_selection = if_model_selection(lambda1, lambda2, mu1)
+
+    if all(isinstance(x, (float, int)) for x in [lambda1, lambda2, mu1]):
+        model_selection = False
 
     h_params = {"model_selection": model_selection, "lambda1": lambda1, "lambda2": lambda2, "mu1": mu1}
 
