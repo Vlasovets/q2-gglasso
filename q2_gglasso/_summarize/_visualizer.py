@@ -146,6 +146,7 @@ def _make_stats(solution: zarr.hierarchy.Group, labels_dict: dict = None):
 
     df = pd.DataFrame(precision.stack(), columns=['covariance']).reset_index()
     df.columns = ["taxa_y", "taxa_x", "covariance"]
+    df = df[df['taxa_x'] != df['taxa_y']]  # remove diagonal elements
     df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
     source_taxa = ColumnDataSource(df)
     columns_taxa = [TableColumn(field=col_ix, title=col_ix) for col_ix in df.columns]
@@ -171,7 +172,7 @@ def _solution_plot(solution: zarr.hierarchy.Group, transformed_table: Table, tax
                        title="Negative inverse covariance", width=width, height=height, label_size=label_size)
     tab3 = Panel(child=row(p3), title="Negative inverse covariance")
 
-    est_covariance = pd.DataFrame(np.linalg.pinv(precision.values), precision.columns, precision.index)
+    est_covariance = pd.DataFrame(-1 * np.linalg.pinv(precision.values), precision.columns, precision.index)
     p2 = _make_heatmap(df=est_covariance, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
                        title="Estimated covariance", width=width, height=height, label_size=label_size)
     tab2 = Panel(child=row(p2), title="Estimated covariance")
