@@ -140,21 +140,22 @@ def check_lambda_path(P):
     lambda2_max = sol_par["lambda2_range"].max()
 
     boundary_lambdas = False
+    hint = dict()
     if lambda1_opt == lambda1_min:
         boundary_lambdas = True
-        print("Try smaller lambda1")
+        warnings.warn("lambda is on the edge of the interval, try SMALLER lambda1")
 
     elif lambda1_opt == lambda1_max:
         boundary_lambdas = True
-        print("Try bigger lambda1")
+        warnings.warn("lambda is on the edge of the interval, try BIGGER lambda1")
 
     elif lambda2_opt == lambda2_min:
         boundary_lambdas = True
-        print("Try smaller lambda2")
+        warnings.warn("lambda is on the edge of the interval, try SMALLER lambda2")
 
     elif lambda2_opt == lambda2_max:
         boundary_lambdas = True
-        print("Try bigger lambda2")
+        warnings.warn("lambda is on the edge of the interval, try BIGGER lambda2")
 
     return boundary_lambdas
 

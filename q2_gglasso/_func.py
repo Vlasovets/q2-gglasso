@@ -251,7 +251,7 @@ def solve_MGL(S: np.ndarray, N: list, reg: str, latent: bool = None, model_selec
 
         boundary_lambdas = check_lambda_path(P)
         if boundary_lambdas:
-            warnings.warn("lambda is on the edge of the interval, the solution might have not reached global minimum!")
+            warnings.warn("The solution might have not reached global minimum!")
     else:
         print("\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(lambda1, lambda2, mu1))
         P = glasso_problem(S, N=N, reg_params={'lambda1': lambda1, 'lambda2': lambda2, "mu1": mu1},
