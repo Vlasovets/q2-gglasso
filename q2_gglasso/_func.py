@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import warnings
 
 from biom.table import Table
 
@@ -8,7 +9,7 @@ from gglasso.helper.basic_linalg import scale_array_by_diagonal
 from gglasso.helper.ext_admm_helper import create_group_array, construct_indexer, check_G
 
 from .utils import if_2d_array, get_hyperparameters, list_to_array
-from .utils import normalize, log_transform, zero_imputation
+from .utils import normalize, log_transform, zero_imputation, check_lambda_path
 
 
 def transform_features(table: Table, transformation: str = "clr", pseudo_count: int = 1) -> pd.DataFrame:
@@ -194,7 +195,10 @@ def solve_SGL(S: np.ndarray, N: list, latent: bool = None, model_selection: bool
         modelselect_params = {'lambda1_range': lambda1, 'mu1_range': mu1, 'lambda1_mask': lambda1_mask}
         P = glasso_problem(S, N=N, latent=latent)
         P.model_selection(modelselect_params=modelselect_params)
-        print(P.__dict__["modelselect_params"])
+
+        boundary_lambdas = check_lambda_path(P)
+        if boundary_lambdas:
+            warnings.warn("lambda is on the edge of the interval, the solution might have not reached global minimum!")
     else:
         print("\tWITH LAMBDA={0} and MU={1}".format(lambda1, mu1))
         P = glasso_problem(S, N=N, reg_params={'lambda1': lambda1, "mu1": mu1, 'lambda1_mask': lambda1_mask},
@@ -244,7 +248,10 @@ def solve_MGL(S: np.ndarray, N: list, reg: str, latent: bool = None, model_selec
         modelselect_params = {'lambda1_range': lambda1, 'lambda2_range': lambda2, 'mu1_range': mu1}
         P = glasso_problem(S, N=N, latent=latent, reg=reg)
         P.model_selection(modelselect_params=modelselect_params)
-        print(P.__dict__["modelselect_params"])
+
+        boundary_lambdas = check_lambda_path(P)
+        if boundary_lambdas:
+            warnings.warn("lambda is on the edge of the interval, the solution might have not reached global minimum!")
     else:
         print("\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(lambda1, lambda2, mu1))
         P = glasso_problem(S, N=N, reg_params={'lambda1': lambda1, 'lambda2': lambda2, "mu1": mu1},
@@ -296,8 +303,10 @@ def solve_non_conforming(S: np.ndarray, N: list, G: list, latent: bool = None, m
         modelselect_params = {'lambda1_range': lambda1, 'lambda2_range': lambda2, 'mu1_range': mu1}
         P = glasso_problem(S, N=N, G=G, latent=latent, reg='GGL')
         P.model_selection(modelselect_params=modelselect_params)
-        print(P.__dict__["modelselect_params"])
 
+        boundary_lambdas = check_lambda_path(P)
+        if boundary_lambdas:
+            warnings.warn("lambda is on the edge of the interval, the solution might have not reached global minimum!")
     else:
         print("\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(lambda1, lambda2, mu1))
         P = glasso_problem(S, N=N, G=G, reg_params={'lambda1': lambda1, 'lambda2': lambda2, "mu1": mu1},
