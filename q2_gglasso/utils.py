@@ -129,6 +129,36 @@ def get_hyperparameters(lambda1_min, lambda1_max, lambda2_min, lambda2_max, mu1,
     return h_params
 
 
+def check_lambda_path(P):
+    lambda1_opt = P.modelselect_stats["BEST"]["lambda1"]
+    lambda2_opt = P.modelselect_stats["BEST"]["lambda2"]
+
+    sol_par = P.__dict__["modelselect_params"]
+    lambda1_min = sol_par["lambda1_range"].min()
+    lambda1_max = sol_par["lambda1_range"].max()
+    lambda2_min = sol_par["lambda2_range"].min()
+    lambda2_max = sol_par["lambda2_range"].max()
+
+    boundary_lambdas = False
+    if lambda1_opt == lambda1_min:
+        boundary_lambdas = True
+        print("Try smaller lambda1")
+
+    elif lambda1_opt == lambda1_max:
+        boundary_lambdas = True
+        print("Try bigger lambda1")
+
+    elif lambda2_opt == lambda2_min:
+        boundary_lambdas = True
+        print("Try smaller lambda2")
+
+    elif lambda2_opt == lambda2_max:
+        boundary_lambdas = True
+        print("Try bigger lambda2")
+
+    return boundary_lambdas
+
+
 def normalize(X):
     """
     transforms to the simplex
