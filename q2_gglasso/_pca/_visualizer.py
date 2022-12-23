@@ -16,6 +16,8 @@ from q2_gglasso.utils import PCA
 from bokeh.models import ColumnDataSource
 from bokeh.models import LinearColorMapper, ColorBar
 
+from decimal import Decimal
+
 
 
 # solution = zarr.load("data/atacama_low/problem.zip")
@@ -51,6 +53,8 @@ def make_plots(df: pd.DataFrame, col_name: str = None, n_components: int = None,
     bokeh_tools = ["save, zoom_in, zoom_out, wheel_zoom, box_zoom, reset, hover"]
 
     grid = np.empty([n_components, n_components], dtype=object)
+    eigv_sum = np.sum(eigv)
+    var_exp = [(value / eigv_sum) for value in sorted(eigv, reverse=True)]
 
     for i, j in comb:
         p = figure(tools=bokeh_tools, toolbar_location='above')
@@ -66,8 +70,9 @@ def make_plots(df: pd.DataFrame, col_name: str = None, n_components: int = None,
         p.circle("x", "y", size=5, source=source, line_color=None,
                  fill_color={"field": "col", "transform": exp_cmap})
 
-        p.xaxis.axis_label = 'PC{0} with eigenvalue {1}'.format(i + 1, eigv[i])
-        p.yaxis.axis_label = 'PC{0} with eigenvalue {1}'.format(j + 1, eigv[j])
+        p.xaxis.axis_label = 'PC{0} ({1}%)'.format(i + 1, str(100 * var_exp[i])[:4])
+        p.yaxis.axis_label = 'PC{0} ({1}%)'.format(j + 1, str(100 * var_exp[j])[:4])
+
 
         grid[i][j] = p
 
