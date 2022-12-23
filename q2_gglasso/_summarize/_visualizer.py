@@ -172,10 +172,11 @@ def _solution_plot(solution: zarr.hierarchy.Group, transformed_table: Table, tax
                        title="Negative inverse covariance", width=width, height=height, label_size=label_size)
     tab3 = Panel(child=row(p3), title="Negative inverse covariance")
 
-    est_covariance = pd.DataFrame(-1 * np.linalg.pinv(precision.values), precision.columns, precision.index)
+    #est_covariance = pd.DataFrame(np.linalg.pinv(precision.values), precision.columns, precision.index)
+    est_covariance = pd.DataFrame(-1*(precision.values), precision.columns, precision.index)
     p2 = _make_heatmap(df=est_covariance, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
-                       title="Estimated covariance", width=width, height=height, label_size=label_size)
-    tab2 = Panel(child=row(p2), title="Estimated covariance")
+                       title="Estimated inverse covariance", width=width, height=height, label_size=label_size)
+    tab2 = Panel(child=row(p2), title="Estimated inverse covariance")
 
     low_rank = pd.DataFrame(solution['solution/lowrank_']).iloc[::-1]
     p4 = _make_heatmap(df=low_rank, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
