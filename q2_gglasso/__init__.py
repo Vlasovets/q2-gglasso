@@ -24,11 +24,6 @@ from q2_gglasso._type import (
     TensorData
 )
 
-from ._heatmap import (
-    heatmap,
-    heatmap_choices
-)
-
 from ._pca import (
     pca
 )

@@ -16,13 +16,6 @@ from qiime2.plugin import (
     Numeric,
 )
 
-from q2_types.feature_table import FeatureTable, Composition
-
-
-from qiime2.plugin import SemanticType
-from q2_types.feature_data import FeatureData
-
-
 glasso_parameters = {
     "n_samples": List[Int],
     "lambda1_min": List[Float],

@@ -14,7 +14,7 @@ import qiime2
 
 from q2_types.feature_table import FeatureTable, Composition, Frequency
 from q2_types.feature_data import FeatureData, Taxonomy
-from qiime2.plugin import Plugin, Float, Str, Bool, List, Int, Choices, Metadata
+from qiime2.plugin import Plugin, Float, Str, Bool, List, Int, Metadata
 
 plugin = Plugin(
     name="gglasso",
@@ -56,7 +56,6 @@ plugin.register_semantic_type_to_format(
     q2g.TensorData, artifact_format=q2g.TensorDataDirectoryFormat
 )
 
-# features_clr
 plugin.methods.register_function(
     function=q2g.transform_features,
     inputs={"table": FeatureTable[Composition | Frequency]},
@@ -214,25 +213,6 @@ plugin.methods.register_function(
         "Method for doing model selection for K single Graphical Lasso problems."
         "Use grid search and AIC/eBIC."
     ),
-)
-
-plugin.visualizers.register_function(
-    function=q2g.heatmap,
-    inputs={
-        "solution": q2g.GGLassoProblem,
-    },
-    name='Generate a heatmap',
-    description='Generate a heatmap representation of a symmetric matrix',
-    input_descriptions={
-        "solution": (
-            "Solution artifact of Graphical Lasso problem."
-        ),
-    },
-    parameters={'color_scheme': Str % Choices(q2g.heatmap_choices['color_scheme'])},
-    parameter_descriptions={
-        'color_scheme': 'The matplotlib colorscheme to generate the heatmap '
-                        'with.',
-    },
 )
 
 plugin.visualizers.register_function(
