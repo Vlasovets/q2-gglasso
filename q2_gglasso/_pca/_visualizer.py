@@ -5,24 +5,24 @@ import pandas as pd
 import qiime2
 import os
 import jinja2
+import warnings
+import zarr
+
 from bokeh.embed import components
 from bokeh.resources import INLINE
-from bokeh.layouts import gridplot
+from bokeh.layouts import gridplot, row
 from biom.table import Table
 from bokeh.plotting import figure
-import zarr
 from biom.table import Table
 from q2_gglasso.utils import PCA
 from bokeh.models import ColumnDataSource
 from bokeh.models import LinearColorMapper, ColorBar
 
-from decimal import Decimal
-
-
-
 # solution = zarr.load("data/atacama_low/problem.zip")
 # # # mapping = pd.read_csv("data/atacama-sample-metadata.tsv", sep='\t', index_col=0)
-# # # df = pd.read_csv(str("data/atacama-table_clr_small/small_clr_feature-table.tsv"), index_col=0, sep='\t')
+# df = pd.read_csv(str("data/atacama-table_clr_small/small_clr_feature-table.tsv"), index_col=0, sep='\t')
+#
+# df.columns
 #
 # from qiime2 import Artifact, sdk
 #
@@ -73,7 +73,6 @@ def make_plots(df: pd.DataFrame, col_name: str = None, n_components: int = None,
         p.xaxis.axis_label = 'PC{0} ({1}%)'.format(i + 1, str(100 * var_exp[i])[:4])
         p.yaxis.axis_label = 'PC{0} ({1}%)'.format(j + 1, str(100 * var_exp[j])[:4])
 
-
         grid[i][j] = p
 
         grid[-1][-1] = add_color_bar(color_map=exp_cmap, title=col_name)
@@ -85,7 +84,7 @@ def make_plots(df: pd.DataFrame, col_name: str = None, n_components: int = None,
     return pair_plot
 
 
-def pca(output_dir: str, table: Table, solution: zarr.hierarchy.Group, n_components: int,
+def pca(output_dir: str, table: Table, solution: zarr.hierarchy.Group, n_components: int = 3, color_by: str = None,
         sample_metadata: qiime2.Metadata = None):
     J_ENV = jinja2.Environment(
         loader=jinja2.PackageLoader('q2_gglasso._pca', 'assets')
@@ -101,7 +100,7 @@ def pca(output_dir: str, table: Table, solution: zarr.hierarchy.Group, n_compone
     md = md.reindex(df.index)
 
     # TO DO: Add widget for columns selection
-
+    plot_dict = dict()
     for col in md.columns:
         plot_df = df.join(md[col])
         plot_df = plot_df.dropna()
@@ -113,8 +112,17 @@ def pca(output_dir: str, table: Table, solution: zarr.hierarchy.Group, n_compone
 
         pca_plot = make_plots(df=plot_df, col_name=col, n_components=n_components, proj=proj, eigv=eigv)
 
-        script, div = components(pca_plot, INLINE)
-        output_from_parsed_template = template.render(plot_script=script, plot_div=div)
+        plot_dict[col] = pca_plot
 
-        with open(os.path.join(output_dir, 'index.html'), 'w') as fh:
-            fh.write(output_from_parsed_template)
+    if color_by is None:
+        warnings.warn("Coloring covariate has not been selected, "
+                      "the first entry from the following list will be used:{0}".format(md.columns))
+        plot = plot_dict[md.columns[0]]
+    else:
+        plot = plot_dict[color_by]
+
+    script, div = components(plot, INLINE)
+    output_from_parsed_template = template.render(plot_script=script, plot_div=div)
+
+    with open(os.path.join(output_dir, 'index.html'), 'w') as fh:
+        fh.write(output_from_parsed_template)

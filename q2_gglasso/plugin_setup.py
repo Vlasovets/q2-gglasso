@@ -252,10 +252,11 @@ plugin.visualizers.register_function(
             "Solution artifact of Graphical Lasso problem with latent variables."
         ),
     },
-    parameters={'sample_metadata': Metadata, "n_components": Int},
+    parameters={'sample_metadata': Metadata, "n_components": Int, "color_by": Str},
     parameter_descriptions={
         'sample_metadata': "Metadata of the study.",
-        'n_components': "Number of PCs to be printed"
+        'n_components': "Number of PCs to be printed",
+        'color_by': "Color components by selected covariate from metadata"
     },
 )
 
