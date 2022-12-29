@@ -10,27 +10,29 @@ import zarr
 
 from bokeh.embed import components
 from bokeh.resources import INLINE
-from bokeh.layouts import gridplot, row
+from bokeh.layouts import gridplot, column, row, layout
 from biom.table import Table
-from bokeh.plotting import figure
+from bokeh.plotting import figure, curdoc
 from biom.table import Table
 from q2_gglasso.utils import PCA
-from bokeh.models import ColumnDataSource
-from bokeh.models import LinearColorMapper, ColorBar
+from bokeh.models import ColumnDataSource, LinearColorMapper, ColorBar, Select, CustomJS
+from bokeh.models import Panel, Tabs
+from bokeh.palettes import Spectral5
 
-# solution = zarr.load("data/atacama_low/problem.zip")
-# # # mapping = pd.read_csv("data/atacama-sample-metadata.tsv", sep='\t', index_col=0)
-# df = pd.read_csv(str("data/atacama-table_clr_small/small_clr_feature-table.tsv"), index_col=0, sep='\t')
-#
-# df.columns
-#
-# from qiime2 import Artifact, sdk
-#
-# # # # # taxonomy = Artifact.load('data/classification.qza')
-# table = Artifact.load('data/atacama-table_clr.qza')
-# table = table.view(Table)
-#
-# sample_metadata = qiime2.Metadata.load("data/atacama-sample-metadata.tsv")
+solution = zarr.load("data/atacama_low/problem.zip")
+# # mapping = pd.read_csv("data/atacama-sample-metadata.tsv", sep='\t', index_col=0)
+df = pd.read_csv(str("data/atacama-table_clr_small/small_clr_feature-table.tsv"), index_col=0, sep='\t')
+
+df.columns
+
+from qiime2 import Artifact, sdk
+
+# # # # taxonomy = Artifact.load('data/classification.qza')
+table = Artifact.load('data/atacama-table_clr.qza')
+table = table.view(Table)
+
+sample_metadata = qiime2.Metadata.load("data/atacama-sample-metadata.tsv")
+
 
 def add_color_bar(color_map: LinearColorMapper, title: str = None):
     color_bar_plot = figure(title=title, title_location="right",
@@ -83,6 +85,160 @@ def make_plots(df: pd.DataFrame, col_name: str = None, n_components: int = None,
 
     return pair_plot
 
+#
+# def create_figure(df, x, y, size, color):
+#     SIZES = list(range(6, 22, 3))
+#     COLORS = Spectral5
+#     N_SIZES = len(SIZES)
+#     N_COLORS = len(COLORS)
+#
+#     xs = df[x.value].values
+#     ys = df[y.value].values
+#     x_title = x.value.title()
+#     y_title = y.value.title()
+#
+#     kw = dict()
+#     kw['x_range'] = sorted(set(xs))
+#     kw['y_range'] = sorted(set(ys))
+#     kw['title'] = "%s vs %s" % (x_title, y_title)
+#
+#     p = figure(height=600, width=800, tools='pan,box_zoom,hover,reset',
+#                x_axis_label=x.value, y_axis_label=y.value,
+#                tooltips=[(x.value, "@" + y.value),
+#                          (x.value, "@" + y.value)
+#                          ],
+#                title=x_title + " vs " + y_title
+#                )
+#     p.xaxis.axis_label = x_title
+#     p.yaxis.axis_label = y_title
+#
+#     p.xaxis.major_label_orientation = np.pi / 4
+#
+#     sz = 9
+#     if size.value != 'None':
+#         if len(set(df[size.value])) > N_SIZES:
+#             groups = pd.qcut(df[size.value].values, N_SIZES, duplicates='drop')
+#         else:
+#             groups = pd.Categorical(df[size.value])
+#         sz = [SIZES[xx] for xx in groups.codes]
+#
+#     c = "#31AADE"
+#     if color.value != 'None':
+#         if len(set(df[color.value])) > N_COLORS:
+#             groups = pd.qcut(df[color.value].values, N_COLORS, duplicates='drop')
+#         else:
+#             groups = pd.Categorical(df[color.value])
+#         c = [COLORS[xx] for xx in groups.codes]
+#
+#     source = ColumnDataSource(data=dict(xs=xs, ys=ys))
+#
+#     p.circle(x='xs', y='ys', color=c, size=sz, source=source,
+#              line_color="white", alpha=0.6, hover_color='white', hover_alpha=0.5)
+#
+#     return p
+#
+#
+# def update(attr, old, new):
+#     layout.children[1] = create_figure()
+#
+# def project_covariates(counts=pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndarray):
+#     proj, loadings, eigv = PCA(counts.dropna(), L, inverse=True)
+#     r = np.linalg.matrix_rank(L)
+#     pc_columns = list('PC_{0}'.format(i) for i in range(1, r + 1))
+#     df_proj = pd.DataFrame(proj, columns=pc_columns, index=counts.index)
+#
+#     df = df_proj.join(metadata)
+#     depth = counts.sum(axis=1)
+#     df['depth'] = depth.values
+#     df = df.fillna(0)
+#
+#     columns = df.columns
+#
+#     select_x = Select(title='X-Axis', value='PC_1', options=list(columns))
+#     select_y = Select(title='Y-Axis', value='PC_2', options=list(columns))
+#     select_size = Select(title='Size', value='None', options=['None'] + list(columns))
+#     select_color = Select(title='Color', value='None', options=['None'] + list(columns))
+#
+#     p = create_figure(df=df, x=select_x, y=select_y, size=select_size, color=select_color)
+#
+#     # ax1 = p.xaxis, ax2 = p.yaxis
+#
+#     changeVariables = CustomJS(
+#         args=dict(plot=p, select1=select_x, select2=select_y), code="""
+#         var x = select_x.value;
+#         console.log(x)
+#         var y = select_y.value;
+#         console.log(y)
+#         plot.title.text = x + " vs " + y;
+#         ax1[0].axis_label = x;
+#         ax2[0].axis_label = y;
+#         source.data['x'] = source.data[x];
+#         source.data['y'] = source.data[y];
+#         source.change.emit();
+#     """)
+#
+#     select_x.js_on_change('value', changeVariables)
+#     select_y.js_on_change('value', changeVariables)
+#     # select_size.js_on_change('value', changeVariables)
+#     # select_color.js_on_change('value', changeVariables)
+#
+#     controls = column(select_x, select_y, width=200)
+#     layout = row(controls, p)
+#
+#     return layout
+
+
+def project_covariates(counts=pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndarray):
+    proj, loadings, eigv = PCA(counts.dropna(), L, inverse=True)
+    r = np.linalg.matrix_rank(L)
+    pc_columns = list('PC{0}'.format(i) for i in range(1, r + 1))
+    df_proj = pd.DataFrame(proj, columns=pc_columns, index=counts.index)
+
+    df = df_proj.join(metadata)
+    depth = counts.sum(axis=1)
+    df['depth'] = depth.values
+    df = df.fillna(0)
+
+    varName1 = 'PC1'
+    varName2 = 'PC2'
+
+    df['x'] = df[varName1]
+    df['y'] = df[varName2]
+
+    source = ColumnDataSource(df)
+
+    p0 = figure(tools='pan, wheel_zoom, box_select, lasso_select', plot_width=800, plot_height=800,
+                active_scroll="wheel_zoom",
+                x_axis_label=varName1, y_axis_label=varName2,
+                tooltips=[(varName1, "@" + varName1),
+                          (varName2, "@" + varName2)
+                          ],
+                title=varName1 + " vs " + varName2)
+
+    p0.circle('x', 'y', source=source, size=15, line_color="navy", fill_color="navy", fill_alpha=0.3)
+
+    select1 = Select(title="X-Axis:", value=varName1, width=100, options=list(df.columns))
+    select2 = Select(title="Y-Axis:", value=varName2, width=100, options=list(df.columns))
+
+    changeVariables = CustomJS(
+        args=dict(plot=p0, source=source, select1=select1, select2=select2, ax1=p0.xaxis, ax2=p0.yaxis), code="""
+        var varName1 = select1.value;
+        var varName2 = select2.value;
+        plot.title.text = varName1 + " vs " + varName2;
+        ax1[0].axis_label = varName1;
+        ax2[0].axis_label = varName2; 
+        source.data['x'] = source.data[varName1];
+        source.data['y'] = source.data[varName2];
+        source.change.emit();
+    """)
+
+    select1.js_on_change("value", changeVariables)
+    select2.js_on_change("value", changeVariables)
+
+    layout_1 = row(p0, select1, select2)
+
+    return layout_1
+
 
 def pca(output_dir: str, table: Table, solution: zarr.hierarchy.Group, n_components: int = 3, color_by: str = None,
         sample_metadata: qiime2.Metadata = None):
@@ -117,11 +273,19 @@ def pca(output_dir: str, table: Table, solution: zarr.hierarchy.Group, n_compone
     if color_by is None:
         warnings.warn("Coloring covariate has not been selected, "
                       "the first entry from the following list will be used:{0}".format(md.columns))
-        plot = plot_dict[md.columns[0]]
+        p1 = plot_dict[md.columns[0]]
     else:
-        plot = plot_dict[color_by]
+        p1 = plot_dict[color_by]
 
-    script, div = components(plot, INLINE)
+    p2 = project_covariates(counts=df, metadata=md, L=L)
+
+    tab1 = Panel(child=p2, title="PCA")
+    tab2 = Panel(child=row(p1), title="Pair-plot")
+
+    tabs = [tab1, tab2]
+    p = Tabs(tabs=tabs)
+
+    script, div = components(p, INLINE)
     output_from_parsed_template = template.render(plot_script=script, plot_div=div)
 
     with open(os.path.join(output_dir, 'index.html'), 'w') as fh:
