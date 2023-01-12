@@ -168,14 +168,10 @@ def _solution_plot(solution: zarr.hierarchy.Group, transformed_table: Table, tax
     tab1 = Panel(child=row(p1), title="Sample covariance")
 
     precision = pd.DataFrame(solution['solution/precision_']).iloc[::-1]
-    p3 = _make_heatmap(df=precision, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
-                       title="Negative inverse covariance", width=width, height=height, label_size=label_size)
-    tab3 = Panel(child=row(p3), title="Negative inverse covariance")
-
-    #est_covariance = pd.DataFrame(np.linalg.pinv(precision.values), precision.columns, precision.index)
+    # due to inversion we multiply the result by -1 to keep the original color scheme
     est_covariance = pd.DataFrame(-1*(precision.values), precision.columns, precision.index)
     p2 = _make_heatmap(df=est_covariance, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
-                       title="Estimated inverse covariance", width=width, height=height, label_size=label_size)
+                       title="Estimated (negative) inverse covariance", width=width, height=height, label_size=label_size)
     tab2 = Panel(child=row(p2), title="Estimated inverse covariance")
 
     low_rank = pd.DataFrame(solution['solution/lowrank_']).iloc[::-1]
@@ -186,7 +182,7 @@ def _solution_plot(solution: zarr.hierarchy.Group, transformed_table: Table, tax
     p5 = _make_stats(solution=solution, labels_dict=labels_dict)
     tab5 = Panel(child=p5, title="Statistics")
 
-    tabs = [tab1, tab2, tab3, tab4, tab5]
+    tabs = [tab1, tab2,  tab4, tab5]
     p = Tabs(tabs=tabs)
     script, div = components(p, INLINE)
 
