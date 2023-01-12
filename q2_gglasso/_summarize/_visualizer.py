@@ -20,17 +20,6 @@ from bokeh.layouts import row, column
 
 
 def _get_bounds(nlabels: int):
-    """
-    Get plotting grid bounds.
-    Parameters
-    ----------
-    nlabels: int
-        Number of labels
-    Returns
-    -------
-    bottom, top, left, right: list
-        Grid of dimensions for plotting.
-    """
     bottom = list(chain.from_iterable([[ii] * nlabels for ii in range(nlabels)]))
     top = list(chain.from_iterable([[ii + 1] * nlabels for ii in range(nlabels)]))
     left = list(chain.from_iterable([list(range(nlabels)) for ii in range(nlabels)]))
@@ -167,22 +156,21 @@ def _solution_plot(solution: zarr.hierarchy.Group, transformed_table: Table, tax
                        title="Sample covariance", width=width, height=height, label_size=label_size)
     tab1 = Panel(child=row(p1), title="Sample covariance")
 
-    precision = pd.DataFrame(solution['solution/precision_']).iloc[::-1]
     # due to inversion we multiply the result by -1 to keep the original color scheme
-    est_covariance = pd.DataFrame(-1*(precision.values), precision.columns, precision.index)
-    p2 = _make_heatmap(df=est_covariance, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
+    precision = pd.DataFrame(solution['solution/precision_']).iloc[::-1]
+    p2 = _make_heatmap(df=-1 * precision, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
                        title="Estimated (negative) inverse covariance", width=width, height=height, label_size=label_size)
     tab2 = Panel(child=row(p2), title="Estimated inverse covariance")
 
     low_rank = pd.DataFrame(solution['solution/lowrank_']).iloc[::-1]
-    p4 = _make_heatmap(df=low_rank, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
+    p3 = _make_heatmap(df=low_rank, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
                        title="Low-rank", not_low_rank=False, width=width, height=height, label_size=label_size)
-    tab4 = Panel(child=row(p4), title="Low-rank")
+    tab3 = Panel(child=row(p3), title="Low-rank")
 
-    p5 = _make_stats(solution=solution, labels_dict=labels_dict)
-    tab5 = Panel(child=p5, title="Statistics")
+    p4 = _make_stats(solution=solution, labels_dict=labels_dict)
+    tab4 = Panel(child=p4, title="Statistics")
 
-    tabs = [tab1, tab2,  tab4, tab5]
+    tabs = [tab1, tab2, tab3, tab4]
     p = Tabs(tabs=tabs)
     script, div = components(p, INLINE)
 
