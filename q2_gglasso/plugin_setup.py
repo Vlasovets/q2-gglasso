@@ -186,7 +186,15 @@ plugin.methods.register_function(
             "Specify whether latent variables should be modeled."
             "The default is False."
         ),
-        "mu1": (
+        "mu1_min": (
+            "Low-rank regularization parameter."
+            "Only needs to be specified if latent=True."
+        ),
+        "mu1_max": (
+            "Low-rank regularization parameter."
+            "Only needs to be specified if latent=True."
+        ),
+        "n_mu1": (
             "Low-rank regularization parameter."
             "Only needs to be specified if latent=True."
         ),

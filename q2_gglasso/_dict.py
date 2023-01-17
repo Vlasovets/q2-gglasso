@@ -22,12 +22,14 @@ glasso_parameters = {
     "lambda1_max": List[Float],
     "lambda2_min": List[Float],
     "lambda2_max": List[Float],
+    "mu1_min": List[Float],
+    "mu1_max": List[Float],
     "n_lambda1": Int,
     "n_lambda2": Int,
+    "n_mu1": Int,
     "lambda1_mask": List[Float],
     "latent": Bool,
     "non_conforming": Bool,
     "group_array": List[Int],
-    "mu1": List[Float],
     "reg": Str
 }

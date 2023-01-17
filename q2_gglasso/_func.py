@@ -196,9 +196,9 @@ def solve_SGL(S: np.ndarray, N: list, latent: bool = None, model_selection: bool
         P = glasso_problem(S, N=N, latent=latent)
         P.model_selection(modelselect_params=modelselect_params)
 
-        boundary_lambdas = check_lambda_path(P)
-        if boundary_lambdas:
-            warnings.warn("lambda is on the edge of the interval, the solution might have not reached global minimum!")
+        # boundary_lambdas = check_lambda_path(P)
+        # if boundary_lambdas:
+        #     warnings.warn("lambda is on the edge of the interval, the solution might have not reached global minimum!")
     else:
         print("\tWITH LAMBDA={0} and MU={1}".format(lambda1, mu1))
         P = glasso_problem(S, N=N, reg_params={'lambda1': lambda1, "mu1": mu1, 'lambda1_mask': lambda1_mask},
@@ -319,7 +319,8 @@ def solve_non_conforming(S: np.ndarray, N: list, G: list, latent: bool = None, m
 def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None, non_conforming: bool = None,
                   lambda1_min: float = None, lambda1_max: float = None, n_lambda1: int = 1,
                   lambda2_min: float = None, lambda2_max: float = None, n_lambda2: int = 1,
-                  mu1: list = None, lambda1_mask: list = None,
+                  mu1_min: float = None, mu1_max: float = None, n_mu1: int = 1,
+                  lambda1_mask: list = None,
                   group_array: list = None, reg: str = 'GGL') -> glasso_problem:
     """
     Solve Graphical Lasso problem.
@@ -372,7 +373,8 @@ def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None,
 
     h_params = get_hyperparameters(lambda1_min=lambda1_min, lambda1_max=lambda1_max, n_lambda1=n_lambda1,
                                    lambda2_min=lambda2_min, lambda2_max=lambda2_max, n_lambda2=n_lambda2,
-                                   mu1=mu1)
+                                   mu1_min=mu1_min, mu1_max=mu1_max, n_mu1=n_mu1)
+
     model_selection = h_params["model_selection"]
     lambda1, lambda2, mu1 = h_params["lambda1"], h_params["lambda2"], h_params["mu1"]
 
