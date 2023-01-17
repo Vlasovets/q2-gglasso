@@ -76,52 +76,41 @@ def if_model_selection(lambda1, lambda2, mu1):
     return model_selection
 
 
-def get_lambda_range(la_min, la_max, n):
-    if (la_min is None) and (la_max is None):
-        la = [None]
+def get_range(lower_bound, upper_bound, n):
+    if (lower_bound is None) and (upper_bound is None):
+        range = [None]
     else:
-        if la_min is None:
-            la_min = 1e-3
-        if la_max is None:
-            la_max = 1
-        la = np.linspace(la_min, la_max, n)
-    return la
+        if lower_bound is None:
+            lower_bound = 1e-3
+        if upper_bound is None:
+            upper_bound = 1
+        range = np.linspace(lower_bound, upper_bound, n)
+    return range
 
 
-def set_default_hyperpameters(model_selection: bool, lambda1: list, lambda2: list, mu1: list):
-    lambda1 = numeric_to_list(lambda1)
-    lambda2 = numeric_to_list(lambda2)
-    mu1 = numeric_to_list(mu1)
+def get_hyperparameters(lambda1_min, lambda1_max, lambda2_min, lambda2_max, mu1_min, mu1_max,
+                              n_lambda1: int = 1, n_lambda2: int = 1, n_mu1: int = 1):
+    lambda1 = get_range(lower_bound=lambda1_min, upper_bound=lambda1_max, n=n_lambda1)
+    lambda2 = get_range(lower_bound=lambda2_min, upper_bound=lambda2_max, n=n_lambda2)
+    mu1 = get_range(lower_bound=mu1_min, upper_bound=mu1_max, n=n_mu1)
 
-    if model_selection:
-        if None in lambda1:
-            lambda1 = np.logspace(0, -3, 10)
-            warnings.warn("Default values for lambda1 have been used.")
-        if None in lambda2:
-            lambda2 = np.logspace(-1, -4, 5)
-            warnings.warn("Default values for lambda2 have been used.")
-        if None in mu1:
-            mu1 = np.logspace(2, -1, 10)
-            warnings.warn("Default values for mu1 have been used.")
-    else:
+    model_selection = True
+
+    if None in lambda1:
+        lambda1 = np.logspace(0, -4, 15)
+        warnings.warn("Default values for lambda1 have been used.")
+    if None in lambda2:
+        lambda2 = np.logspace(-1, -4, 5)
+        warnings.warn("Default values for lambda2 have been used.")
+    if None in mu1:
+        mu1 = np.logspace(2, -1, 10)
+        warnings.warn("Default values for mu1 have been used.")
+
+    if (len(lambda1) == 1) and len(lambda2) == 1 and (len(mu1) == 1):
         lambda1 = np.array(lambda1).item()
         lambda2 = np.array(lambda2).item()
         mu1 = np.array(mu1).item()
 
-    return lambda1, lambda2, mu1
-
-
-def get_hyperparameters(lambda1_min, lambda1_max, lambda2_min, lambda2_max, mu1, n_lambda1: int = 1, n_lambda2: int = 1):
-    lambda1 = get_lambda_range(la_min=lambda1_min, la_max=lambda1_max, n=n_lambda1)
-    lambda2 = get_lambda_range(la_min=lambda2_min, la_max=lambda2_max, n=n_lambda2)
-    model_selection = if_model_selection(lambda1, lambda2, mu1)
-
-    lambda1, lambda2, mu1 = set_default_hyperpameters(model_selection=model_selection,
-                                                      lambda1=lambda1, lambda2=lambda2, mu1=mu1)
-
-    lambda1, lambda2, mu1 = if_all_none(lambda1, lambda2, mu1)
-
-    if all(isinstance(x, (float, int)) for x in [lambda1, lambda2, mu1]):
         model_selection = False
 
     h_params = {"model_selection": model_selection, "lambda1": lambda1, "lambda2": lambda2, "mu1": mu1}
