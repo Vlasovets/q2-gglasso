@@ -14,7 +14,7 @@ from bokeh.layouts import gridplot, column, row, layout
 from biom.table import Table
 from bokeh.plotting import figure, curdoc
 from biom.table import Table
-from q2_gglasso.utils import PCA
+from q2_gglasso.utils import PCA, get_seq_depth
 from bokeh.models import ColumnDataSource, LinearColorMapper, ColorBar, Select, CustomJS
 from bokeh.models import Panel, Tabs
 from bokeh.palettes import Spectral6, Blues8
@@ -23,122 +23,20 @@ from bokeh.palettes import Spectral6, Blues8
 # # # mapping = pd.read_csv("data/atacama-sample-metadata.tsv", sep='\t', index_col=0)
 # df = pd.read_csv(str("data/atacama-table_clr_small/small_clr_feature-table.tsv"), index_col=0, sep='\t')
 #
-
-# depth = counts.sum(axis=1)
-# df['depth'] = depth.values
-# df = df.fillna(0)
 #
-# df.columns
-#
-# from qiime2 import Artifact, sdk
-#
-# # # # # taxonomy = Artifact.load('data/classification.qza')
-# table = Artifact.load('data/atacama-table_clr.qza')
-# table = table.view(Table)
-#
+# # depth = counts.sum(axis=1)
+# # df['depth'] = depth.values
+# # df = df.fillna(0)
+# #
+# # df.columns
+# #
+# # from qiime2 import Artifact, sdk
+# #
+# # # # # # taxonomy = Artifact.load('data/classification.qza')
+# # table = Artifact.load('data/atacama-table_clr.qza')
+# # table = table.view(Table)
+# #
 # sample_metadata = qiime2.Metadata.load("data/atacama-sample-metadata.tsv")
-
-# def create_figure(df, x, y, size, color):
-#     SIZES = list(range(6, 22, 3))
-#     COLORS = Spectral5
-#     N_SIZES = len(SIZES)
-#     N_COLORS = len(COLORS)
-#
-#     xs = df[x.value].values
-#     ys = df[y.value].values
-#     x_title = x.value.title()
-#     y_title = y.value.title()
-#
-#     kw = dict()
-#     kw['x_range'] = sorted(set(xs))
-#     kw['y_range'] = sorted(set(ys))
-#     kw['title'] = "%s vs %s" % (x_title, y_title)
-#
-#     p = figure(height=600, width=800, tools='pan,box_zoom,hover,reset',
-#                x_axis_label=x.value, y_axis_label=y.value,
-#                tooltips=[(x.value, "@" + y.value),
-#                          (x.value, "@" + y.value)
-#                          ],
-#                title=x_title + " vs " + y_title
-#                )
-#     p.xaxis.axis_label = x_title
-#     p.yaxis.axis_label = y_title
-#
-#     p.xaxis.major_label_orientation = np.pi / 4
-#
-#     sz = 9
-#     if size.value != 'None':
-#         if len(set(df[size.value])) > N_SIZES:
-#             groups = pd.qcut(df[size.value].values, N_SIZES, duplicates='drop')
-#         else:
-#             groups = pd.Categorical(df[size.value])
-#         sz = [SIZES[xx] for xx in groups.codes]
-#
-#     c = "#31AADE"
-#     if color.value != 'None':
-#         if len(set(df[color.value])) > N_COLORS:
-#             groups = pd.qcut(df[color.value].values, N_COLORS, duplicates='drop')
-#         else:
-#             groups = pd.Categorical(df[color.value])
-#         c = [COLORS[xx] for xx in groups.codes]
-#
-#     source = ColumnDataSource(data=dict(xs=xs, ys=ys))
-#
-#     p.circle(x='xs', y='ys', color=c, size=sz, source=source,
-#              line_color="white", alpha=0.6, hover_color='white', hover_alpha=0.5)
-#
-#     return p
-#
-#
-# def update(attr, old, new):
-#     layout.children[1] = create_figure()
-#
-# def project_covariates(counts=pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndarray):
-#     proj, loadings, eigv = PCA(counts.dropna(), L, inverse=True)
-#     r = np.linalg.matrix_rank(L)
-#     pc_columns = list('PC_{0}'.format(i) for i in range(1, r + 1))
-#     df_proj = pd.DataFrame(proj, columns=pc_columns, index=counts.index)
-#
-#     df = df_proj.join(metadata)
-#     depth = counts.sum(axis=1)
-#     df['depth'] = depth.values
-#     df = df.fillna(0)
-#
-#     columns = df.columns
-#
-#     select_x = Select(title='X-Axis', value='PC_1', options=list(columns))
-#     select_y = Select(title='Y-Axis', value='PC_2', options=list(columns))
-#     select_size = Select(title='Size', value='None', options=['None'] + list(columns))
-#     select_color = Select(title='Color', value='None', options=['None'] + list(columns))
-#
-#     p = create_figure(df=df, x=select_x, y=select_y, size=select_size, color=select_color)
-#
-#     # ax1 = p.xaxis, ax2 = p.yaxis
-#
-#     changeVariables = CustomJS(
-#         args=dict(plot=p, select1=select_x, select2=select_y), code="""
-#         var x = select_x.value;
-#         console.log(x)
-#         var y = select_y.value;
-#         console.log(y)
-#         plot.title.text = x + " vs " + y;
-#         ax1[0].axis_label = x;
-#         ax2[0].axis_label = y;
-#         source.data['x'] = source.data[x];
-#         source.data['y'] = source.data[y];
-#         source.change.emit();
-#     """)
-#
-#     select_x.js_on_change('value', changeVariables)
-#     select_y.js_on_change('value', changeVariables)
-#     # select_size.js_on_change('value', changeVariables)
-#     # select_color.js_on_change('value', changeVariables)
-#
-#     controls = column(select_x, select_y, width=200)
-#     layout = row(controls, p)
-#
-#     return layout
-
 
 def project_covariates(counts=pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndarray, color_by=str):
     proj, loadings, eigv = PCA(counts.dropna(), L, inverse=True)
@@ -295,6 +193,12 @@ def pca(output_dir: str, table: Table, solution: zarr.hierarchy.Group, n_compone
     numeric_md_cols = sample_metadata.filter_columns(column_type='numeric')
     md = numeric_md_cols.to_dataframe()
     md = md.reindex(df.index)
+
+    if color_by is None:
+        depth = get_seq_depth(df)
+        depth = pd.DataFrame(depth, index=depth.index, columns=["seq-depth"])
+        md = md.join(depth)
+        color_by = "seq-depth"
 
     p1 = project_covariates(counts=df, metadata=md, L=L, color_by=color_by)
     p2 = pair_plot(counts=df, metadata=md, L=L, n_components=n_components, color_by=color_by)
