@@ -37,17 +37,20 @@ from bokeh.palettes import Spectral6, Blues8
 # # table = table.view(Table)
 # #
 # sample_metadata = qiime2.Metadata.load("data/atacama-sample-metadata.tsv")
+# counts = df
 
 def project_covariates(counts=pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndarray, color_by=str):
     proj, loadings, eigv = PCA(counts.dropna(), L, inverse=True)
     r = np.linalg.matrix_rank(L)
-    pc_columns = list('PC{0}'.format(i) for i in range(1, r + 1))
-    df_proj = pd.DataFrame(proj, columns=pc_columns, index=counts.index)
+    eigv_sum = np.sum(eigv)
+    var_exp = [(value / eigv_sum) for value in sorted(eigv, reverse=True)]
 
+    pc_columns = list('PC{0} ({1}%)'.format(i+1, str(100 * var_exp[i])[:4]) for i in range(0, r))
+    df_proj = pd.DataFrame(proj, columns=pc_columns, index=counts.index)
     df = df_proj.join(metadata)
 
-    varName1 = 'PC1'
-    varName2 = 'PC2'
+    varName1 = 'PC1 ({0}%)'.format(str(100 * var_exp[0])[:4])
+    varName2 = 'PC2 ({0}%)'.format(str(100 * var_exp[1])[:4])
     df['x'] = df[varName1]
     df['y'] = df[varName2]
 
@@ -61,7 +64,7 @@ def project_covariates(counts=pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndar
                           ],
                 title=varName1 + " vs " + varName2)
 
-    exp_cmap = LinearColorMapper(palette=Blues8, low=min(df[color_by].values), high=max(df[color_by].values))
+    exp_cmap = LinearColorMapper(palette=Blues8[::-1], low=min(df[color_by].values), high=max(df[color_by].values))
     p0.circle('x', 'y', source=source, size=15, line_color=None, fill_color={"field": color_by, "transform": exp_cmap},
               fill_alpha=0.3)
 
