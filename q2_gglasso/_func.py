@@ -15,10 +15,26 @@ from sklearn import preprocessing
 
 sample_metadata = qiime2.Metadata.load("data/atacama-sample-metadata.tsv")
 
-'data/atacama-table_clr_test/feature-table.biom'
+taxa = pd.read_csv(str("data/classification/taxonomy.tsv"), index_col=0, sep='\t')
+test = pd.read_csv(str("data/atacama-table_clr_test/composition_feature-table.tsv"), index_col=0, sep='\t').T
+ASVs = test.index.values
 
+# ASVs = X.index.values
 
-def transform_features(table: Table, sample_metadata: qiime2.Metadata = None,
+# for i in ASVs[:-15]:
+#     if i in taxa.index:
+#         print(i)
+#         name = taxa.loc[i, "Taxon"]
+#         if name not in test.index:
+#         # print(name)
+#             test = test.rename(index={i: name})
+#         # test = test.rename(columns={i: name}, inplace=True)
+#
+# test.index
+# test[test.index.duplicated(keep=False)]
+# test.groupby(level=0).filter(lambda x: len(x) > 1).index
+
+def transform_features(table: Table, taxonomy: pd.Series, sample_metadata: qiime2.Metadata = None,
                        transformation: str = "clr", pseudo_count: int = 1,
                        scale_metadata: bool = True, add_metadata: bool = False) -> pd.DataFrame:
     """
@@ -26,6 +42,10 @@ def transform_features(table: Table, sample_metadata: qiime2.Metadata = None,
 
     Parameters
     ----------
+    add_metadata
+    scale_metadata
+    sample_metadata
+    taxonomy
     pseudo_count: int, optional
         Add pseudo count, only necessary for transformation = "clr".
     table: biom.Table
@@ -58,6 +78,16 @@ def transform_features(table: Table, sample_metadata: qiime2.Metadata = None,
         )
 
     X = pd.DataFrame(X, columns=X.columns, index=X.index)
+
+    taxa = pd.DataFrame(taxonomy.view(pd.Series))
+    ASV_names = X.index.values
+
+    for i in ASV_names:
+        if i in taxa.index:
+            name = taxa.loc[i, "Taxon"]
+            if name not in X.index:  # check duplicates
+                X = X.rename(index={i: name})
+
     X = X.T  # p, N
 
     if add_metadata:
@@ -77,7 +107,9 @@ def transform_features(table: Table, sample_metadata: qiime2.Metadata = None,
     else:
         result = X
 
-    return result.T
+    result = result.T  # N, p
+
+    return result
 
 
 def calculate_covariance(table: pd.DataFrame, method: str = "scaled", bias: bool = True) -> pd.DataFrame:
@@ -116,7 +148,9 @@ def calculate_covariance(table: pd.DataFrame, method: str = "scaled", bias: bool
     else:
         raise ValueError('Given covariance calculation method is not supported.')
 
-    return pd.DataFrame(result)
+    result = pd.DataFrame(result, index=table.index, columns=table.index)
+
+    return result
 
 
 def build_groups(tables: Table, check_groups: bool = True) -> np.ndarray:
