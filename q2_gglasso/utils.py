@@ -76,6 +76,16 @@ def if_model_selection(lambda1, lambda2, mu1):
     return model_selection
 
 
+def get_seq_depth(counts):
+    p, n = counts.shape
+    if p >= n:
+        depth = counts.sum(axis=0)
+    else:
+        depth = counts.sum(axis=1)
+    depth_scaled = (depth - depth.min()) / (depth.max() - depth.min())
+    return depth_scaled
+
+
 def get_range(lower_bound, upper_bound, n):
     if (lower_bound is None) and (upper_bound is None):
         range = [None]
