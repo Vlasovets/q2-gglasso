@@ -59,7 +59,8 @@ plugin.register_semantic_type_to_format(
 plugin.methods.register_function(
     function=q2g.transform_features,
     inputs={"table": FeatureTable[Composition | Frequency]},
-    parameters={"transformation": Str, "pseudo_count": Int},
+    parameters={'sample_metadata': Metadata, "transformation": Str, "pseudo_count": Int, "scale_metadata": Bool,
+                "add_metadata": Bool},
     outputs=[("transformed_table", FeatureTable[Composition])],
     input_descriptions={
         "table": (
@@ -68,6 +69,15 @@ plugin.methods.register_function(
         ),
     },
     parameter_descriptions={
+        'sample_metadata': (
+            "Metadata of the study."
+        ),
+        'add_metadata': (
+            "Merging metadata with the count table."
+        ),
+        'scale_metadata': (
+            "Scaling metadata."
+        ),
         "transformation": (
             "String representing the name of the "
             "transformation we will use "

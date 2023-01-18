@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import warnings
+import qiime2
 
 from biom.table import Table
 
@@ -8,11 +9,18 @@ from gglasso.problem import glasso_problem
 from gglasso.helper.basic_linalg import scale_array_by_diagonal
 from gglasso.helper.ext_admm_helper import create_group_array, construct_indexer, check_G
 
-from .utils import if_2d_array, get_hyperparameters, list_to_array
+from .utils import if_2d_array, get_hyperparameters, list_to_array, remove_biom_header
 from .utils import normalize, log_transform, zero_imputation, check_lambda_path
+from sklearn import preprocessing
+
+sample_metadata = qiime2.Metadata.load("data/atacama-sample-metadata.tsv")
+
+'data/atacama-table_clr_test/feature-table.biom'
 
 
-def transform_features(table: Table, transformation: str = "clr", pseudo_count: int = 1) -> pd.DataFrame:
+def transform_features(table: Table, sample_metadata: qiime2.Metadata = None,
+                       transformation: str = "clr", pseudo_count: int = 1,
+                       scale_metadata: bool = True, add_metadata: bool = False) -> pd.DataFrame:
     """
     Project compositional data to Euclidean space.
 
@@ -34,25 +42,42 @@ def transform_features(table: Table, transformation: str = "clr", pseudo_count: 
     """
     X = table.to_dataframe()
     X = X.sparse.to_dense()
-    columns = X.columns
 
     if transformation == "clr":
         X = zero_imputation(X, pseudo_count=pseudo_count)
         X = normalize(X)
         X = log_transform(X, transformation=transformation)
 
-        return pd.DataFrame(X, columns=columns)
-
     elif transformation == "mclr":
         X = normalize(X)
         X = log_transform(X, transformation=transformation)
-
-        return pd.DataFrame(X, columns=columns)
 
     else:
         raise ValueError(
             "Unknown transformation name, use clr and not %r" % transformation
         )
+
+    X = pd.DataFrame(X, columns=X.columns, index=X.index)
+    X = X.T  # p, N
+
+    if add_metadata:
+        numeric_md_cols = sample_metadata.filter_columns(column_type='numeric')
+        md = numeric_md_cols.to_dataframe()
+
+        if md.isnull().values.any():
+            warnings.warn("Missing values are imputed with 0!")
+            md = md.fillna(0)
+
+        if scale_metadata:
+            scaler = preprocessing.StandardScaler().fit(md)
+            md_scaled = scaler.transform(md)
+            md = pd.DataFrame(md_scaled, index=md.index, columns=md.columns)
+
+        result = X.join(md)
+    else:
+        result = X
+
+    return result.T
 
 
 def calculate_covariance(table: pd.DataFrame, method: str = "scaled", bias: bool = True) -> pd.DataFrame:
