@@ -11,6 +11,7 @@ print(sys.path)
 import importlib
 import q2_gglasso as q2g
 import qiime2
+import pandas as pd
 
 from q2_types.feature_table import FeatureTable, Composition, Frequency
 from q2_types.feature_data import FeatureData, Taxonomy
@@ -156,7 +157,7 @@ plugin.methods.register_function(
 plugin.methods.register_function(
     function=q2g.solve_problem,
     inputs={
-        "covariance_matrix": List[q2g.PairwiseFeatureData]
+        "covariance_matrix": q2g.PairwiseFeatureData,
     },
     parameters=q2g.glasso_parameters,
     outputs=[("solution", q2g.GGLassoProblem)],
@@ -209,7 +210,7 @@ plugin.methods.register_function(
             "Low-rank regularization parameter."
             "Only needs to be specified if latent=True."
         ),
-        "lambda1_mask": (
+        "adapt_lambda1": (
             "Array (p,p), non-negative, symmetric."
             "The lambda1 parameter is multiplied element-wise with this array, thus lambda1 has to be provided."
         ),

@@ -15,6 +15,8 @@ from sklearn import preprocessing
 
 sample_metadata = qiime2.Metadata.load("data/atacama-sample-metadata.tsv")
 
+sample_metadata.columns
+
 taxa = pd.read_csv(str("data/classification/taxonomy.tsv"), index_col=0, sep='\t')
 test = pd.read_csv(str("data/atacama-table_clr_test/composition_feature-table.tsv"), index_col=0, sep='\t').T
 ASVs = test.index.values
@@ -375,11 +377,10 @@ def solve_non_conforming(S: np.ndarray, N: list, G: list, latent: bool = None, m
     return P
 
 
-def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None, non_conforming: bool = None,
+def solve_problem(covariance_matrix: pd.DataFrame, n_samples: list, latent: bool = None, non_conforming: bool = None,
                   lambda1_min: float = None, lambda1_max: float = None, n_lambda1: int = 1,
                   lambda2_min: float = None, lambda2_max: float = None, n_lambda2: int = 1,
-                  mu1_min: float = None, mu1_max: float = None, n_mu1: int = 1,
-                  lambda1_mask: list = None,
+                  mu1_min: float = None, mu1_max: float = None, n_mu1: int = 1, adapt_lambda1: list = None,
                   group_array: list = None, reg: str = 'GGL') -> glasso_problem:
     """
     Solve Graphical Lasso problem.
@@ -410,7 +411,7 @@ def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None,
     mu1: list
         A list of non-negative low-rank regularization hyperparameters 'mu1';
         Only needs to be specified if 'latent=True'.
-    lambda1_mask: list, optional
+    adapt_lambda1: list, optional
         Non-negative, symmetric (p,p) matrix;
         The 'lambda1' parameter is multiplied element-wise with this array. Only available for SGL.
     group_array: list, optional
@@ -425,6 +426,20 @@ def solve_problem(covariance_matrix: list, n_samples: list, latent: bool = None,
         All elements are dictionaries with keys 1,...,K and (p_k,p_k)-arrays as values.
 
     """
+    # adapt_lambda1 = ["ph", 0.01, "percent-cover", 0.01]
+    # covariance_matrix = pd.read_csv(str("data/atacama-table_corr_test/pairwise_comparisons.tsv"), index_col=0, sep='\t')
+    if adapt_lambda1 is not None:
+        adapt_dict = {adapt_lambda1[i]: adapt_lambda1[i + 1] for i in range(0, len(adapt_lambda1), 2)}
+
+        mask = np.ones(covariance_matrix.shape)
+
+        mask_df = pd.DataFrame(mask, index=covariance_matrix.index, columns=covariance_matrix.columns)
+        for key, item in adapt_dict.items():
+            mask_df[key] = float(item)
+            mask_df = mask_df.T
+            mask_df[key] = float(item)
+        lambda1_mask = mask_df.values
+
     S = np.array(covariance_matrix)
     S = if_2d_array(S)
 

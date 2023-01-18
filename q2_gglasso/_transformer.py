@@ -16,11 +16,11 @@ def _0(data: pd.DataFrame) -> q2g.GGLassoDataFormat:
 
 
 @plugin.register_transformer
-def _1(ff: q2g.GGLassoDataFormat) -> list:
+def _1(ff: q2g.GGLassoDataFormat) -> pd.DataFrame:
     table = load_table(str(ff))
     df = table.to_dataframe()
-    df_list = list(df.values)
-    return df_list
+    # df_list = list(df.values)
+    return df
 
 
 @plugin.register_transformer
