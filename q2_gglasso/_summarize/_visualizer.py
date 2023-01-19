@@ -150,27 +150,35 @@ def _make_stats(solution: zarr.hierarchy.Group, labels_dict: dict = None):
 def _solution_plot(solution: zarr.hierarchy.Group, transformed_table: Table, taxonomy: pd.Series,
                    width: int, height: int, label_size: str):
     labels_dict, labels_dict_reversed = _get_labels(feature_data=transformed_table, taxonomy=taxonomy)
+    tabs = []
 
     sample_covariance = pd.DataFrame(solution['covariance']).iloc[::-1]
     p1 = _make_heatmap(df=sample_covariance, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
                        title="Sample covariance", width=width, height=height, label_size=label_size)
     tab1 = Panel(child=row(p1), title="Sample covariance")
+    tabs.append(tab1)
 
     # due to inversion we multiply the result by -1 to keep the original color scheme
     precision = pd.DataFrame(solution['solution/precision_']).iloc[::-1]
     p2 = _make_heatmap(df=-1 * precision, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
-                       title="Estimated (negative) inverse covariance", width=width, height=height, label_size=label_size)
+                       title="Estimated (negative) inverse covariance", width=width, height=height,
+                       label_size=label_size)
     tab2 = Panel(child=row(p2), title="Estimated inverse covariance")
+    tabs.append(tab2)
 
-    low_rank = pd.DataFrame(solution['solution/lowrank_']).iloc[::-1]
-    p3 = _make_heatmap(df=low_rank, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
-                       title="Low-rank", not_low_rank=False, width=width, height=height, label_size=label_size)
-    tab3 = Panel(child=row(p3), title="Low-rank")
+    try:
+        low_rank = pd.DataFrame(solution['solution/lowrank_']).iloc[::-1]
+        p3 = _make_heatmap(df=low_rank, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
+                           title="Low-rank", not_low_rank=False, width=width, height=height, label_size=label_size)
+        tab3 = Panel(child=row(p3), title="Low-rank")
+        tabs.append(tab3)
+    except:
+        print("NO low-rank solution has been found.")
 
     p4 = _make_stats(solution=solution, labels_dict=labels_dict)
     tab4 = Panel(child=p4, title="Statistics")
+    tabs.append(tab4)
 
-    tabs = [tab1, tab2, tab3, tab4]
     p = Tabs(tabs=tabs)
     script, div = components(p, INLINE)
 
