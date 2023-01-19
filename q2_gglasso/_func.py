@@ -10,7 +10,7 @@ from gglasso.helper.basic_linalg import scale_array_by_diagonal
 from gglasso.helper.ext_admm_helper import create_group_array, construct_indexer, check_G
 
 from .utils import if_2d_array, get_hyperparameters, list_to_array, remove_biom_header
-from .utils import normalize, log_transform, zero_imputation, check_lambda_path
+from .utils import normalize, log_transform, zero_imputation, check_lambda_path, get_lambda_mask
 from sklearn import preprocessing
 
 sample_metadata = qiime2.Metadata.load("data/atacama-sample-metadata.tsv")
@@ -426,20 +426,6 @@ def solve_problem(covariance_matrix: pd.DataFrame, n_samples: list, latent: bool
         All elements are dictionaries with keys 1,...,K and (p_k,p_k)-arrays as values.
 
     """
-    # adapt_lambda1 = ["ph", 0.01, "percent-cover", 0.01]
-    # covariance_matrix = pd.read_csv(str("data/atacama-table_corr_test/pairwise_comparisons.tsv"), index_col=0, sep='\t')
-    if adapt_lambda1 is not None:
-        adapt_dict = {adapt_lambda1[i]: adapt_lambda1[i + 1] for i in range(0, len(adapt_lambda1), 2)}
-
-        mask = np.ones(covariance_matrix.shape)
-
-        mask_df = pd.DataFrame(mask, index=covariance_matrix.index, columns=covariance_matrix.columns)
-        for key, item in adapt_dict.items():
-            mask_df[key] = float(item)
-            mask_df = mask_df.T
-            mask_df[key] = float(item)
-        lambda1_mask = mask_df.values
-
     S = np.array(covariance_matrix)
     S = if_2d_array(S)
 
@@ -451,6 +437,9 @@ def solve_problem(covariance_matrix: pd.DataFrame, n_samples: list, latent: bool
 
     model_selection = h_params["model_selection"]
     lambda1, lambda2, mu1 = h_params["lambda1"], h_params["lambda2"], h_params["mu1"]
+
+    if adapt_lambda1 is not None:
+        lambda1_mask = get_lambda_mask(adapt_lambda1=adapt_lambda1, covariance_matrix=covariance_matrix)
 
     # if 2d array => solve SGL
     if S.ndim == 2:
