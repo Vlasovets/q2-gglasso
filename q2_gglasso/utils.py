@@ -99,7 +99,7 @@ def get_range(lower_bound, upper_bound, n):
 
 
 def get_hyperparameters(lambda1_min, lambda1_max, lambda2_min, lambda2_max, mu1_min, mu1_max,
-                              n_lambda1: int = 1, n_lambda2: int = 1, n_mu1: int = 1):
+                        n_lambda1: int = 1, n_lambda2: int = 1, n_mu1: int = 1):
     lambda1 = get_range(lower_bound=lambda1_min, upper_bound=lambda1_max, n=n_lambda1)
     lambda2 = get_range(lower_bound=lambda2_min, upper_bound=lambda2_max, n=n_lambda2)
     mu1 = get_range(lower_bound=mu1_min, upper_bound=mu1_max, n=n_mu1)
@@ -126,6 +126,21 @@ def get_hyperparameters(lambda1_min, lambda1_max, lambda2_min, lambda2_max, mu1_
     h_params = {"model_selection": model_selection, "lambda1": lambda1, "lambda2": lambda2, "mu1": mu1}
 
     return h_params
+
+
+def get_lambda_mask(adapt_lambda1: list, covariance_matrix: pd.DataFrame):
+    mask = np.ones(covariance_matrix.shape)
+    adapt_dict = {adapt_lambda1[i]: adapt_lambda1[i + 1] for i in range(0, len(adapt_lambda1), 2)}
+
+    mask_df = pd.DataFrame(mask, index=covariance_matrix.index, columns=covariance_matrix.columns)
+    for key, item in adapt_dict.items():
+        x_ix = mask_df.index.str.endswith(key)
+        x_col = mask_df.columns[mask_df.columns.to_series().str.endswith(key)]
+        mask_df[x_ix] = float(item)
+        mask_df[x_col] = float(item)
+    lambda1_mask = mask_df.values
+
+    return lambda1_mask
 
 
 def check_lambda_path(P):
