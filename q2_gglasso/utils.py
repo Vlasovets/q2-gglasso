@@ -138,6 +138,7 @@ def get_lambda_mask(adapt_lambda1: list, covariance_matrix: pd.DataFrame):
         x_col = mask_df.columns[mask_df.columns.to_series().str.endswith(key)]
         mask_df[x_ix] = float(item)
         mask_df[x_col] = float(item)
+        print("ADAPTIVE lambda={0} has been used for:{1}".format(item, x_col))
     lambda1_mask = mask_df.values
 
     return lambda1_mask
