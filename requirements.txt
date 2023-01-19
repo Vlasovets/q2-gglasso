@@ -4,7 +4,7 @@ numba>=0.46.0
 scipy>=0.11.0
 scikit-learn>=0.24.1
 zarr>=2.11.1
-gglasso>=0.1.9
+
 setuptools>=59.8.0
 pytest>=7.0.1
 versioneer
@@ -13,6 +13,7 @@ pandas
 biom-format
 
 git+https://github.com/qiime2/sphinx-ext-qiime2
+git+https://github.com/fabian-sp/GGLasso.git@f-fda-and-mask
 calysto-bash
 sphinx-exercise
 jupyter-book
