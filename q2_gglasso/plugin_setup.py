@@ -264,8 +264,6 @@ plugin.visualizers.register_function(
     function=q2g.summarize,
     inputs={
         "solution": q2g.GGLassoProblem,
-        "transformed_table": FeatureTable[Composition],
-        "taxonomy": FeatureData[Taxonomy],
     },
     name='Summary table',
     description='Summary table with sparsity level, lambda, mu path and rank of the solution',

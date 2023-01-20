@@ -38,31 +38,22 @@ def _get_colors(df: pd.DataFrame(), n_colors: int = 9):
     return color_list, colors
 
 
-def _get_labels(feature_data: Table, taxonomy: pd.Series):
-    taxa = pd.DataFrame(taxonomy.view(pd.Series))
-
-    df = feature_data.to_dataframe()
-    df = df.sparse.to_dense()
-    ASVs = df.columns.values
-
-    labels = []
-    for i in ASVs:
-        if i in taxa.index:
-            name = taxa.loc[i, "Taxon"]
-            labels.append(name)
-        else:
-            labels.append(i)
-
-    labels_dict = dict(zip(range(len(labels)), labels))
-    labels_dict_reversed = dict(zip(range(len(labels)), reversed(labels)))
+def _get_labels(solution: zarr.hierarchy.Group):
+    labels_dict = dict()
+    labels_dict_reversed = dict()
+    p = np.array(solution['p']).item()
+    for i in range(0, p):
+        labels_dict[i] = np.array(solution['labels/{0}'.format(i)]).item()
+        labels_dict_reversed[p - 1] = np.array(solution['labels/{0}'.format(i)]).item()
+        p -= 1
 
     return labels_dict, labels_dict_reversed
 
 
-def _make_heatmap(df: pd.DataFrame(), labels_dict: dict = None, labels_dict_reversed: dict = None, title: str = None,
+def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict=None, labels_dict_reversed: dict=None,
                   width: int = 1500, height: int = 1500, label_size: str = "5pt", not_low_rank: bool = True):
-    nlabels = df.shape[0]
-    df = pd.DataFrame(df.stack(), columns=['covariance']).reset_index()
+    nlabels = len(labels_dict)
+    df = pd.DataFrame(data.stack(), columns=['covariance']).reset_index()
     df.columns = ["taxa_y", "taxa_x", "covariance"]
     if not_low_rank:
         df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
@@ -147,20 +138,19 @@ def _make_stats(solution: zarr.hierarchy.Group, labels_dict: dict = None):
     return l1
 
 
-def _solution_plot(solution: zarr.hierarchy.Group, transformed_table: Table, taxonomy: pd.Series,
-                   width: int, height: int, label_size: str):
-    labels_dict, labels_dict_reversed = _get_labels(feature_data=transformed_table, taxonomy=taxonomy)
+def _solution_plot(solution: zarr.hierarchy.Group, width: int, height: int, label_size: str):
     tabs = []
+    labels_dict, labels_dict_reversed = _get_labels(solution=solution)
 
     sample_covariance = pd.DataFrame(solution['covariance']).iloc[::-1]
-    p1 = _make_heatmap(df=sample_covariance, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
-                       title="Sample covariance", width=width, height=height, label_size=label_size)
+    p1 = _make_heatmap(data=sample_covariance, title="Sample covariance", width=width, height=height,
+                       label_size=label_size, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed)
     tab1 = Panel(child=row(p1), title="Sample covariance")
     tabs.append(tab1)
 
     # due to inversion we multiply the result by -1 to keep the original color scheme
     precision = pd.DataFrame(solution['solution/precision_']).iloc[::-1]
-    p2 = _make_heatmap(df=-1 * precision, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
+    p2 = _make_heatmap(data=-1 * precision, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
                        title="Estimated (negative) inverse covariance", width=width, height=height,
                        label_size=label_size)
     tab2 = Panel(child=row(p2), title="Estimated inverse covariance")
@@ -168,7 +158,7 @@ def _solution_plot(solution: zarr.hierarchy.Group, transformed_table: Table, tax
 
     try:
         low_rank = pd.DataFrame(solution['solution/lowrank_']).iloc[::-1]
-        p3 = _make_heatmap(df=low_rank, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
+        p3 = _make_heatmap(data=low_rank, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
                            title="Low-rank", not_low_rank=False, width=width, height=height, label_size=label_size)
         tab3 = Panel(child=row(p3), title="Low-rank")
         tabs.append(tab3)
@@ -185,7 +175,7 @@ def _solution_plot(solution: zarr.hierarchy.Group, transformed_table: Table, tax
     return script, div
 
 
-def summarize(output_dir: str, solution: zarr.hierarchy.Group, transformed_table: Table, taxonomy: pd.Series,
+def summarize(output_dir: str, solution: zarr.hierarchy.Group,
               width: int = 1500, height: int = 1500, label_size: str = "5pt"):
     J_ENV = jinja2.Environment(
         loader=jinja2.PackageLoader('q2_gglasso._summarize', 'assets')
@@ -193,8 +183,7 @@ def summarize(output_dir: str, solution: zarr.hierarchy.Group, transformed_table
 
     template = J_ENV.get_template('index.html')
 
-    script, div = _solution_plot(solution=solution, transformed_table=transformed_table, taxonomy=taxonomy,
-                                 width=width, height=height, label_size=label_size)
+    script, div = _solution_plot(solution=solution, width=width, height=height, label_size=label_size)
 
     output_from_parsed_template = template.render(plot_script=script, plot_div=div)
 
