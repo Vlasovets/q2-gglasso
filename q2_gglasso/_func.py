@@ -21,6 +21,7 @@ taxa = pd.read_csv(str("data/classification/taxonomy.tsv"), index_col=0, sep='\t
 test = pd.read_csv(str("data/atacama-table_clr_test/composition_feature-table.tsv"), index_col=0, sep='\t').T
 ASVs = test.index.values
 
+
 # ASVs = X.index.values
 
 # for i in ASVs[:-15]:
@@ -485,5 +486,7 @@ def solve_problem(covariance_matrix: pd.DataFrame, n_samples: list, latent: bool
 
                 P = solve_MGL(S=S, N=n_samples, reg=reg, latent=latent, model_selection=model_selection,
                               lambda1=lambda1, lambda2=lambda2, mu1=mu1)
+
+    P.__dict__["labels"] = dict(zip(range(len(covariance_matrix.columns)), list(covariance_matrix.columns)))
 
     return P
