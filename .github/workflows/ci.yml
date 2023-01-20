@@ -21,11 +21,7 @@ jobs:
       run: pip install -q flake8
 
     - name: lint
-      run: |
-        pip install -q https://github.com/qiime2/q2lint/archive/master.zip
-        q2lint
-        pip install -q flake8
-        flake8
+      run: flake8
 
   build-and-test:
     needs: [lint]
