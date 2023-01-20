@@ -9,7 +9,7 @@ from gglasso.problem import glasso_problem
 from gglasso.helper.basic_linalg import scale_array_by_diagonal
 from gglasso.helper.ext_admm_helper import create_group_array, construct_indexer, check_G
 
-from .utils import if_2d_array, get_hyperparameters, list_to_array, remove_biom_header
+from .utils import if_2d_array, get_hyperparameters, list_to_array
 from .utils import normalize, log_transform, zero_imputation, check_lambda_path, get_lambda_mask
 from sklearn import preprocessing
 
