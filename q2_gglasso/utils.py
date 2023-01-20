@@ -144,18 +144,14 @@ def get_lambda_mask(adapt_lambda1: list, covariance_matrix: pd.DataFrame):
     return lambda1_mask
 
 
-def check_lambda_path(P):
-    lambda1_opt = P.modelselect_stats["BEST"]["lambda1"]
-    lambda2_opt = P.modelselect_stats["BEST"]["lambda2"]
-
+def check_lambda_path(P, mgl_problem=False):
     sol_par = P.__dict__["modelselect_params"]
+    lambda1_opt = P.modelselect_stats["BEST"]["lambda1"]
     lambda1_min = sol_par["lambda1_range"].min()
     lambda1_max = sol_par["lambda1_range"].max()
-    lambda2_min = sol_par["lambda2_range"].min()
-    lambda2_max = sol_par["lambda2_range"].max()
 
     boundary_lambdas = False
-    hint = dict()
+
     if lambda1_opt == lambda1_min:
         boundary_lambdas = True
         warnings.warn("lambda is on the edge of the interval, try SMALLER lambda1")
@@ -164,13 +160,18 @@ def check_lambda_path(P):
         boundary_lambdas = True
         warnings.warn("lambda is on the edge of the interval, try BIGGER lambda1")
 
-    elif lambda2_opt == lambda2_min:
-        boundary_lambdas = True
-        warnings.warn("lambda is on the edge of the interval, try SMALLER lambda2")
+    if mgl_problem:
+        lambda2_opt = P.modelselect_stats["BEST"]["lambda2"]
+        lambda2_min = sol_par["lambda2_range"].min()
+        lambda2_max = sol_par["lambda2_range"].max()
 
-    elif lambda2_opt == lambda2_max:
-        boundary_lambdas = True
-        warnings.warn("lambda is on the edge of the interval, try BIGGER lambda2")
+        if lambda2_opt == lambda2_min:
+            boundary_lambdas = True
+            warnings.warn("lambda is on the edge of the interval, try SMALLER lambda2")
+
+        elif lambda2_opt == lambda2_max:
+            boundary_lambdas = True
+            warnings.warn("lambda is on the edge of the interval, try BIGGER lambda2")
 
     return boundary_lambdas
 

@@ -13,29 +13,6 @@ from .utils import if_2d_array, get_hyperparameters, list_to_array, remove_biom_
 from .utils import normalize, log_transform, zero_imputation, check_lambda_path, get_lambda_mask
 from sklearn import preprocessing
 
-sample_metadata = qiime2.Metadata.load("data/atacama-sample-metadata.tsv")
-
-sample_metadata.columns
-
-taxa = pd.read_csv(str("data/classification/taxonomy.tsv"), index_col=0, sep='\t')
-test = pd.read_csv(str("data/atacama-table_clr_test/composition_feature-table.tsv"), index_col=0, sep='\t').T
-ASVs = test.index.values
-
-
-# ASVs = X.index.values
-
-# for i in ASVs[:-15]:
-#     if i in taxa.index:
-#         print(i)
-#         name = taxa.loc[i, "Taxon"]
-#         if name not in test.index:
-#         # print(name)
-#             test = test.rename(index={i: name})
-#         # test = test.rename(columns={i: name}, inplace=True)
-#
-# test.index
-# test[test.index.duplicated(keep=False)]
-# test.groupby(level=0).filter(lambda x: len(x) > 1).index
 
 def transform_features(table: Table, taxonomy: pd.Series, sample_metadata: qiime2.Metadata = None,
                        transformation: str = "clr", pseudo_count: int = 1,
@@ -45,10 +22,6 @@ def transform_features(table: Table, taxonomy: pd.Series, sample_metadata: qiime
 
     Parameters
     ----------
-    add_metadata
-    scale_metadata
-    sample_metadata
-    taxonomy
     pseudo_count: int, optional
         Add pseudo count, only necessary for transformation = "clr".
     table: biom.Table
@@ -56,6 +29,14 @@ def transform_features(table: Table, taxonomy: pd.Series, sample_metadata: qiime
     transformation: str
         If 'clr' the data is transformed with center log-ratio method by Aitchison (1982).
         If 'mclr' the data is transformed with modified center log-ratio method by Yoon et al. (2019).
+    add_metadata: bool
+        Add metadata associated with count table, default False.
+    scale_metadata: bool
+        Scaling metadata with mu=0, std=1, default 'True'.
+    sample_metadata: qiime2.Metadata, optional
+        Metadata associated with count table.
+    taxonomy: pd.Series, optional
+        Taxonomic assignments, i.e. bacteria names for feature IDs.
 
     Returns
     -------
@@ -88,7 +69,7 @@ def transform_features(table: Table, taxonomy: pd.Series, sample_metadata: qiime
     for i in ASV_names:
         if i in taxa.index:
             name = taxa.loc[i, "Taxon"]
-            if name not in X.index:  # check duplicates
+            if name not in X.index:  # avoid duplicated names
                 X = X.rename(index={i: name})
 
     X = X.T  # p, N
@@ -258,9 +239,9 @@ def solve_SGL(S: np.ndarray, N: list, latent: bool = None, model_selection: bool
         P = glasso_problem(S, N=N, latent=latent)
         P.model_selection(modelselect_params=modelselect_params)
 
-        # boundary_lambdas = check_lambda_path(P)
-        # if boundary_lambdas:
-        #     warnings.warn("lambda is on the edge of the interval, the solution might have not reached global minimum!")
+        boundary_lambdas = check_lambda_path(P)
+        if boundary_lambdas:
+            warnings.warn("lambda is on the edge of the interval, the solution might have not reached global minimum!")
     else:
         print("\tWITH LAMBDA={0} and MU={1}".format(lambda1, mu1))
         P = glasso_problem(S, N=N, reg_params={'lambda1': lambda1, "mu1": mu1, 'lambda1_mask': lambda1_mask},
@@ -311,7 +292,7 @@ def solve_MGL(S: np.ndarray, N: list, reg: str, latent: bool = None, model_selec
         P = glasso_problem(S, N=N, latent=latent, reg=reg)
         P.model_selection(modelselect_params=modelselect_params)
 
-        boundary_lambdas = check_lambda_path(P)
+        boundary_lambdas = check_lambda_path(P, mgl_problem=True)
         if boundary_lambdas:
             warnings.warn("The solution might have not reached global minimum!")
     else:
@@ -366,7 +347,7 @@ def solve_non_conforming(S: np.ndarray, N: list, G: list, latent: bool = None, m
         P = glasso_problem(S, N=N, G=G, latent=latent, reg='GGL')
         P.model_selection(modelselect_params=modelselect_params)
 
-        boundary_lambdas = check_lambda_path(P)
+        boundary_lambdas = check_lambda_path(P, mgl_problem=True)
         if boundary_lambdas:
             warnings.warn("lambda is on the edge of the interval, the solution might have not reached global minimum!")
     else:
@@ -388,12 +369,7 @@ def solve_problem(covariance_matrix: pd.DataFrame, n_samples: list, latent: bool
 
     Parameters
     ----------
-    n_lambda2
-    lambda2_max
-    lambda2_min
-    n_lambda1
-    lambda1_max
-    lambda1_min
+
     covariance_matrix: list
         Array of K covariance matrices.
     n_samples: list
@@ -403,18 +379,37 @@ def solve_problem(covariance_matrix: pd.DataFrame, n_samples: list, latent: bool
     non_conforming: boolean, optional
         Solve the Group Graphical Lasso problem where not all instances have the same number of dimensions,
         i.e. some variables are present in some instances and not in others.
-    lambda1: list
-        A list of non-negative regularization hyperparameters 'lambda1';
-        'lambda1' accounts for sparsity level in within the groups.
-    lambda2: list
-        A list of non-negative regularization hyperparameters 'lambda2';
+    lambda2_min: float
+        A minimal non-negative regularization hyperparameter 'lambda2';
         'lambda2' accounts for sparsity level in across the groups.
-    mu1: list
-        A list of non-negative low-rank regularization hyperparameters 'mu1';
+    lambda2_max: float
+         A maximal of non-negative regularization hyperparameters 'lambda2';
+        'lambda2' accounts for sparsity level in across the groups.
+    n_lambda2: int
+        A range of 'lambda1'.
+    lambda1_min: float
+        A minimal non-negative regularization hyperparameter 'lambda1';
+        'lambda1' accounts for sparsity level in within the groups.
+    lambda1_max: float
+        A maximal non-negative regularization hyperparameter 'lambda1';
+        'lambda1' accounts for sparsity level in within the groups.
+    n_lambda1: int
+        A range of 'lambda1'.
+    mu1_min: float
+        A minimal of non-negative low-rank regularization hyperparameters 'mu1';
         Only needs to be specified if 'latent=True'.
+    mu1_max: float
+        A maximal of non-negative low-rank regularization hyperparameters 'mu1';
+        Only needs to be specified if 'latent=True'.
+    n_mu1: int
+        A range of 'mu1'.
     adapt_lambda1: list, optional
-        Non-negative, symmetric (p,p) matrix;
-        The 'lambda1' parameter is multiplied element-wise with this array. Only available for SGL.
+        List of elements and associated weights which will be multiplied by 'lambda1' during regularization;
+        The 'lambda1' parameter is multiplied element-wise with list. Only available for SGL;
+        List must be provided in the format: (entry, weight), where entry is a string, and weight is a float;
+        For example, ph 0.01, es 0.5, Ammoniphilus 0.7 Solibacteriales 1.
+        Note, in the example below we set the weight of "Solibacteriales" to 1, AFTER setting "es" to 0.5,
+        otherwise, both entries would have weight 0.5.
     group_array: list, optional
         Bookkeeping array containing information where the respective entries for each group can be found.
     reg: str
@@ -487,6 +482,8 @@ def solve_problem(covariance_matrix: pd.DataFrame, n_samples: list, latent: bool
                 P = solve_MGL(S=S, N=n_samples, reg=reg, latent=latent, model_selection=model_selection,
                               lambda1=lambda1, lambda2=lambda2, mu1=mu1)
 
-    P.__dict__["labels"] = dict(zip(range(len(covariance_matrix.columns)), list(covariance_matrix.columns)))
+    labels = list(covariance_matrix.columns)
+    labels_range = range(len(labels))
+    P.__dict__["labels"] = dict(zip(labels_range, labels))
 
     return P
