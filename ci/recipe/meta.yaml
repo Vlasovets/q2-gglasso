@@ -1,46 +1,46 @@
-{% set data = load_setup_py_data() %}
-{% set version = data.get('version') or 'placehold' %}
-
-package:
-  name: q2-gglasso
-  version: {{ version }}
-
-source:
-  path: ../..
-
-build:
-  script: | 
-    make VERBOSE=1
-    make install
-
-requirements:
-  host:
-    - python {{ python }}
-    - setuptools
-
-  run:
-    - python {{ python }}
-    - gglasso >= 0.1.9
-    - pandas {{ pandas }}
-    - zarr>=2.11.1
-    - pytest>=7.0.1
-    - jinja2
-    - biom-format
-    - q2-types {{ qiime2_epoch }}.*
-    - qiime2 {{ qiime2_epoch }}.*
-
-test:
-  imports:
-    - q2_gglasso
-    - qiime2.plugins.gglasso
-  requires:
-    - qiime2 >={{ qiime2 }}
-    - q2-types >={{ q2_types }}
-    - pytest
-  commands:
-    - pytest --cov q2_gglasso --pyargs q2_gglasso
-
-about:
-  home: https://github.com/bio-datascience/q2-gglasso
-  license: BSD-3-Clause
-  license_family: BSD
+#{% set data = load_setup_py_data() %}
+#{% set version = data.get('version') or 'placehold' %}
+#
+#package:
+#  name: q2-gglasso
+#  version: {{ version }}
+#
+#source:
+#  path: ../..
+#
+#build:
+#  script: |
+#    make VERBOSE=1
+#    make install
+#
+#requirements:
+#  host:
+#    - python {{ python }}
+#    - setuptools
+#
+#  run:
+#    - python {{ python }}
+#    - gglasso >= 0.1.9
+#    - pandas {{ pandas }}
+#    - zarr>=2.11.1
+#    - pytest>=7.0.1
+#    - jinja2
+#    - biom-format
+#    - q2-types {{ qiime2_epoch }}.*
+#    - qiime2 {{ qiime2_epoch }}.*
+#
+#test:
+#  imports:
+#    - q2_gglasso
+#    - qiime2.plugins.gglasso
+#  requires:
+#    - qiime2 >={{ qiime2 }}
+#    - q2-types >={{ q2_types }}
+#    - pytest
+#  commands:
+#    - pytest --cov q2_gglasso --pyargs q2_gglasso
+#
+#about:
+#  home: https://github.com/bio-datascience/q2-gglasso
+#  license: BSD-3-Clause
+#  license_family: BSD
