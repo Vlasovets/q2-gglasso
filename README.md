@@ -1,13 +1,22 @@
 ---
 title: 'type'
 
-authors:
-  - name:'elevation', 'extract-concen', 'amplicon-concentration', 'depth', 'ph', 'toc', 'ec', 
-    'average-soil-relative-humidity', 'relative-humidity-soil-high', 
-    'relative-humidity-soil-low', 'percent-relative-humidity-soil-100', 
-    'average-soil-temperature', 'temperature-soil-high', 'temperature-soil-low', 'percentcover'
-    orcid: 0000-0000-0000-0000
-    affiliation: 1
+features:
+  - elevation:
+  - extract-concen:
+  - amplicon-concentration:
+  - depth:
+  - ph
+  - toc 
+  - ec
+  - average-soil-relative-humidity 
+  - relative-humidity-soil-high
+  - relative-humidity-soil-low 
+  - percent-relative-humidity-soil-100 
+  - average-soil-temperature 
+  - temperature-soil-high
+  - temperature-soil-low 
+  - percentcover
 ---
 
 [//]: # ()
