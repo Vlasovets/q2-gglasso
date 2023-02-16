@@ -2,28 +2,7 @@
 title: 'type'
 features:
   - elevation:
-
-  - extract-concen:
-  - amplicon-concentration:
-  - depth:
-  - ph
-  - toc 
-  - ec
-  - average-soil-relative-humidity 
-  - relative-humidity-soil-high
-  - relative-humidity-soil-low 
-  - percent-relative-humidity-soil-100 
-  - average-soil-temperature 
-  - temperature-soil-high
-  - temperature-soil-low 
-  - percentcover
 ---
-  
----
-title: 'type'
-features:
-  - elevation:
-
   - extract-concen:
   - amplicon-concentration:
   - depth:
