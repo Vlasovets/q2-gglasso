@@ -8,7 +8,7 @@ on:
   push:
 
 jobs:
-  if: ${{ github.event.label.name == 'bug' }}
+  if: ${{ github.event.label.name == 'bug' }} # turn off CI/CD for now
   lint:
     runs-on: ubuntu-latest
     steps:
