@@ -5,9 +5,6 @@ authors:
   - name: First Last
     orcid: 0000-0000-0000-0000
     affiliation: 1
-  - name: Second Last
-    orcid: 0000-0000-0000-0000
-    affiliation: 2
 ---
 
 [//]: # ()
