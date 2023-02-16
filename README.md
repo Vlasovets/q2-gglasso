@@ -18,6 +18,7 @@ features:
   - temperature-soil-low 
   - percentcover
 ---
+---
 title: 'type'
 features:
   - elevation:
