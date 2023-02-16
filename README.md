@@ -1,26 +1,19 @@
 ---
-title: 'BioHackrXiv  template'
-tags:
-  - replace with your own keywords
-  - at least 3 is recommended
-authors:
-  - name: First Last
-    orcid: 0000-0000-0000-0000
-    affiliation: 1
-  - name: Second Last
-    orcid: 0000-0000-0000-0000
-    affiliation: 2
+title: 'type'
+feature:
+  - name: 'elevation', 'extract-concen', 'amplicon-concentration', 'depth', 'ph', 'toc', 'ec', 
+    'average-soil-relative-humidity', 'relative-humidity-soil-high', 
+    'relative-humidity-soil-low', 'percent-relative-humidity-soil-100', 
+    'average-soil-temperature', 'temperature-soil-high', 'temperature-soil-low', 'percentcover'
 
-affiliations:
- - name: Institution 1, address, city, country
-   index: 1
- - name: Institution 1, address, city, country
-   index: 2
-date: 01 January 2020
-bibliography: paper.bib
-authors_short: Last et al. (2021) BioHackrXiv  template
-group: BioHackrXiv
-event: BioHackathon Europe 2021
+  - unit: m.a.s.l. µg/ml ? A (0–60 cm), B (60–220 cm), C (220–340 cm) logarithmic  μg TOC g−1 
+    S/m %  % % t° t° t°
+  - mean: 2825	2.92	9.54	2.0	7.05	693.8	0.72	63.27 78.51	43.62	37.86	15.72  
+    23.61	7.24	1.82
+  - std: 1014.23	5.96	6.81	0.46	2.53	1958.49	1.26	33.54	32.09	32.58	39.
+45	5.8	6.82	5.96	3.05 
+  - min: 895	0.01	0.12	1.0	0	0	0	0	0	0	0	0	0	-2.57	0 
+  - max: 4697	33.49	19.2	3.0	9.36	16449	6.08	100	100	100	100	23.61	35.21	18.33	8.8
 ---
 
 # Introduction or Background
@@ -108,47 +101,4 @@ Leave thise section blank, create a paper.bib with all your references.
 [//]: # ()
 [//]: # (# Tutorial)
 
-[//]: # ()
-[//]: # (---)
 
-[//]: # (title: 'type')
-
-[//]: # ()
-[//]: # (feature:)
-
-[//]: # ()
-[//]: # (  - name: 'elevation', 'extract-concen', 'amplicon-concentration', 'depth', 'ph',)
-
-[//]: # ()
-[//]: # (       'toc', 'ec', 'average-soil-relative-humidity',)
-
-[//]: # ()
-[//]: # (       'relative-humidity-soil-high', 'relative-humidity-soil-low',)
-
-[//]: # ()
-[//]: # (       'percent-relative-humidity-soil-100', 'average-soil-temperature',)
-
-[//]: # ()
-[//]: # (       'temperature-soil-high', 'temperature-soil-low', 'percentcover')
-
-[//]: # ()
-[//]: # (    unit: m.a.s.l. µg/ml ? A &#40;0–60 cm&#41;, B &#40;60–220 cm&#41;, C &#40;220–340 cm&#41; logarithmic  μg TOC g−1 S/m % )
-
-[//]: # (    % % t° t° t°)
-
-[//]: # ()
-[//]: # (    mean: 2825	2.92	9.54	2.0	7.05	693.8	0.72	63.27 78.51	43.62	37.86	15.72	)
-
-[//]: # (    23.61	7.24	1.82)
-
-[//]: # ()
-[//]: # (    std: 1014.23	5.96	6.81	0.46	2.53	1958.49	1.26	33.54	32.09	32.58	39.45	5.8	6.82	5.96	3.05)
-
-[//]: # ()
-[//]: # (    min: 895	0.01	0.12	1.0	0	0	0	0	0	0	0	0	0	-2.57	0)
-
-[//]: # ()
-[//]: # (    max: 4697	33.49	19.2	3.0	9.36	16449	6.08	100	100	100	100	23.61	35.21	18.33	8.8)
-
-[//]: # ()
-[//]: # (---)
