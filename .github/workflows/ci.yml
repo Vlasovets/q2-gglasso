@@ -8,6 +8,7 @@ on:
   push:
 
 jobs:
+  if: ${{ github.event.label.name == 'bug' }}
   lint:
     runs-on: ubuntu-latest
     steps:
