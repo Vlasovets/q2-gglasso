@@ -5,12 +5,6 @@ feature:
     'average-soil-relative-humidity', 'relative-humidity-soil-high', 
     'relative-humidity-soil-low', 'percent-relative-humidity-soil-100', 
     'average-soil-temperature', 'temperature-soil-high', 'temperature-soil-low', 'percentcover'
-  - mean: 2825	2.92	9.54	2.0	7.05	693.8	0.72	63.27 78.51	43.62	37.86	15.72  
-    23.61	7.24	1.82
-  - std: 1014.23	5.96	6.81	0.46	2.53	1958.49	1.26	33.54	32.09	32.58	39.
-45	5.8	6.82	5.96	3.05 
-  - min: 895	0.01	0.12	1.0	0	0	0	0	0	0	0	0	0	-2.57	0 
-  - max: 4697	33.49	19.2	3.0	9.36	16449	6.08	100	100	100	100	23.61	35.21	18.33	8.8
 ---
 
 # Introduction or Background
