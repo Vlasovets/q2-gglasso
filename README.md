@@ -53,7 +53,7 @@ Please note that preprocessing steps, such as the [center log-ratio transformati
 of the count table and [scaling](https://en.wikipedia.org/wiki/Feature_scaling) metadata, have 
 been omitted from this tutorial, but you can find these steps in the documentation linked [here](https://github.com/Vlasovets/atacama-soil-microbiome-tutorial/blob/main/python/tutorial.ipynb).
 
-![covariates](./example/atacama/plots/asv_correlation.png)
+![counts](./example/atacama/plots/asv_correlation.png)
 Figure 1. Correlation between ASVs in Atacama soil microbiome.
 
 ## Metadata
@@ -88,27 +88,27 @@ Figure 2. Correlation between Atacama covariates.
 
 ## Analysis
 ### SGL
-![covariates](./example/atacama/plots/SGL.png)
+![sgl](./example/atacama/plots/SGL.png)
 Figure 3. Single graphical lasso problem solution.
 
-![covariates](./example/atacama/plots/SGL_network.png)
+![sgl_network](./example/atacama/plots/SGL_network.png)
 Figure 3. Single graphical lasso problem solution.
 
 
 ### Adaptive SGL
 
-![covariates](./example/atacama/plots/lambda_mask.png)
+![lambda_mask](./example/atacama/plots/lambda_mask.png)
 Figure 4. Single graphical lasso problem solution.
 
-![covariates](./example/atacama/plots/adapt_SGL.png)
+![adapt_sgl](./example/atacama/plots/adapt_SGL.png)
 Figure 4. Single graphical lasso problem solution.
 
-![covariates](./example/atacama/plots/adapt_network.png)
+![adapt_network](./example/atacama/plots/adapt_network.png)
 Figure 3. Single graphical lasso problem solution.
 
 ### SGL + low-rank
-![covariates](./example/atacama/plots/low_rank.png)
+![low](./example/atacama/plots/low_rank.png)
 Figure 5. Single graphical lasso + low-rank problem solution.
 
-![covariates](./example/atacama/plots/low_network.png)
+![low_network](./example/atacama/plots/low_network.png)
 Figure 3. Single graphical lasso problem solution.
