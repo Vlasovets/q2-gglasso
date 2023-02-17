@@ -21,3 +21,5 @@ q2_gglasso/test.py
 /example/atacama/kora.py
 /data/kora/
 /example/atacama/api_atacama.py
+/.github/
+/ci/
