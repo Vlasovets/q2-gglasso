@@ -92,23 +92,23 @@ Figure 2. Correlation between Atacama covariates.
 Figure 3. Single graphical lasso problem solution.
 
 ![sgl_network](./example/atacama/plots/SGL_network.png)
-Figure 3. Single graphical lasso problem solution.
+Figure 4. Single graphical lasso problem solution.
 
 
 ### Adaptive SGL
 
 ![lambda_mask](./example/atacama/plots/lambda_mask.png)
-Figure 4. Single graphical lasso problem solution.
+Figure 5. Single graphical lasso problem solution.
 
 ![adapt_sgl](./example/atacama/plots/adapt_SGL.png)
-Figure 4. Single graphical lasso problem solution.
+Figure 6. Single graphical lasso problem solution.
 
 ![adapt_network](./example/atacama/plots/adapt_network.png)
-Figure 3. Single graphical lasso problem solution.
+Figure 7. Single graphical lasso problem solution.
 
 ### SGL + low-rank
 ![low](./example/atacama/plots/low_rank.png)
-Figure 5. Single graphical lasso + low-rank problem solution.
+Figure 8. Single graphical lasso + low-rank problem solution.
 
 ![low_network](./example/atacama/plots/low_network.png)
-Figure 3. Single graphical lasso problem solution.
+Figure 9. Single graphical lasso problem solution.
