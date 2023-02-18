@@ -41,13 +41,14 @@ Let's get started!
 In the following tutorial we will work with 130 ASVs written into count table of the following 
 format:
 
-|       | ASV_1     | ASV_2     | ASV_3     | ASV_4     | ASV_5     |
-|-------|-----------|-----------|-----------|-----------|-----------|
-| ASV_1 | 1.000000  | 0.235220  | -0.300181 | 0.125571  | 0.179510  | 
-| ASV_2 | 0.235220  | 1.000000  | 0.115052  | -0.113347 | 0.271909  | 
-| ASV_3 | -0.300181 | 0.115052  | 1.000000  | -0.177694 | -0.238362 |
-| ASV_4 | 0.125571  | -0.113347 | -0.177694 | 1.000000  | 0.146477  |
-| ASV_5 | 0.179510  | 0.271909  | -0.238362 | 0.146477  | 1.000000  | 
+|           | ASV 1     | ASV 2     | ASV 3     | ...       | ASV 130   |
+|-----------|-----------|-----------|-----------|-----------|-----------|
+| sample 1  | -0.167770 | -0.167770 | -0.167770 | ...       | -0.167770 |
+| sample 2  | -0.436407 | -0.436407 | -0.436407 | ...       | -0.436407 |
+| sample 3  | -0.229753 | 1.967471  | -0.229753 | ...       | -0.229753 |
+| sample 4  | -0.424645 | 4.097143  | 3.264234  | ...       | -0.424645 |
+| ...       | ...       | ...       | ...       | ...       | -0.353991 |
+| sample 53 | -0.384811 | 4.069537  | 3.443831  | -0.384811 | -0.384811 |  
 
 Please note that preprocessing steps, such as the [center log-ratio transformation](https://en.wikipedia.org/wiki/Compositional_data#:~:text=in%20the%20simplex.-,Center%20logratio%20transform,-%5Bedit%5D) 
 of the count table and [scaling](https://en.wikipedia.org/wiki/Feature_scaling) metadata, have 
