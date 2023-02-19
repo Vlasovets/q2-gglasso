@@ -25,11 +25,17 @@ For details on QIIME 2, see https://qiime2.org.
 # Example of Atacama soil microbiome analysis
 <div style="text-align: justify">
 
-Welcome to this tutorial on using QIIME 2 for analyzing soil samples from the Atacama Desert in northern Chile. This tutorial assumes that you have already installed QIIME 2, but if you haven't, you can follow the instructions from the [docs](https://docs.qiime2.org/2022.11/install/).
+Welcome to this tutorial on using QIIME 2 for analyzing soil samples from the Atacama Desert in 
+northern Chile. This tutorial assumes that you have already installed QIIME 2, but if you 
+haven't, you can follow the instructions from the [docs](https://docs.qiime2.org/2022.11/install/).
 
-The Atacama Desert is known to be one of the most arid locations on Earth, with some areas receiving less than a millimeter of rain per decade. Despite such extreme conditions, the soil in the Atacama Desert is known to harbor a variety of microbial life. In this tutorial, we will explore how to use graphical models for analyzing microbial compositions in soil samples from the Atacama Desert. 
+The Atacama Desert is known to be one of the most arid locations on Earth, with some areas 
+receiving less than a millimeter of rain per decade. Despite such extreme conditions, the soil 
+in the Atacama Desert is known to harbor a variety of microbial life. In this tutorial, we will 
+explore how to use graphical models for analyzing microbial compositions in soil samples from the Atacama Desert. 
 
-Specifically, we will demonstrate the application of Single graphical lasso (SGL), adaptive SGL, and SGL + low-rank, to illustrate how covariates are related to microbial compositions.
+Specifically, we will demonstrate the application of Single graphical lasso (SGL), adaptive SGL,
+and SGL + low-rank, to illustrate how covariates are related to microbial compositions.
 
 Let's get started!
 
@@ -48,14 +54,16 @@ format:
 | sample 3  | -0.229753 | 1.967471  | -0.229753 | ...       | -0.229753 |
 | sample 4  | -0.424645 | 4.097143  | 3.264234  | ...       | -0.424645 |
 | ...       | ...       | ...       | ...       | ...       | -0.353991 |
-| sample 53 | -0.384811 | 4.069537  | 3.443831  | -0.384811 | -0.384811 |  
+| sample 53 | -0.384811 | 4.069537  | 3.443831  | -0.384811 | -0.384811 | 
 
+<div style="text-align: justify">
 Please note that preprocessing steps, such as the [center log-ratio transformation](https://en.wikipedia.org/wiki/Compositional_data#:~:text=in%20the%20simplex.-,Center%20logratio%20transform,-%5Bedit%5D) 
 of the count table and [scaling](https://en.wikipedia.org/wiki/Feature_scaling) metadata, have 
 been omitted from this tutorial, but you can find these steps in the documentation linked [here](https://github.com/Vlasovets/atacama-soil-microbiome-tutorial/blob/main/python/tutorial.ipynb).
 
 ![counts](./example/atacama/plots/asv_correlation.png)
 Figure 1. Correlation between ASVs in Atacama soil microbiome.
+</div>
 
 ## Metadata
 This section presents a description and basic statistical analysis of the covariates 
