@@ -94,7 +94,6 @@ Figure 3. Single graphical lasso problem solution.
 
 ### Adaptive SGL
 
-
 ![adapt_sgl](./example/atacama/plots/step_2.png)
 Figure 4. Single graphical lasso problem solution.
 
