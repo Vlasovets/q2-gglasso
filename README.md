@@ -24,6 +24,7 @@ For details on QIIME 2, see https://qiime2.org.
 
 # Example of Atacama soil microbiome analysis
 <div style="text-align: justify">
+
 Welcome to this tutorial on using QIIME 2 for analyzing soil samples from the Atacama Desert in 
 northern Chile. This tutorial assumes that you have already installed QIIME 2, but if you 
 haven't, you can follow the instructions from the [docs](https://docs.qiime2.org/2022.11/install/).
