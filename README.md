@@ -161,5 +161,9 @@ and ASV 18 is no longer a hub node.
 
 Figure 8. Association between ASVs and covariates in adaptive SGL solution.
 
+![PCA](./example/atacama/plots/pca_cartoon.png)
+
+Figure 9. PCA of Atacama soil microbiome
+
 
 ## Model comparison
