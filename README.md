@@ -65,6 +65,7 @@ Figure 1. Correlation between ASVs in Atacama soil microbiome.
 
 ## Metadata
 <p align="left">
+
 This section presents a description and basic statistical analysis of the covariates 
 under investigation. For more comprehensive information about 
 the research, readers are referred to the original [paper](https://www.frontiersin.org/articles/10.3389/fmicb.2021.794743/full).
