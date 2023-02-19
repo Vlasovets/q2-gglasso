@@ -96,6 +96,7 @@ covariance, the relationship between ASV 18, ASV 51, ASV 46, ASV 13, ASV 7, and 
 conditionally independent, implying that these relationships do not affect one another. 
 Nevertheless, in reality, we are aware that the microbial compositions are frequently influenced 
 by the environment. Therefore, we should contemplate the possibility of the existence of additional covariates and their potential impact on these associations. Furthermore, it is worth investigating whether these associations will be altered or remain unchanged due to the introduction of new covariates.
+
 ![sgl](./example/atacama/plots/SGL_network.png)
 
 Figure 4. Bacterial associations in SGL solution.
