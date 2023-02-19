@@ -23,6 +23,7 @@ For details on QIIME 2, see https://qiime2.org.
 
 
 # Example of Atacama soil microbiome analysis
+<div style="text-align: justify">
 Welcome to this tutorial on using QIIME 2 for analyzing soil samples from the Atacama Desert in 
 northern Chile. This tutorial assumes that you have already installed QIIME 2, but if you 
 haven't, you can follow the instructions from the [docs](https://docs.qiime2.org/2022.11/install/).
@@ -36,10 +37,13 @@ Specifically, we will demonstrate the application of Single graphical lasso (SGL
 SGL, and SGL + low-rank, to illustrate how covariates are related to microbial compositions.
 
 Let's get started!
+</div>
 
 ## Compositional data
+<div style="text-align: justify">
 In the following tutorial we will work with 130 ASVs written into count table of the following 
 format:
+</div>
 
 |           | ASV 1     | ASV 2     | ASV 3     | ...       | ASV 130   |
 |-----------|-----------|-----------|-----------|-----------|-----------|
@@ -66,7 +70,7 @@ the research, readers are referred to the original [paper](https://www.frontiers
 | feature                            | mean  | std     | min  | max   | description (units)                                |  
 |------------------------------------|-------|---------|------|-------|----------------------------------------------------|
 | elevation                          | 2825  | 1014.23 | 895  | 4697  | height above sea level (m)                         |
-| extract-concen                     | 2.92  | 5.96    | 0.01 | 33.49 | amoung of DNA before PCR (µg/ml)                   |
+| extract-concen                     | 2.92  | 5.96    | 0.01 | 33.49 | amount of DNA before PCR <br/>(µg/ml)              |
 | amplicon-concentration             | 9.54  | 6.81    | 0.12 | 19.2  | amount of DNA after PCR (µg/ml)                    |
 | depth                              | 2     | 0.46    | 1    | 3     | level of sampling A/B/C (0–60/60–220/220–340 cm)   |
 | ph                                 | 7.05  | 2.53    | 0    | 9.36  | potential of hydrogen (log)                        |
