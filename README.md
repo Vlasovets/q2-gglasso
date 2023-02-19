@@ -24,6 +24,7 @@ For details on QIIME 2, see https://qiime2.org.
 
 # Example of Atacama soil microbiome analysis
 <p align="left">
+
 Welcome to this tutorial on using QIIME 2 for analyzing soil samples from the Atacama Desert in 
 northern Chile. This tutorial assumes that you have already installed QIIME 2, but if you 
 haven't, you can follow the instructions from the [docs](https://docs.qiime2.org/2022.11/install/).
@@ -52,6 +53,7 @@ format:
 | ...       | ...       | ...       | ...       | ...       | -0.353991 |
 | sample 53 | -0.384811 | 4.069537  | 3.443831  | -0.384811 | -0.384811 |
 <p align="left">
+
 Please note that preprocessing steps, such as the [center log-ratio transformation](https://en.wikipedia.org/wiki/Compositional_data#:~:text=in%20the%20simplex.-,Center%20logratio%20transform,-%5Bedit%5D) 
 of the count table and [scaling](https://en.wikipedia.org/wiki/Feature_scaling) metadata, have 
 been omitted from this tutorial, but you can find these steps in the documentation linked [here](https://github.com/Vlasovets/atacama-soil-microbiome-tutorial/blob/main/python/tutorial.ipynb).
