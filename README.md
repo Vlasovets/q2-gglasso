@@ -97,17 +97,38 @@ conditionally independent, implying that these relationships do not affect one a
 Nevertheless, in reality, we are aware that the microbial compositions are frequently influenced 
 by the environment. Therefore, we should contemplate the possibility of the existence of additional covariates and their potential impact on these associations. Furthermore, it is worth investigating whether these associations will be altered or remain unchanged due to the introduction of new covariates.
 
-![sgl](./example/atacama/plots/SGL_network.png)
+![sgl_network](./example/atacama/plots/SGL_network.png)
 
 Figure 4. Bacterial associations in SGL solution.
 
 ## Adaptive SGL
 
 ![adapt_sgl](./example/atacama/plots/step_2.png)
-Figure 4. Adaptive SGL solution.
+Figure 5. Adaptive SGL solution.
+
+Let us now incorporate information regarding the covariates in our model and evaluate the correlation between ASVs and various selected covariates such as temperature, humidity, pH, and others. As some of these covariates have a profound effect on microbial compositions, we will utilize an adaptive SGL model which only penalizes the associations between ASVs and does not penalize associations between ASVs and covariates. By examining the changes in the relationship between a hub node of ASV 18 identified through the previous SGL model, we can observe that the relationship between ASV 18 and ASV 53 was influenced by covariates such as average humidity, average temperature, elevation, and the concentration of DNA in a sample prior to PCR. However, with the adaptive SGL model, the spurious relationship between ASV 18 and ASV 53 was eliminated.
+
+![adapt_network](./example/atacama/plots/adapt_network.png)
+
+Figure 6. Association between ASVs and covariates in adaptive SGL solution.
+
 
 ## SGL + low-rank
 ![low](./example/atacama/plots/step_3.png)
-Figure 5. SGL with latent variables solution.
+Figure 7. SGL with latent variables solution.
+
+Frequently, due to privacy concerns, covariate information may not be available, and only microbial 
+data may be at hand. In such cases, it may be of interest to determine whether the effects of the 
+covariates on microbial associations can be detected without having access to covariate information. 
+It is indeed possible to do so by employing an SGL model with latent variables. 
+As shown in Figure 8, the use of latent variables, which are accounted for by the low-rank of 
+the solution, resulted in the disappearance of spurious correlations between ASV 18 and ASVs 51, 46, 
+and 5, and ASV 18 is no longer a hub node.
+
+
+![low_network](./example/atacama/plots/low_network.png)
+
+Figure 8. Association between ASVs and covariates in adaptive SGL solution.
+
 
 ## Model comparison
