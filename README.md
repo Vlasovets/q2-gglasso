@@ -23,7 +23,7 @@ For details on QIIME 2, see https://qiime2.org.
 
 
 # Example of Atacama soil microbiome analysis
-
+<p align="left">
 Welcome to this tutorial on using QIIME 2 for analyzing soil samples from the Atacama Desert in 
 northern Chile. This tutorial assumes that you have already installed QIIME 2, but if you 
 haven't, you can follow the instructions from the [docs](https://docs.qiime2.org/2022.11/install/).
@@ -37,6 +37,7 @@ Specifically, we will demonstrate the application of Single graphical lasso (SGL
 and SGL + low-rank, to illustrate how covariates are related to microbial compositions.
 
 Let's get started!
+</p>
 
 ## Compositional data
 In the following tutorial we will work with 130 ASVs written into count table of the following 
@@ -50,19 +51,21 @@ format:
 | sample 4  | -0.424645 | 4.097143  | 3.264234  | ...       | -0.424645 |
 | ...       | ...       | ...       | ...       | ...       | -0.353991 |
 | sample 53 | -0.384811 | 4.069537  | 3.443831  | -0.384811 | -0.384811 |
-
+<p align="left">
 Please note that preprocessing steps, such as the [center log-ratio transformation](https://en.wikipedia.org/wiki/Compositional_data#:~:text=in%20the%20simplex.-,Center%20logratio%20transform,-%5Bedit%5D) 
 of the count table and [scaling](https://en.wikipedia.org/wiki/Feature_scaling) metadata, have 
 been omitted from this tutorial, but you can find these steps in the documentation linked [here](https://github.com/Vlasovets/atacama-soil-microbiome-tutorial/blob/main/python/tutorial.ipynb).
-
+</p>
 ![counts](./example/atacama/plots/asv_correlation.png)
+
 Figure 1. Correlation between ASVs in Atacama soil microbiome.
 
 ## Metadata
-
+<p align="left">
 This section presents a description and basic statistical analysis of the covariates 
 under investigation. For more comprehensive information about 
 the research, readers are referred to the original [paper](https://www.frontiersin.org/articles/10.3389/fmicb.2021.794743/full).
+</p>
 
 | feature                            | mean  | std     | min  | max   | description (units)                                |  
 |------------------------------------|-------|---------|------|-------|----------------------------------------------------|
@@ -82,23 +85,31 @@ the research, readers are referred to the original [paper](https://www.frontiers
 | temperature-soil-high              | 23.61 | 6.82  | 0     | 35.21 | soil temperature at the top of a sample (t°)       |
 | temperature-soil-low               | 7.24  | 5.96  | -2.57 | 18.33 | soil temperature at the bottom of a sample (t°)    |
 
+<p align="left">
 Figure 2 illustrates the correlation between the covariates, it is clear that some of them are 
 highly correlated and thus can be disregarded.
 For instance, in the subsequent analysis of humidity and temperature, their average values shall suffice for our purposes.
+</p>
+
 ![covariates](./example/atacama/plots/covariates_correlation.png)
+
 Figure 2. Correlation between Atacama covariates.
 
 ## SGL
 ![sgl](./example/atacama/plots/step_1.png)
+
 Figure 3. Single graphical lasso (SGL) solution.
 
-Let us examine the discovered connections among ASVs at Figure 4. By definition of inverse 
-covariance, the relationship between ASV 18, ASV 51, ASV 46, ASV 13, ASV 7, and ASV 5 is  
-conditionally independent, implying that these relationships do not affect one another.
+<p align="left">
+Let us examine the discovered connections among ASVs at Figure 4. By definition of inverse
+covariance, the relationship between ASV 18, ASV 51, ASV 46, ASV 13, ASV 7, and ASV 5 is 
+conditionally independent, implying that these relationships do not affect one another. 
 Nevertheless, in reality, we are aware that the microbial compositions are frequently influenced 
 by the environment. Therefore, we should contemplate the possibility of the existence of 
 additional  covariates and their potential impact on these associations. Furthermore, it is
-worth investigating whether these associations will be altered or remain unchanged due to the introduction of new covariates.
+worth investigating whether these associations will be altered or remain unchanged due to the 
+introduction of new covariates. 
+</p>
 
 ![sgl_network](./example/atacama/plots/SGL_network.png)
 
@@ -107,8 +118,10 @@ Figure 4. Bacterial associations in SGL solution.
 ## Adaptive SGL
 
 ![adapt_sgl](./example/atacama/plots/step_2.png)
+
 Figure 5. Adaptive SGL solution.
 
+<p align="left">
 Let us now incorporate information regarding the covariates in our model and evaluate the 
 correlation  between ASVs and various selected covariates such as temperature, humidity, pH, and 
 others.  As some of these covariates have a profound effect on microbial compositions, we will  
@@ -118,6 +131,7 @@ between a hub node of ASV 18 identified through the previous SGL model, we can o
 relationship between ASV 18 and ASV 53 was influenced by covariates such as average humidity,  
 average temperature, elevation, and the concentration of DNA in a sample prior to PCR. However,  
 with the adaptive SGL model, the spurious relationship between ASV 18 and ASV 53 was eliminated.
+</p>
 
 ![adapt_network](./example/atacama/plots/adapt_network.png)
 
@@ -126,15 +140,18 @@ Figure 6. Association between ASVs and covariates in adaptive SGL solution.
 
 ## SGL + low-rank
 ![low](./example/atacama/plots/step_3.png)
+
 Figure 7. SGL with latent variables solution.
 
+<p align="left">
 Frequently, due to privacy concerns, covariate information may not be available, and only microbial 
 data may be at hand. In such cases, it may be of interest to determine whether the effects of the 
 covariates on microbial associations can be detected without having access to covariate information. 
-It is indeed possible to do so by employing an SGL model with latent variables. 
-As shown in Figure 8, the use of latent variables, which are accounted for by the low-rank of 
-the solution, resulted in the disappearance of spurious correlations between ASV 18 and ASVs 51, 46, 
-and 5, and ASV 18 is no longer a hub node.
+It is indeed possible to do so by employing an SGL model with latent variables. As shown in 
+Figure 8, the use of latent variables, which are accounted for by the low-rank of the solution, 
+resulted in the disappearance of spurious correlations between ASV 18 and ASVs 51, 46, and 5, 
+and ASV 18 is no longer a hub node.
+</p>
 
 ![low_network](./example/atacama/plots/low_network.png)
 
