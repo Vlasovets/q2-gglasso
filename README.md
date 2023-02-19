@@ -29,6 +29,8 @@ Welcome to this tutorial on using QIIME 2 for analyzing soil samples from the At
 northern Chile. This tutorial assumes that you have already installed QIIME 2, but if you 
 haven't, you can follow the instructions from the [docs](https://docs.qiime2.org/2022.11/install/).
 
+</div>
+<div style="text-align: justify">
 The Atacama Desert is known to be one of the most arid locations on Earth, with some areas receiving 
 less than a millimeter of rain per decade. Despite such extreme conditions, the soil in the Atacama Desert 
 is known to harbor a variety of microbial life. In this tutorial, we will explore how to use 
@@ -38,6 +40,7 @@ Specifically, we will demonstrate the application of Single graphical lasso (SGL
 SGL, and SGL + low-rank, to illustrate how covariates are related to microbial compositions.
 
 Let's get started!
+
 </div>
 
 ## Compositional data
