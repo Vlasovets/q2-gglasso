@@ -58,6 +58,7 @@ Please note that preprocessing steps, such as the [center log-ratio transformati
 of the count table and [scaling](https://en.wikipedia.org/wiki/Feature_scaling) metadata, have 
 been omitted from this tutorial, but you can find these steps in the documentation linked [here](https://github.com/Vlasovets/atacama-soil-microbiome-tutorial/blob/main/python/tutorial.ipynb).
 </p>
+
 ![counts](./example/atacama/plots/asv_correlation.png)
 
 Figure 1. Correlation between ASVs in Atacama soil microbiome.
