@@ -88,14 +88,16 @@ For instance, in the subsequent analysis of humidity and temperature, their aver
 Figure 2. Correlation between Atacama covariates.
 
 ## SGL
-![sgl](./example/atacama/plots/step_1.png "Figure 3. Single graphical lasso (SGL) solution.")
+![sgl](./example/atacama/plots/step_1.png)
+Figure 3. Single graphical lasso (SGL) solution.
 
-<img alt="sgl_network" title="Title" style="float: right; margin-left: 10px" height="300" src="./example/atacama/plots/SGL_network.png"  width="300"/> 
 Let us examine the discovered connections among ASVs at Figure 4. By definition of inverse 
 covariance, the relationship between ASV 18, ASV 51, ASV 46, ASV 13, ASV 7, and ASV 5 is 
 conditionally independent, implying that these relationships do not affect one another. 
 Nevertheless, in reality, we are aware that the microbial compositions are frequently influenced 
 by the environment. Therefore, we should contemplate the possibility of the existence of additional covariates and their potential impact on these associations. Furthermore, it is worth investigating whether these associations will be altered or remain unchanged due to the introduction of new covariates.
+![sgl](./example/atacama/plots/SGL_network.png)
+Figure 4. Bacterial associations in SGL solution.
 
 ## Adaptive SGL
 
