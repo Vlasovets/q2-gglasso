@@ -123,6 +123,7 @@ introduction of new covariates.
 </p>
 
 <div style="text-align:center"><img src="./example/atacama/plots/SGL_network.png" /></div>
+
 <p align="center">
 Figure 4. Bacterial associations in SGL solution.
 </p>
@@ -173,6 +174,7 @@ and ASV 18 is no longer a hub node.
 
 
 <div style="text-align:center"><img src="./example/atacama/plots/low_network.png" /></div>
+
 <p align="center">
 Figure 8. Association between ASVs and covariates in adaptive SGL solution.
 </p>
