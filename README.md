@@ -74,8 +74,8 @@ the research, readers are referred to the original [paper](https://www.frontiers
 | feature                            | mean  | std     | min  | max   | description (units)                                |  
 |------------------------------------|-------|---------|------|-------|----------------------------------------------------|
 | elevation                          | 2825  | 1014.23 | 895  | 4697  | height above sea level (m)                         |
-| extract-concen                     | 2.92  | 5.96    | 0.01 | 33.49 | amount of DNA before PCR <br/>(µg/ml)              |
-| amplicon-concentration             | 9.54  | 6.81    | 0.12 | 19.2  | amount of DNA after PCR (µg/ml)                    |
+| extract-concen                     | 2.92  | 5.96    | 0.01 | 33.49 | concentrarion of DNA before PCR <br/>(%)           |
+| amplicon-concentration             | 9.54  | 6.81    | 0.12 | 19.2  | concentration of DNA after PCR (%)                 |
 | depth                              | 2     | 0.46    | 1    | 3     | level of sampling A/B/C (0–60/60–220/220–340 cm)   |
 | ph                                 | 7.05  | 2.53    | 0    | 9.36  | potential of hydrogen (log)                        |
 | toc                                | 693.8 | 1958.49 | 0    | 16449 | total organic carbon (μg/g)                        |
@@ -161,9 +161,30 @@ and ASV 18 is no longer a hub node.
 
 Figure 8. Association between ASVs and covariates in adaptive SGL solution.
 
+## Model comparison
+The Graphical Lasso solution is of the form Θ−𝐿 where Θ is sparse and 𝐿 has low rank. 
+We use the low rank component of the Graphical Lasso solution in order to do a robust PCA. 
+For this, we use the eigendecomposition 
+
+$L = V \Sigma V^T$
+
+where the columns of 𝑉 are the orthonormal eigenvecors and Σ is diagonal containing the eigenvalues. 
+Denote the columns of 𝑉 corresponding only to positive eigenvalues with  $\tilde{V} \in \mathbb
+{R}^{p\times r}$ and $\tilde{\Sigma} \in \mathbb{R}^{r\times r}$ accordingly, where $r=\mathrm{rank}(L)$. 
+Then we have $L = \tilde{V} \tilde{\Sigma} \tilde{V}^T$
+
+Now we project the data matrix $X\in \mathbb{R}^{p\times N}$ onto the eigenspaces of $L^{-1}$ 
+which are the same as of $𝐿$ - by computing
+
+$U := X^T \tilde{V}\tilde{\Sigma}$
+
+
+
+
+
 ![PCA](./example/atacama/plots/pca_cartoon.png)
 
 Figure 9. PCA of Atacama soil microbiome
 
 
-## Model comparison
+
