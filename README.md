@@ -221,6 +221,12 @@ $U := X^T \tilde{V}\tilde{\Sigma}$
 Figure 10. PCA of Atacama soil microbiome
 </p>
 
+In Figure 11, a comparison is presented between the outcomes of principal component analysis 
+(PCA) of the adaptive graphical lasso solution and the low-rank graphical lasso solution. 
+The results indicate a strong correlation between average temperature and the principal components 
+in both cases, suggesting that a single graphical lasso with low-rank may be appropriate in 
+scenarios where only compositional data is available and additional covariates are unknown, i.e., 
+SGL + low-rank is capable of accounting for the impact of hidden confounders.
 
 <div style="text-align:center"><img src="./example/atacama/plots/PCA.png" /></div>
 <p align="center">
