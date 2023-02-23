@@ -157,9 +157,14 @@ resulted in the disappearance of spurious correlations between ASV 18 and ASVs 5
 and ASV 18 is no longer a hub node.
 </p>
 
+<p align="center">
+
 ![low_network](./example/atacama/plots/low_network.png)
 
+</p>
+
 Figure 8. Association between ASVs and covariates in adaptive SGL solution.
+
 
 ## Model comparison
 The Graphical Lasso solution is of the form Θ−𝐿 where Θ is sparse and 𝐿 has low rank. 
