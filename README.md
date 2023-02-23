@@ -166,18 +166,24 @@ The Graphical Lasso solution is of the form Θ−𝐿 where Θ is sparse and �
 We use the low rank component of the Graphical Lasso solution in order to do a robust PCA. 
 For this, we use the eigendecomposition 
 
+<p align="center">
 $L = V \Sigma V^T$
+</p>
 
 where the columns of 𝑉 are the orthonormal eigenvecors and Σ is diagonal containing the eigenvalues. 
-Denote the columns of 𝑉 corresponding only to positive eigenvalues with  $\tilde{V} \in \mathbb
-{R}^{p\times r}$ and $\tilde{\Sigma} \in \mathbb{R}^{r\times r}$ accordingly, where $r=\mathrm{rank}(L)$. 
-Then we have $L = \tilde{V} \tilde{\Sigma} \tilde{V}^T$
+Denote the columns of 𝑉 corresponding only to positive eigenvalues with  $\tilde{V} \in \mathbb{R}^{p\times r}$ and $\tilde{\Sigma} \in \mathbb{R}^{r\times r}$ accordingly, where $r=\mathrm{rank}(L)$. 
+Then we have 
+
+<p align="center">
+$L = \tilde{V} \tilde{\Sigma} \tilde{V}^T$
+</p>
 
 Now we project the data matrix $X\in \mathbb{R}^{p\times N}$ onto the eigenspaces of $L^{-1}$ 
 which are the same as of $𝐿$ - by computing
 
+<p align="center">
 $U := X^T \tilde{V}\tilde{\Sigma}$
-
+</p>
 
 
 
