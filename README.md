@@ -52,6 +52,7 @@ format:
 | sample 4  | -0.424645 | 4.097143  | 3.264234  | ...       | -0.424645 |
 | ...       | ...       | ...       | ...       | ...       | -0.353991 |
 | sample 53 | -0.384811 | 4.069537  | 3.443831  | -0.384811 | -0.384811 |
+
 <p align="left">
 
 Please note that preprocessing steps, such as the [center log-ratio transformation](https://en.wikipedia.org/wiki/Compositional_data#:~:text=in%20the%20simplex.-,Center%20logratio%20transform,-%5Bedit%5D) 
@@ -59,9 +60,11 @@ of the count table and [scaling](https://en.wikipedia.org/wiki/Feature_scaling) 
 been omitted from this tutorial, but you can find these steps in the documentation linked [here](https://github.com/Vlasovets/atacama-soil-microbiome-tutorial/blob/main/python/tutorial.ipynb).
 </p>
 
-![counts](./example/atacama/plots/asv_correlation.png)
 
+<div style="text-align:center"><img src="./example/atacama/plots/asv_correlation.png" /></div>
+<p align="center">
 Figure 1. Correlation between ASVs in Atacama soil microbiome.
+</p>
 
 ## Metadata
 <p align="left">
@@ -70,6 +73,7 @@ This section presents a description and basic statistical analysis of the covari
 under investigation. For more comprehensive information about 
 the research, readers are referred to the original [paper](https://www.frontiersin.org/articles/10.3389/fmicb.2021.794743/full).
 </p>
+
 
 | feature                            | mean  | std     | min  | max   | description (units)                                |  
 |------------------------------------|-------|---------|------|-------|----------------------------------------------------|
@@ -95,14 +99,17 @@ highly correlated and thus can be disregarded.
 For instance, in the subsequent analysis of humidity and temperature, their average values shall suffice for our purposes.
 </p>
 
-![covariates](./example/atacama/plots/covariates_correlation.png)
-
+<div style="text-align:center"><img src="./example/atacama/plots/covariates_correlation.png" /></div>
+<p align="center">
 Figure 2. Correlation between Atacama covariates.
+</p>
 
 ## SGL
-![sgl](./example/atacama/plots/step_1.png)
 
+<div style="text-align:center"><img src="./example/atacama/plots/step_1.png" /></div>
+<p align="center">
 Figure 3. Single graphical lasso (SGL) solution.
+</p>
 
 <p align="left">
 Let us examine the discovered connections among ASVs at Figure 4. By definition of inverse
@@ -115,15 +122,19 @@ worth investigating whether these associations will be altered or remain unchang
 introduction of new covariates. 
 </p>
 
-![sgl_network](./example/atacama/plots/SGL_network.png)
-
+<div style="text-align:center"><img src="./example/atacama/plots/SGL_network.png" /></div>
+<p align="center">
 Figure 4. Bacterial associations in SGL solution.
+</p>
+
+
 
 ## Adaptive SGL
 
-![adapt_sgl](./example/atacama/plots/step_2.png)
-
+<div style="text-align:center"><img src="./example/atacama/plots/step_2.png" /></div>
+<p align="center">
 Figure 5. Adaptive SGL solution.
+</p>
 
 <p align="left">
 Let us now incorporate information regarding the covariates in our model and evaluate the 
@@ -137,15 +148,18 @@ average temperature, elevation, and the concentration of DNA in a sample prior t
 with the adaptive SGL model, the spurious relationship between ASV 18 and ASV 53 was eliminated.
 </p>
 
-![adapt_network](./example/atacama/plots/adapt_network.png)
 
+<div style="text-align:center"><img src="./example/atacama/plots/adapt_network.png" /></div>
+<p align="center">
 Figure 6. Association between ASVs and covariates in adaptive SGL solution.
-
+</p>
 
 ## SGL + low-rank
-![low](./example/atacama/plots/step_3.png)
 
+<div style="text-align:center"><img src="./example/atacama/plots/step_3.png" /></div>
+<p align="center">
 Figure 7. SGL with latent variables solution.
+</p>
 
 <p align="left">
 Frequently, due to privacy concerns, covariate information may not be available, and only microbial 
@@ -157,14 +171,11 @@ resulted in the disappearance of spurious correlations between ASV 18 and ASVs 5
 and ASV 18 is no longer a hub node.
 </p>
 
+
+<div style="text-align:center"><img src="./example/atacama/plots/low_network.png" /></div>
 <p align="center">
-
-![low_network](./example/atacama/plots/low_network.png)
-
-</p>
-
 Figure 8. Association between ASVs and covariates in adaptive SGL solution.
-
+</p>
 
 ## Model comparison
 The Graphical Lasso solution is of the form Θ−𝐿 where Θ is sparse and 𝐿 has low rank. 
@@ -191,11 +202,11 @@ $U := X^T \tilde{V}\tilde{\Sigma}$
 </p>
 
 
-
-
-![PCA](./example/atacama/plots/pca_cartoon.png)
-
+<div style="text-align:center"><img src="./example/atacama/plots/pca_cartoon.png" /></div>
+<p align="center">
 Figure 9. PCA of Atacama soil microbiome
+</p>
+
 
 
 
