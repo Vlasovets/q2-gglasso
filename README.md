@@ -178,6 +178,13 @@ Figure 8. Association between ASVs and covariates in adaptive SGL solution.
 </p>
 
 ## Model comparison
+
+<div style="text-align:center"><img src="./example/atacama/plots/l1_plot.png" /></div>
+<p align="center">
+Figure 9. Inverse covariance sorted by l1-norm of the covariates.
+</p>
+
+
 The Graphical Lasso solution is of the form Θ−𝐿 where Θ is sparse and 𝐿 has low rank. 
 We use the low rank component of the Graphical Lasso solution in order to do a robust PCA. 
 For this, we use the eigendecomposition 
@@ -204,7 +211,13 @@ $U := X^T \tilde{V}\tilde{\Sigma}$
 
 <div style="text-align:center"><img src="./example/atacama/plots/pca_cartoon.png" /></div>
 <p align="center">
-Figure 9. PCA of Atacama soil microbiome
+Figure 10. PCA of Atacama soil microbiome
+</p>
+
+
+<div style="text-align:center"><img src="./example/atacama/plots/PCA.png" /></div>
+<p align="center">
+Figure 11. PCA comparison
 </p>
 
 
