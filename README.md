@@ -195,8 +195,8 @@ Figure 9. Inverse covariance sorted by l1-norm of the covariates.
 
 
 The Graphical Lasso solution is of the form Θ−𝐿 where Θ is sparse and 𝐿 has low rank. 
-We use the low rank component of the Graphical Lasso solution in order to do a robust PCA. 
-For this, we use the eigendecomposition 
+We use the low rank component of the Graphical Lasso solution in order to do a PCA by the 
+following  eigendecomposition 
 
 <p align="center">
 $L = V \Sigma V^T$
