@@ -179,6 +179,13 @@ Figure 8. Association between ASVs and covariates in adaptive SGL solution.
 
 ## Model comparison
 
+<p align="left">
+To demonstrate the correlation between ASVs (amplicon sequence variants) and covariates, 
+we can compute the l1-norm of the covariates and arrange our solution matrix in descending order 
+based on this norm. Figure 9 reveals certain ASVs located at the top, which are solely 
+associated with the covariates. Among these ASVs, we can observe the presence of ASV_18, 
+which we previously identified.
+</p>
 <div style="text-align:center"><img src="./example/atacama/plots/l1_plot.png" /></div>
 <p align="center">
 Figure 9. Inverse covariance sorted by l1-norm of the covariates.
