@@ -33,7 +33,9 @@ def _get_colors(df: pd.DataFrame(), n_colors: int = 9):
     ccorr = np.arange(-1, 1, 1 / (len(colors) / 2))
     color_list = []
     for value in df.covariance.values:
-        ind = bisect.bisect_left(ccorr, value)
+        ind = bisect.bisect_left(ccorr, value)  # smart array insertion
+        if ind == 0:  # avoid ind == -1 on the next step
+            ind = ind + 1
         color_list.append(colors[ind - 1])
     return color_list, colors
 
@@ -50,8 +52,10 @@ def _get_labels(solution: zarr.hierarchy.Group):
     return labels_dict, labels_dict_reversed
 
 
-def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict=None, labels_dict_reversed: dict=None,
-                  width: int = 1500, height: int = 1500, label_size: str = "5pt", not_low_rank: bool = True):
+def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = None,
+                  labels_dict_reversed: dict = None,
+                  width: int = 1500, height: int = 1500, label_size: str = "5pt",
+                  not_low_rank: bool = True):
     nlabels = len(labels_dict)
     df = pd.DataFrame(data.stack(), columns=['covariance']).reset_index()
     df.columns = ["taxa_y", "taxa_x", "covariance"]
@@ -64,8 +68,9 @@ def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict=Non
 
     bottom, top, left, right = _get_bounds(nlabels=nlabels)
 
-    source = ColumnDataSource(dict(top=top, bottom=bottom, left=left, right=right, color_list=color_list,
-                                   taxa_x=df['taxa_x'], taxa_y=df['taxa_y'], covariance=df['covariance']))
+    source = ColumnDataSource(
+        dict(top=top, bottom=bottom, left=left, right=right, color_list=color_list,
+             taxa_x=df['taxa_x'], taxa_y=df['taxa_y'], covariance=df['covariance']))
 
     bokeh_tools = ["save, zoom_in, zoom_out, wheel_zoom, box_zoom, crosshair, reset, hover"]
 
@@ -73,7 +78,8 @@ def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict=Non
                title=title, title_location='above', x_axis_location="below",
                tools=bokeh_tools, toolbar_location='left')
 
-    p.quad(top="top", bottom="bottom", left="left", right="right", line_color='white', color="color_list",
+    p.quad(top="top", bottom="bottom", left="left", right="right", line_color='white',
+           color="color_list",
            source=source)
     p.xaxis.major_label_orientation = pi / 4
     p.yaxis.major_label_orientation = "horizontal"
@@ -117,7 +123,8 @@ def _make_stats(solution: zarr.hierarchy.Group, labels_dict: dict = None):
     best_lambda1 = flatten_array(solution['modelselect_stats/BEST/lambda1'])
     best_mu = flatten_array(solution['modelselect_stats/BEST/mu1'])
 
-    best_stats_dict = {"best lambda": best_lambda1, "best mu": best_mu, "positive edges percentage": pep_stat}
+    best_stats_dict = {"best lambda": best_lambda1, "best mu": best_mu,
+                       "positive edges percentage": pep_stat}
     df_best = pd.DataFrame.from_dict(best_stats_dict, orient='columns')
     source_best = ColumnDataSource(df_best)
 
@@ -143,14 +150,17 @@ def _solution_plot(solution: zarr.hierarchy.Group, width: int, height: int, labe
     labels_dict, labels_dict_reversed = _get_labels(solution=solution)
 
     sample_covariance = pd.DataFrame(solution['covariance']).iloc[::-1]
-    p1 = _make_heatmap(data=sample_covariance, title="Sample covariance", width=width, height=height,
-                       label_size=label_size, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed)
+    p1 = _make_heatmap(data=sample_covariance, title="Sample covariance", width=width,
+                       height=height,
+                       label_size=label_size, labels_dict=labels_dict,
+                       labels_dict_reversed=labels_dict_reversed)
     tab1 = Panel(child=row(p1), title="Sample covariance")
     tabs.append(tab1)
 
     # due to inversion we multiply the result by -1 to keep the original color scheme
     precision = pd.DataFrame(solution['solution/precision_']).iloc[::-1]
-    p2 = _make_heatmap(data=-1 * precision, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
+    p2 = _make_heatmap(data=-1 * precision, labels_dict=labels_dict,
+                       labels_dict_reversed=labels_dict_reversed,
                        title="Estimated (negative) inverse covariance", width=width, height=height,
                        label_size=label_size)
     tab2 = Panel(child=row(p2), title="Estimated inverse covariance")
@@ -158,8 +168,10 @@ def _solution_plot(solution: zarr.hierarchy.Group, width: int, height: int, labe
 
     try:
         low_rank = pd.DataFrame(solution['solution/lowrank_']).iloc[::-1]
-        p3 = _make_heatmap(data=low_rank, labels_dict=labels_dict, labels_dict_reversed=labels_dict_reversed,
-                           title="Low-rank", not_low_rank=False, width=width, height=height, label_size=label_size)
+        p3 = _make_heatmap(data=low_rank, labels_dict=labels_dict,
+                           labels_dict_reversed=labels_dict_reversed,
+                           title="Low-rank", not_low_rank=False, width=width, height=height,
+                           label_size=label_size)
         tab3 = Panel(child=row(p3), title="Low-rank")
         tabs.append(tab3)
     except:
@@ -183,7 +195,8 @@ def summarize(output_dir: str, solution: zarr.hierarchy.Group,
 
     template = J_ENV.get_template('index.html')
 
-    script, div = _solution_plot(solution=solution, width=width, height=height, label_size=label_size)
+    script, div = _solution_plot(solution=solution, width=width, height=height,
+                                 label_size=label_size)
 
     output_from_parsed_template = template.render(plot_script=script, plot_div=div)
 
