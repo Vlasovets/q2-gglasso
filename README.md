@@ -75,23 +75,23 @@ the research, readers are referred to the original [paper](https://www.frontiers
 </p>
 
 
-| feature                            | mean  | std     | min  | max   | description (units)                                |  
-|------------------------------------|-------|---------|------|-------|----------------------------------------------------|
-| elevation                          | 2825  | 1014.23 | 895  | 4697  | height above sea level (m)                         |
-| extract-concen                     | 2.92  | 5.96    | 0.01 | 33.49 | concentrarion of DNA before PCR <br/>(%)           |
-| amplicon-concentration             | 9.54  | 6.81    | 0.12 | 19.2  | concentration of DNA after PCR (%)                 |
-| depth                              | 2     | 0.46    | 1    | 3     | level of sampling A/B/C (0–60/60–220/220–340 cm)   |
-| ph                                 | 7.05  | 2.53    | 0    | 9.36  | potential of hydrogen (log)                        |
-| toc                                | 693.8 | 1958.49 | 0    | 16449 | total organic carbon (μg/g)                        |
-| ec                                 | 0.72  | 1.26    | 0    | 6.08  | electric conductivity (S/m in SI)                  |
-| percentcover                       | 1.82  | 3.05  | 0     | 8.8   | vegetation coverage (% per $m^2$)                  |
-| average-soil-relative-humidity     | 63.27 | 33.54   | 0    | 100   | average soil humidity  (%)                         |
-| relative-humidity-soil-high        | 78.51 | 32.09   | 0    | 100   | soil humidity at the top of a sample (%)           |
-| relative-humidity-soil-low         | 43.62 | 32.58 | 0     | 100   | soil humidity at the bottom of a sample (%)        |
+| feature                            | mean  | std     | min  | max   | description (units)                              |  
+|------------------------------------|-------|---------|------|-------|--------------------------------------------------|
+| elevation                          | 2825  | 1014.23 | 895  | 4697  | height above sea level (m)                       |
+| extract-concen                     | 2.92  | 5.96    | 0.01 | 33.49 | concentrarion of DNA before PCR (µg/ml)          |
+| amplicon-concentration             | 9.54  | 6.81    | 0.12 | 19.2  | concentration of DNA after PCR (µg/ml)                |
+| depth                              | 2     | 0.46    | 1    | 3     | level of sampling A/B/C (0–60/60–220/220–340 cm) |
+| ph                                 | 7.05  | 2.53    | 0    | 9.36  | potential of hydrogen (log)                      |
+| toc                                | 693.8 | 1958.49 | 0    | 16449 | total organic carbon (μg/g)                      |
+| ec                                 | 0.72  | 1.26    | 0    | 6.08  | electric conductivity (S/m in SI)                |
+| percentcover                       | 1.82  | 3.05  | 0     | 8.8   | vegetation coverage (% per $m^2$)                |
+| average-soil-relative-humidity     | 63.27 | 33.54   | 0    | 100   | average soil humidity  (%)                       |
+| relative-humidity-soil-high        | 78.51 | 32.09   | 0    | 100   | soil humidity at the top of a sample (%)         |
+| relative-humidity-soil-low         | 43.62 | 32.58 | 0     | 100   | soil humidity at the bottom of a sample (%)      |
 | percent-relative-humidity-soil-100 | 37.86 | 39.45 | 0     | 100   | relative soil humidity across all depth levels (%) |
-| average-soil-temperature           | 15.72 | 5.8   | 0     | 23.61 | average soil temperature (t°)                      |
-| temperature-soil-high              | 23.61 | 6.82  | 0     | 35.21 | soil temperature at the top of a sample (t°)       |
-| temperature-soil-low               | 7.24  | 5.96  | -2.57 | 18.33 | soil temperature at the bottom of a sample (t°)    |
+| average-soil-temperature           | 15.72 | 5.8   | 0     | 23.61 | average soil temperature (t°)                    |
+| temperature-soil-high              | 23.61 | 6.82  | 0     | 35.21 | soil temperature at the top of a sample (t°)     |
+| temperature-soil-low               | 7.24  | 5.96  | -2.57 | 18.33 | soil temperature at the bottom of a sample (t°)  |
 
 <p align="left">
 Figure 2 illustrates the correlation between the covariates, it is clear that some of them are 
