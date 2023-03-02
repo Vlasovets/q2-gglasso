@@ -235,6 +235,16 @@ SGL + low-rank is capable of accounting for the impact of hidden confounders.
 Figure 11. PCA comparison
 </p>
 
+<div style="text-align:center"><img src="./example/atacama/plots/temp_plot.png" /></div>
+<p align="center">
+Figure 12. Correlation between temperature, ASV 18 and ASV 51.
+</p>
+
+<div style="text-align:center"><img src="./example/atacama/plots/l1_plot_low.png" /></div>
+<p align="center">
+Figure 13. Inverse covariance sorted by l1-norm of low-rank principal components (PCs).
+</p>
+
 
 
 
