@@ -215,7 +215,8 @@ def log_transform(X, transformation=str, eps=0.1):
     return Z
 
 
-def zero_imputation(X: pd.DataFrame, pseudo_count: int = 1):
+def zero_imputation(df: pd.DataFrame, pseudo_count: int = 1):
+    X = df.copy()
     original_sum = X.sum(axis=0)  # sum in a sample (axis=0 if p, N matrix)
     for col in X.columns:
         X[col].replace(to_replace=0, value=pseudo_count, inplace=True)
