@@ -216,12 +216,12 @@ def log_transform(X, transformation=str, eps=0.1):
 
 
 def zero_imputation(X: pd.DataFrame, pseudo_count: int = 1):
-    original_sum = X.sum(axis=0)
+    original_sum = X.sum(axis=0)  # sum in a sample (axis=0 if p, N matrix)
     for col in X.columns:
         X[col].replace(to_replace=0, value=pseudo_count, inplace=True)
     shifted_sum = X.sum(axis=0)
-    scaling_parameter = original_sum.div(shifted_sum)
-    X = X.mul(scaling_parameter)
+    scaling_parameter = original_sum.div(shifted_sum)  # you need to scale as you added 1 to zeros
+    X = X.mul(scaling_parameter, axis=1)
 
     return X
 
