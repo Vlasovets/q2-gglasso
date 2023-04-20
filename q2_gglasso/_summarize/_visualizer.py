@@ -57,13 +57,17 @@ def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = N
                   width: int = 1500, height: int = 1500, label_size: str = "5pt",
                   not_low_rank: bool = True):
     nlabels = len(labels_dict)
-    df = pd.DataFrame(data.stack(), columns=['covariance']).reset_index()
+    df = data.iloc[::-1]  # rotate matrix 90 degrees
+    df = pd.DataFrame(df.stack(), columns=['covariance']).reset_index()
     df.columns = ["taxa_y", "taxa_x", "covariance"]
     if not_low_rank:
         df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
 
-    color_list, colors = _get_colors(df=df)
-    mapper = LinearColorMapper(palette=colors, low=-1, high=1)
+    color_list, colors = _get_colors(df=df, n_colors=11)
+    min_value = df['covariance'].min()
+    max_value = df['covariance'].max()
+    mapper = LinearColorMapper(palette=colors, low=min_value, high=max_value)
+    #     mapper = LinearColorMapper(palette=colors, low=-1, high=1)
     color_bar = ColorBar(color_mapper=mapper, location=(0, 0))
 
     bottom, top, left, right = _get_bounds(nlabels=nlabels)
@@ -87,11 +91,16 @@ def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = N
     p.add_layout(color_bar, 'right')
     p.toolbar.autohide = True
 
-    p.xaxis.ticker = list(range(0, nlabels))
-    p.yaxis.ticker = list(range(0, nlabels))
+    p.xaxis.ticker = [x + 0.5 for x in
+                      list(range(0, nlabels))]  ### shift label position to the center
+    p.yaxis.ticker = [x + 0.5 for x in list(range(0, nlabels))]
+
+    shifted_labels_dict = {k + 0.5: v for k, v in labels_dict.items()}
+    shifted_labels_dict_reversed = {k + 0.5: v for k, v in labels_dict_reversed.items()}
+
     if not_low_rank:
-        p.xaxis.major_label_overrides = labels_dict
-        p.yaxis.major_label_overrides = labels_dict_reversed
+        p.xaxis.major_label_overrides = shifted_labels_dict
+        p.yaxis.major_label_overrides = shifted_labels_dict_reversed
     p.xaxis.major_label_text_font_size = label_size
     p.yaxis.major_label_text_font_size = label_size
 
@@ -103,6 +112,57 @@ def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = N
     ]
 
     return p
+# def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = None,
+#                   labels_dict_reversed: dict = None,
+#                   width: int = 1500, height: int = 1500, label_size: str = "5pt",
+#                   not_low_rank: bool = True):
+#     nlabels = len(labels_dict)
+#     df = pd.DataFrame(data.stack(), columns=['covariance']).reset_index()
+#     df.columns = ["taxa_y", "taxa_x", "covariance"]
+#     if not_low_rank:
+#         df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
+#
+#     color_list, colors = _get_colors(df=df)
+#     mapper = LinearColorMapper(palette=colors, low=-1, high=1)
+#     color_bar = ColorBar(color_mapper=mapper, location=(0, 0))
+#
+#     bottom, top, left, right = _get_bounds(nlabels=nlabels)
+#
+#     source = ColumnDataSource(
+#         dict(top=top, bottom=bottom, left=left, right=right, color_list=color_list,
+#              taxa_x=df['taxa_x'], taxa_y=df['taxa_y'], covariance=df['covariance']))
+#
+#     bokeh_tools = ["save, zoom_in, zoom_out, wheel_zoom, box_zoom, crosshair, reset, hover"]
+#
+#     p = figure(plot_width=width, plot_height=height, x_range=(0, nlabels), y_range=(0, nlabels),
+#                title=title, title_location='above', x_axis_location="below",
+#                tools=bokeh_tools, toolbar_location='left')
+#
+#     p.quad(top="top", bottom="bottom", left="left", right="right", line_color='white',
+#            color="color_list",
+#            source=source)
+#     p.xaxis.major_label_orientation = pi / 4
+#     p.yaxis.major_label_orientation = "horizontal"
+#     p.title.text_font_size = "24pt"
+#     p.add_layout(color_bar, 'right')
+#     p.toolbar.autohide = True
+#
+#     p.xaxis.ticker = list(range(0, nlabels))
+#     p.yaxis.ticker = list(range(0, nlabels))
+#     if not_low_rank:
+#         p.xaxis.major_label_overrides = labels_dict
+#         p.yaxis.major_label_overrides = labels_dict_reversed
+#     p.xaxis.major_label_text_font_size = label_size
+#     p.yaxis.major_label_text_font_size = label_size
+#
+#     hover = p.select(dict(type=HoverTool))
+#     hover.tooltips = [
+#         ("taxa_x", "@taxa_x"),
+#         ("taxa_y", "@taxa_y"),
+#         ("covariance", "@covariance"),
+#     ]
+#
+#     return p
 
 
 def _make_stats(solution: zarr.hierarchy.Group, labels_dict: dict = None):
