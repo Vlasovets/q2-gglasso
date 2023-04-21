@@ -72,9 +72,10 @@ def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = N
     df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
 
     color_list, colors = _get_colors(df=df)
-    min_value = df['covariance'].min()
-    max_value = df['covariance'].max()
-    mapper = LinearColorMapper(palette=colors, low=min_value, high=max_value)
+    # min_value = df['covariance'].min()
+    # max_value = df['covariance'].max()
+    # mapper = LinearColorMapper(palette=colors, low=min_value, high=max_value)
+    mapper = LinearColorMapper(palette=colors, low=-1, high=1)
     color_bar = ColorBar(color_mapper=mapper, location=(0, 0))
 
     bottom, top, left, right = _get_bounds(nlabels=nlabels)
