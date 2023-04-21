@@ -4,6 +4,7 @@ import jinja2
 import bisect
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from math import pi
 from biom.table import Table
@@ -28,8 +29,13 @@ def _get_bounds(nlabels: int):
     return bottom, top, left, right
 
 
-def _get_colors(df: pd.DataFrame(), n_colors: int = 9):
-    colors = list(RdBu[n_colors])
+def _get_colors(df: pd.DataFrame()):
+    cmap = plt.cm.get_cmap('RdBu', 256)
+    # Create a list of hex color codes from the colormap
+    colors = [cmap(i)[:3] for i in range(256)]
+    colors = ['#' + ''.join([format(int(c * 255), '02x') for c in color]) for color in colors]
+    colors = colors[::-1]  # red - positive, blue - negative
+
     ccorr = np.arange(-1, 1, 1 / (len(colors) / 2))
     color_list = []
     for value in df.covariance.values:
@@ -55,19 +61,20 @@ def _get_labels(solution: zarr.hierarchy.Group):
 def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = None,
                   labels_dict_reversed: dict = None,
                   width: int = 1500, height: int = 1500, label_size: str = "5pt",
-                  not_low_rank: bool = True):
+                  title_size: str = "24pt", not_low_rank: bool = True):
     nlabels = len(labels_dict)
+    shifted_labels_dict = {k + 0.5: v for k, v in labels_dict.items()}
+    shifted_labels_dict_reversed = {k + 0.5: v for k, v in labels_dict_reversed.items()}
+
     df = data.iloc[::-1]  # rotate matrix 90 degrees
     df = pd.DataFrame(df.stack(), columns=['covariance']).reset_index()
     df.columns = ["taxa_y", "taxa_x", "covariance"]
-    if not_low_rank:
-        df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
+    df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
 
-    color_list, colors = _get_colors(df=df, n_colors=11)
+    color_list, colors = _get_colors(df=df)
     min_value = df['covariance'].min()
     max_value = df['covariance'].max()
     mapper = LinearColorMapper(palette=colors, low=min_value, high=max_value)
-    #     mapper = LinearColorMapper(palette=colors, low=-1, high=1)
     color_bar = ColorBar(color_mapper=mapper, location=(0, 0))
 
     bottom, top, left, right = _get_bounds(nlabels=nlabels)
@@ -83,26 +90,19 @@ def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = N
                tools=bokeh_tools, toolbar_location='left')
 
     p.quad(top="top", bottom="bottom", left="left", right="right", line_color='white',
-           color="color_list",
-           source=source)
+           color="color_list", source=source)
     p.xaxis.major_label_orientation = pi / 4
     p.yaxis.major_label_orientation = "horizontal"
-    p.title.text_font_size = "24pt"
+    p.xaxis.major_label_text_font_size = label_size
+    p.yaxis.major_label_text_font_size = label_size
+    p.title.text_font_size = title_size
     p.add_layout(color_bar, 'right')
     p.toolbar.autohide = True
-
     p.xaxis.ticker = [x + 0.5 for x in
                       list(range(0, nlabels))]  ### shift label position to the center
     p.yaxis.ticker = [x + 0.5 for x in list(range(0, nlabels))]
-
-    shifted_labels_dict = {k + 0.5: v for k, v in labels_dict.items()}
-    shifted_labels_dict_reversed = {k + 0.5: v for k, v in labels_dict_reversed.items()}
-
-    if not_low_rank:
-        p.xaxis.major_label_overrides = shifted_labels_dict
-        p.yaxis.major_label_overrides = shifted_labels_dict_reversed
-    p.xaxis.major_label_text_font_size = label_size
-    p.yaxis.major_label_text_font_size = label_size
+    p.xaxis.major_label_overrides = shifted_labels_dict
+    p.yaxis.major_label_overrides = shifted_labels_dict_reversed
 
     hover = p.select(dict(type=HoverTool))
     hover.tooltips = [
@@ -112,6 +112,8 @@ def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = N
     ]
 
     return p
+
+
 # def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = None,
 #                   labels_dict_reversed: dict = None,
 #                   width: int = 1500, height: int = 1500, label_size: str = "5pt",
