@@ -1,5 +1,6 @@
-# syntax=docker/dockerfile:1
-FROM quay.io/qiime2/core:2022.8
+# Install the latest version of QIIME2
+ARG QIIME2_RELEASE=2023.2
+FROM quay.io/qiime2/core:$QIIME2_RELEASE
 
 COPY . ./
 WORKDIR .
