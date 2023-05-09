@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from matplotlib.colors import ListedColormap
 from math import pi
 from biom.table import Table
 from itertools import chain
@@ -30,7 +31,9 @@ def _get_bounds(nlabels: int):
 
 
 def _get_colors(df: pd.DataFrame()):
-    cmap = plt.cm.get_cmap('RdBu', 256)
+    rdbu = plt.get_cmap('RdBu')
+    cmap = ListedColormap(rdbu(np.arange(256)))
+
     # Create a list of hex color codes from the colormap
     colors = [cmap(i)[:3] for i in range(256)]
     colors = ['#' + ''.join([format(int(c * 255), '02x') for c in color]) for color in colors]
