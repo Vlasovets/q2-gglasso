@@ -4,6 +4,7 @@ import jinja2
 import bisect
 import numpy as np
 import pandas as pd
+import seaborn as sns
 import matplotlib.pyplot as plt
 
 from matplotlib.colors import ListedColormap
@@ -59,6 +60,36 @@ def _get_labels(solution: zarr.hierarchy.Group):
         p -= 1
 
     return labels_dict, labels_dict_reversed
+
+
+def _get_order(data: pd.DataFrame, method: str = 'average', metric: str = 'euclidean'):
+    grid = sns.clustermap(data, method=method, metric=metric, robust=True)
+    plt.close()
+
+    row_order = grid.dendrogram_row.reordered_ind
+    col_order = grid.dendrogram_col.reordered_ind
+
+    return row_order, col_order
+
+
+def hierarchical_clustering(data: pd.DataFrame, row_order: list, column_order: list,
+                            n_covariates: int = None):
+    if n_covariates is None:
+        re_data = data.iloc[row_order, column_order]
+
+    else:
+        asv_part = data.iloc[:-n_covariates, :-n_covariates]
+        re_asv_part = asv_part.iloc[row_order, column_order]
+        cov_asv_part = data.iloc[:-n_covariates, -n_covariates:].iloc[row_order, :]
+        cov_part = data.iloc[-n_covariates:, -n_covariates:]
+
+        res = np.block([[re_asv_part.values, cov_asv_part.values],
+                        [cov_asv_part.T.values, cov_part.values]])
+
+        labels = list(re_asv_part.columns) + list(cov_part.columns)
+        re_data = pd.DataFrame(res, index=labels, columns=labels)
+
+    return re_data
 
 
 def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = None,
