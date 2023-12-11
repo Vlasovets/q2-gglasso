@@ -31,5 +31,6 @@ glasso_parameters = {
     "latent": Bool,
     "non_conforming": Bool,
     "group_array": List[Int],
-    "reg": Str
+    "reg": Str,
+    "gamma": Float
 }

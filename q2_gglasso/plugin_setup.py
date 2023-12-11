@@ -13,7 +13,7 @@ import q2_gglasso as q2g
 import qiime2
 import pandas as pd
 
-from q2_types.feature_table import FeatureTable, Composition, Frequency
+from q2_types.feature_table import FeatureTable, Composition, Frequency, Design
 from q2_types.feature_data import FeatureData, Taxonomy
 from qiime2.plugin import Plugin, Float, Str, Bool, List, Int, Metadata
 
@@ -100,7 +100,7 @@ plugin.methods.register_function(
 
 plugin.methods.register_function(
     function=q2g.build_groups,
-    inputs={"tables": List[FeatureTable[Composition]]},
+    inputs={"tables": List[FeatureTable[Frequency]]},
     parameters={"check_groups": Bool},
     outputs=[("group_array", q2g.TensorData)],
     input_descriptions={
@@ -124,7 +124,7 @@ plugin.methods.register_function(
 
 plugin.methods.register_function(
     function=q2g.calculate_covariance,
-    inputs={"table": FeatureTable[Composition]},
+    inputs={"table": FeatureTable[Frequency]},
     parameters={"method": Str, "bias": Bool},
     outputs=[("covariance_matrix", q2g.PairwiseFeatureData)],
     input_descriptions={
@@ -148,7 +148,7 @@ plugin.methods.register_function(
     name="calculate_covariance",
     description=(
         "Perform empirical covariance estimation given the data p x N, "
-        "from FeatureTable[Composition | Frequency]"
+        "from FeatureTable[Frequency]"
         "prior to network analysis"
         "default transformation is centered log ratio"
     ),
@@ -225,6 +225,10 @@ plugin.methods.register_function(
         "group_array": (
             "Bookeeping array"
         ),
+        "gamma": (
+            "Gamma value for eBIC (between 0 and 1)"
+            "The larger the value, the more eBIC tends to pick sparse solutions."
+        ),
     },
     output_descriptions={"solution": "dictionary containing the solution and "
                                      "hyper-/parameters of GGLasso problem"},
@@ -238,7 +242,7 @@ plugin.methods.register_function(
 plugin.visualizers.register_function(
     function=q2g.pca,
     inputs={
-        "table": FeatureTable[Composition],
+        "table": FeatureTable[Frequency],
         "solution": q2g.GGLassoProblem,
     },
     name='Principal component analysis (PCA)',
