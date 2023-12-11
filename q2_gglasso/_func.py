@@ -75,6 +75,7 @@ def transform_features(table: Table, taxonomy: pd.Series, sample_metadata: qiime
     X = X.T  # p, N
 
     if add_metadata:
+        # metadata is (N, p) matrix
         numeric_md_cols = sample_metadata.filter_columns(column_type='numeric')
         md = numeric_md_cols.to_dataframe()
 
