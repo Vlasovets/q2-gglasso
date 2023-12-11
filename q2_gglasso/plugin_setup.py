@@ -59,11 +59,11 @@ plugin.register_semantic_type_to_format(
 
 plugin.methods.register_function(
     function=q2g.transform_features,
-    inputs={"table": FeatureTable[Composition | Frequency],
+    inputs={"table": FeatureTable[Composition | Frequency | Design],
             "taxonomy": FeatureData[Taxonomy],},
     parameters={'sample_metadata': Metadata, "transformation": Str, "pseudo_count": Int, "scale_metadata": Bool,
                 "add_metadata": Bool},
-    outputs=[("transformed_table", FeatureTable[Composition])],
+    outputs=[("transformed_table", FeatureTable[Frequency])],
     input_descriptions={
         "table": (
             "Matrix representing the compositional "
