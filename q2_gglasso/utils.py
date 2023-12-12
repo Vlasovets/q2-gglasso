@@ -203,7 +203,7 @@ def get_range(lower_bound, upper_bound, n):
             lower_bound = 1e-3
         if upper_bound is None:
             upper_bound = 1
-        range = np.logspace(lower_bound, upper_bound, n)
+        range = np.logspace(np.log10(lower_bound), np.log10(upper_bound), n)
     return range
 
 
