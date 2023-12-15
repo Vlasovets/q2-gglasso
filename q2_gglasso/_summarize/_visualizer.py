@@ -108,10 +108,6 @@ def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = N
     shifted_labels_dict = {k + 0.5: v for k, v in labels_dict.items()}
     shifted_labels_dict_reversed = {k + 0.5: v for k, v in labels_dict_reversed.items()}
 
-    # data.rename(index=labels_dict, inplace=True)
-    # data.rename(columns=labels_dict, inplace=True)
-
-    # df = data.iloc[::-1]  # rotate matrix 90 degrees
     df = pd.DataFrame(data.stack(), columns=['covariance']).reset_index()
     df.columns = ["taxa_y", "taxa_x", "covariance"]
     df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
@@ -159,58 +155,6 @@ def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = N
 
     return p
 
-# def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = None,
-#                   labels_dict_reversed: dict = None,
-#                   width: int = 1500, height: int = 1500, label_size: str = "5pt",
-#                   not_low_rank: bool = True):
-#     nlabels = len(labels_dict)
-#     df = pd.DataFrame(data.stack(), columns=['covariance']).reset_index()
-#     df.columns = ["taxa_y", "taxa_x", "covariance"]
-#     if not_low_rank:
-#         df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
-#
-#     color_list, colors = _get_colors(df=df)
-#     mapper = LinearColorMapper(palette=colors, low=-1, high=1)
-#     color_bar = ColorBar(color_mapper=mapper, location=(0, 0))
-#
-#     bottom, top, left, right = _get_bounds(nlabels=nlabels)
-#
-#     source = ColumnDataSource(
-#         dict(top=top, bottom=bottom, left=left, right=right, color_list=color_list,
-#              taxa_x=df['taxa_x'], taxa_y=df['taxa_y'], covariance=df['covariance']))
-#
-#     bokeh_tools = ["save, zoom_in, zoom_out, wheel_zoom, box_zoom, crosshair, reset, hover"]
-#
-#     p = figure(plot_width=width, plot_height=height, x_range=(0, nlabels), y_range=(0, nlabels),
-#                title=title, title_location='above', x_axis_location="below",
-#                tools=bokeh_tools, toolbar_location='left')
-#
-#     p.quad(top="top", bottom="bottom", left="left", right="right", line_color='white',
-#            color="color_list",
-#            source=source)
-#     p.xaxis.major_label_orientation = pi / 4
-#     p.yaxis.major_label_orientation = "horizontal"
-#     p.title.text_font_size = "24pt"
-#     p.add_layout(color_bar, 'right')
-#     p.toolbar.autohide = True
-#
-#     p.xaxis.ticker = list(range(0, nlabels))
-#     p.yaxis.ticker = list(range(0, nlabels))
-#     if not_low_rank:
-#         p.xaxis.major_label_overrides = labels_dict
-#         p.yaxis.major_label_overrides = labels_dict_reversed
-#     p.xaxis.major_label_text_font_size = label_size
-#     p.yaxis.major_label_text_font_size = label_size
-#
-#     hover = p.select(dict(type=HoverTool))
-#     hover.tooltips = [
-#         ("taxa_x", "@taxa_x"),
-#         ("taxa_y", "@taxa_y"),
-#         ("covariance", "@covariance"),
-#     ]
-#
-#     return p
-
 
 def _make_stats(solution: zarr.hierarchy.Group, labels_dict: dict = None):
     sparsity = flatten_array(solution['modelselect_stats/SP'])
@@ -257,15 +201,15 @@ def _solution_plot(solution: zarr.hierarchy.Group, width: int, height: int, labe
     tabs = []
     labels_dict, labels_dict_reversed = _get_labels(solution=solution, clustered=False)
 
-    sample_covariance = pd.DataFrame(solution['covariance'])
     # rotate diagonal
-    precision = pd.DataFrame(solution['solution/precision_'])
+    sample_covariance = pd.DataFrame(solution['covariance']).iloc[::-1]
+    precision = pd.DataFrame(solution['solution/precision_']).iloc[::-1]
 
-    # if clustered:
-    #     clust_order = _get_order(sample_covariance, method='average', metric='euclidean')
-    #     sample_covariance = hierarchical_clustering(sample_covariance, clust_order=clust_order,
-    #                                                 n_covariates=n_cov)
-    #     precision = hierarchical_clustering(precision, clust_order=clust_order, n_covariates=n_cov)
+    if clustered:
+        clust_order = _get_order(sample_covariance, method='average', metric='euclidean')
+        sample_covariance = hierarchical_clustering(sample_covariance, clust_order=clust_order,
+                                                    n_covariates=n_cov)
+        precision = hierarchical_clustering(precision, clust_order=clust_order, n_covariates=n_cov)
 
     p1 = _make_heatmap(data=sample_covariance, title="Sample covariance",
                        width=width, height=height,
@@ -283,7 +227,7 @@ def _solution_plot(solution: zarr.hierarchy.Group, width: int, height: int, labe
     tabs.append(tab2)
 
     try:
-        low_rank = pd.DataFrame(solution['solution/lowrank_'])
+        low_rank = pd.DataFrame(solution['solution/lowrank_']).iloc[::-1]
         p3 = _make_heatmap(data=low_rank, labels_dict=labels_dict,
                            labels_dict_reversed=labels_dict_reversed,
                            title="Low-rank", not_low_rank=False, width=width, height=height,
