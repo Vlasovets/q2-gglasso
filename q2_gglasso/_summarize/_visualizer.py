@@ -108,7 +108,8 @@ def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = N
     shifted_labels_dict = {k + 0.5: v for k, v in labels_dict.items()}
     shifted_labels_dict_reversed = {k + 0.5: v for k, v in labels_dict_reversed.items()}
 
-    df = pd.DataFrame(data.stack(), columns=['covariance']).reset_index()
+    df = data.iloc[::-1]  # rotate the diagonal
+    df = pd.DataFrame(df.stack(), columns=['covariance']).reset_index()
     df.columns = ["taxa_y", "taxa_x", "covariance"]
     df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
 
@@ -202,14 +203,20 @@ def _solution_plot(solution: zarr.hierarchy.Group, width: int, height: int, labe
     labels_dict, labels_dict_reversed = _get_labels(solution=solution, clustered=False)
 
     # rotate diagonal
-    sample_covariance = pd.DataFrame(solution['covariance']).iloc[::-1]
-    precision = pd.DataFrame(solution['solution/precision_']).iloc[::-1]
+    sample_covariance = pd.DataFrame(solution['covariance'])
+    precision = pd.DataFrame(solution['solution/precision_'])
 
     if clustered:
         clust_order = _get_order(sample_covariance, method='average', metric='euclidean')
-        sample_covariance = hierarchical_clustering(sample_covariance, clust_order=clust_order,
-                                                    n_covariates=n_cov)
-        precision = hierarchical_clustering(precision, clust_order=clust_order, n_covariates=n_cov)
+        # problem in hier clust
+        S = hierarchical_clustering(sample_covariance, clust_order=clust_order, n_covariates=n_cov)
+        Theta = hierarchical_clustering(precision, clust_order=clust_order, n_covariates=n_cov)
+
+        labels_dict = {i: labels_dict[key] for i, key in enumerate(clust_order)}
+
+        sample_covariance = S.T.reset_index(drop=True).T.reset_index(drop=True)
+        # sample_covariance = sample_covariance.iloc[::-1]
+        precision = Theta.T.reset_index(drop=True).T.reset_index(drop=True)
 
     p1 = _make_heatmap(data=sample_covariance, title="Sample covariance",
                        width=width, height=height,
