@@ -11,7 +11,7 @@ from matplotlib.colors import ListedColormap
 from math import pi
 from biom.table import Table
 from itertools import chain
-from q2_gglasso.utils import flatten_array, pep_metric
+from q2_gglasso.utils import flatten_array, pep_metric, reset_columns_and_index
 
 from bokeh.plotting import figure
 from bokeh.models import HoverTool, Panel, Tabs, ColorBar, LinearColorMapper
@@ -111,6 +111,7 @@ def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = N
     df = data.iloc[::-1]  # rotate the diagonal
     df = pd.DataFrame(df.stack(), columns=['covariance']).reset_index()
     df.columns = ["taxa_y", "taxa_x", "covariance"]
+    # clustering is correct, check the labels
     df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
 
     color_list, colors = _get_colors(df=df)
@@ -198,7 +199,7 @@ def _make_stats(solution: zarr.hierarchy.Group, labels_dict: dict = None):
 
 
 def _solution_plot(solution: zarr.hierarchy.Group, width: int, height: int, label_size: str,
-                   clustered: bool = False, n_cov: int = None):
+                   clustered: bool = True, n_cov: int = None):
     tabs = []
     labels_dict, labels_dict_reversed = _get_labels(solution=solution, clustered=False)
 
@@ -208,15 +209,16 @@ def _solution_plot(solution: zarr.hierarchy.Group, width: int, height: int, labe
 
     if clustered:
         clust_order = _get_order(sample_covariance, method='average', metric='euclidean')
-        # problem in hier clust
+
         S = hierarchical_clustering(sample_covariance, clust_order=clust_order, n_covariates=n_cov)
         Theta = hierarchical_clustering(precision, clust_order=clust_order, n_covariates=n_cov)
 
-        labels_dict = {i: labels_dict[key] for i, key in enumerate(clust_order)}
+        sample_covariance = reset_columns_and_index(S)
+        precision = reset_columns_and_index(Theta)
 
-        sample_covariance = S.T.reset_index(drop=True).T.reset_index(drop=True)
-        # sample_covariance = sample_covariance.iloc[::-1]
-        precision = Theta.T.reset_index(drop=True).T.reset_index(drop=True)
+        # new labels order according to the clustering
+        labels_dict = {i: labels_dict[key] for i, key in enumerate(clust_order)}
+        labels_dict_reversed = {len(labels_dict) - 1 - k: v for k, v in labels_dict.items()}
 
     p1 = _make_heatmap(data=sample_covariance, title="Sample covariance",
                        width=width, height=height,
@@ -234,7 +236,13 @@ def _solution_plot(solution: zarr.hierarchy.Group, width: int, height: int, labe
     tabs.append(tab2)
 
     try:
-        low_rank = pd.DataFrame(solution['solution/lowrank_']).iloc[::-1]
+        low_rank = pd.DataFrame(solution['solution/lowrank_'])
+
+        if clustered:
+            clust_order = _get_order(sample_covariance, method='average', metric='euclidean')
+            L = hierarchical_clustering(low_rank, clust_order=clust_order, n_covariates=n_cov)
+            low_rank = reset_columns_and_index(L)
+
         p3 = _make_heatmap(data=low_rank, labels_dict=labels_dict,
                            labels_dict_reversed=labels_dict_reversed,
                            title="Low-rank", not_low_rank=False, width=width, height=height,

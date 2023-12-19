@@ -51,6 +51,7 @@ def numeric_to_list(x):
         x = [x]
     return x
 
+
 def if_equal_dict(a, b):
     """
     Check if the values for each key in two dictionaries are equal.
@@ -104,6 +105,22 @@ def if_2d_array(x=np.ndarray):
     if x.shape[0] == 1:
         x = x[0, :]
     return x
+
+
+def reset_columns_and_index(df):
+    """
+    Reset column indices and drop the existing row index.
+
+    Parameters:
+    - df (pd.DataFrame): The input DataFrame.
+
+    Returns:
+    - pd.DataFrame: The DataFrame with reset column indices and dropped row index.
+    """
+    df.columns = range(df.columns.size)  # reset columns
+    df = df.reset_index(drop=True)  # reset indices
+
+    return df
 
 
 def if_all_none(lambda1, lambda2, mu1):
@@ -254,7 +271,8 @@ def get_hyperparameters(lambda1_min, lambda1_max, lambda2_min, lambda2_max, mu1_
 
         model_selection = False
 
-    h_params = {"model_selection": model_selection, "lambda1": lambda1, "lambda2": lambda2, "mu1": mu1}
+    h_params = {"model_selection": model_selection, "lambda1": lambda1, "lambda2": lambda2,
+                "mu1": mu1}
 
     return h_params
 
@@ -393,6 +411,34 @@ def zero_imputation(df: pd.DataFrame, pseudo_count: int = 1):
     X = X.mul(scaling_parameter, axis=1)
 
     return X
+
+
+def rename_index_with_sum(df: pd.DataFrame):
+    """
+    Rename the index of a DataFrame based on the relative abundance.
+    New index values are generated with the format "ASV" followed by the top abundance among all the features.
+
+    Parameters:
+    - df: pandas DataFrame. The DataFrame to be modified.
+
+    Returns:
+    - df: pandas DataFrame. The modified DataFrame with the renamed index.
+    """
+
+    # Calculate the sum of each row and rename the index
+    row_sum = df.sum(axis=1)
+    df.rename(index=row_sum, inplace=True)
+
+    # Sort the index
+    df.sort_index(inplace=True)
+
+    # Reset the index
+    df.reset_index(drop=True, inplace=True)
+
+    # Rename the index using the new index values
+    df.rename(index=lambda x: f"ASV-{x + 1}", inplace=True)
+
+    return df
 
 
 def remove_biom_header(file_path):
@@ -551,7 +597,8 @@ def correlated_PC(data=pd.DataFrame, metadata=pd.DataFrame, low_rank=np.ndarray,
         df = df.dropna()
         print(col, ":", df.shape)
 
-        proj, loadings, eigv = PCA(df.iloc[:, :-1], low_rank, inverse=True)  # exclude feature column :-1
+        proj, loadings, eigv = PCA(df.iloc[:, :-1], low_rank,
+                                   inverse=True)  # exclude feature column :-1
 
         df = df.join(seq_depth)
 
