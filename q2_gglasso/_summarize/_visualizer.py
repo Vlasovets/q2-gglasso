@@ -81,15 +81,30 @@ def _get_order(data: pd.DataFrame, method: str = 'average', metric: str = 'eucli
     return clust_order
 
 
-def hierarchical_clustering(data: pd.DataFrame, clust_order: list, n_covariates: int = None):
-    if n_covariates is None:
+def hierarchical_clustering(data: pd.DataFrame, clust_order: list, n_cov: int = None):
+    """
+        Perform hierarchical clustering on a given dataset.
+
+        Parameters:
+        - data (pd.DataFrame): The input dataset.
+        - clust_order (list): List specifying the order of rows and columns for clustering.
+        - n_cov (int, optional): Number of columns representing covariates. Default is None.
+
+        Returns:
+        pd.DataFrame: A rearranged version of the input data based on the hierarchical clustering.
+        If n_cov is None, the clustering is applied to the entire dataset.
+        If n_cov is specified, the clustering is applied separately to ASV (microbial) and covariate parts,
+        and the resulting data is block-wise combined.
+    """
+    if n_cov is None:
         re_data = data.iloc[clust_order, clust_order]
 
     else:
-        asv_part = data.iloc[:-n_covariates, :-n_covariates]
+        asv_part = data.iloc[:-n_cov, :-n_cov]
+
         re_asv_part = asv_part.iloc[clust_order, clust_order]
-        cov_asv_part = data.iloc[:-n_covariates, -n_covariates:].iloc[clust_order, :]
-        cov_part = data.iloc[-n_covariates:, -n_covariates:]
+        cov_asv_part = data.iloc[:-n_cov, -n_cov:].iloc[clust_order, :]
+        cov_part = data.iloc[-n_cov:, -n_cov:]
 
         res = np.block([[re_asv_part.values, cov_asv_part.values],
                         [cov_asv_part.T.values, cov_part.values]])
@@ -198,6 +213,37 @@ def _make_stats(solution: zarr.hierarchy.Group, labels_dict: dict = None):
     return l1
 
 
+def _clust_data(data, n_cov=None, method: str = 'average', metric: str = 'euclidean'):
+    if n_cov is None:
+        clust_order = _get_order(data, method=method, metric=metric)
+    else:
+        asv_part = data.iloc[:-n_cov, :-n_cov]
+        clust_order = _get_order(asv_part, method=method, metric=metric)
+
+    return clust_order
+
+def perform_clusterings(data, clust_order, n_cov=None):
+    clustered_data = hierarchical_clustering(data, clust_order=clust_order, n_cov=n_cov)
+
+    result = reset_columns_and_index(clustered_data)
+
+    return result
+
+def update_labels_dict(labels_dict, clust_order, n_cov=None):
+    if n_cov is None:
+        labels_asvs = {i: labels_dict[key] for i, key in enumerate(clust_order)}
+        labels_dict_reversed = {len(labels_asvs) - 1 - k: v for k, v in labels_dict.items()}
+    else:
+        labels_asvs = {i: labels_dict[key] for i, key in enumerate(clust_order)}
+        labels_covs = {k: v for k, v in labels_dict.items() if k >= len(clust_order)}
+        labels_dict = {**labels_asvs, **labels_covs}
+        labels_dict_reversed = {len(labels_dict) - 1 - k: v for k, v in labels_dict.items()}
+
+    return labels_dict, labels_dict_reversed
+
+
+
+
 def _solution_plot(solution: zarr.hierarchy.Group, width: int, height: int, label_size: str,
                    clustered: bool = True, n_cov: int = None):
     tabs = []
@@ -207,18 +253,42 @@ def _solution_plot(solution: zarr.hierarchy.Group, width: int, height: int, labe
     sample_covariance = pd.DataFrame(solution['covariance'])
     precision = pd.DataFrame(solution['solution/precision_'])
 
+    # TO DO optimise the code
+    # if clustered:
+    #     clust_order = _clust_data(sample_covariance, n_cov=n_cov, method='average', metric='euclidean')
+    #     sample_covariance = perform_clusterings(data=sample_covariance, clust_order=clust_order)
+    #     precision = perform_clusterings(data=precision, clust_order=clust_order)
+    #     labels_dict, labels_dict_reversed = update_labels_dict(labels_dict, clust_order, n_cov=n_cov)
+
     if clustered:
-        clust_order = _get_order(sample_covariance, method='average', metric='euclidean')
+        if n_cov is None:
+            clust_order = _get_order(sample_covariance, method='average', metric='euclidean')
 
-        S = hierarchical_clustering(sample_covariance, clust_order=clust_order, n_covariates=n_cov)
-        Theta = hierarchical_clustering(precision, clust_order=clust_order, n_covariates=n_cov)
+            S = hierarchical_clustering(sample_covariance, clust_order=clust_order, n_cov=n_cov)
+            Theta = hierarchical_clustering(precision, clust_order=clust_order, n_cov=n_cov)
 
-        sample_covariance = reset_columns_and_index(S)
-        precision = reset_columns_and_index(Theta)
+            sample_covariance = reset_columns_and_index(S)
+            precision = reset_columns_and_index(Theta)
 
-        # new labels order according to the clustering
-        labels_dict = {i: labels_dict[key] for i, key in enumerate(clust_order)}
-        labels_dict_reversed = {len(labels_dict) - 1 - k: v for k, v in labels_dict.items()}
+            # new labels order according to the clustering
+            labels_dict = {i: labels_dict[key] for i, key in enumerate(clust_order)}
+            labels_dict_reversed = {len(labels_dict) - 1 - k: v for k, v in labels_dict.items()}
+
+        else:
+            asv_part = sample_covariance.iloc[:-n_cov, :-n_cov]
+            clust_order = _get_order(asv_part, method='average', metric='euclidean')
+
+            S = hierarchical_clustering(sample_covariance, clust_order=clust_order, n_cov=n_cov)
+            Theta = hierarchical_clustering(precision, clust_order=clust_order, n_cov=n_cov)
+
+            sample_covariance = reset_columns_and_index(S)
+            precision = reset_columns_and_index(Theta)
+
+            labels_asvs = {i: labels_dict[key] for i, key in enumerate(clust_order)}
+            labels_covs = {k: v for k, v in labels_dict.items() if k >= len(clust_order)}
+
+            labels_dict = {**labels_asvs, **labels_covs}
+            labels_dict_reversed = {len(labels_dict) - 1 - k: v for k, v in labels_dict.items()}
 
     p1 = _make_heatmap(data=sample_covariance, title="Sample covariance",
                        width=width, height=height,
@@ -262,7 +332,7 @@ def _solution_plot(solution: zarr.hierarchy.Group, width: int, height: int, labe
     return script, div
 
 
-def summarize(output_dir: str, solution: zarr.hierarchy.Group,
+def summarize(output_dir: str, solution: zarr.hierarchy.Group, n_cov: int = None,
               width: int = 1500, height: int = 1500, label_size: str = "5pt"):
     J_ENV = jinja2.Environment(
         loader=jinja2.PackageLoader('q2_gglasso._summarize', 'assets')
@@ -271,7 +341,7 @@ def summarize(output_dir: str, solution: zarr.hierarchy.Group,
     template = J_ENV.get_template('index.html')
 
     script, div = _solution_plot(solution=solution, width=width, height=height,
-                                 label_size=label_size)
+                                 label_size=label_size, n_cov=n_cov)
 
     output_from_parsed_template = template.render(plot_script=script, plot_div=div)
 
