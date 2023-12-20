@@ -276,11 +276,12 @@ plugin.visualizers.register_function(
             "p x p semi-positive definite covariance matrix."
         ),
     },
-    parameters={"width": Int, "height": Int, "label_size": Str},
+    parameters={"width": Int, "height": Int, "label_size": Str, "n_cov": Int},
     parameter_descriptions={
         'width': "The width you would like your plots to be, by default 1500.",
         'height': 'The height you would like your plots to be, by default 1500',
         'label_size': 'The font size of labels ticks in, by default "5pt".',
+        'n_cov': 'Number of covariates, by default None.',
     },
 )
 
