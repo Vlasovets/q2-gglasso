@@ -5,13 +5,16 @@ scikit-learn>=0.24.1
 zarr>=2.11.1
 setuptools>=59.8.0
 pytest>=7.0.1
+bokeh>=2.4.2
+jupyterlab>=3.0.0
+zarr>=2.11.1
 versioneer
 jinja2
 pandas
 biom-format
 
 git+https://github.com/qiime2/sphinx-ext-qiime2
-git+https://github.com/fabian-sp/GGLasso.git@f-fda-and-mask
+git+https://github.com/fabian-sp/GGLasso.git@master
 calysto-bash
 sphinx-exercise
 jupyter-book
