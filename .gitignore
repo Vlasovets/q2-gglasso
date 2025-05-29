@@ -1,23 +1,42 @@
-*.ipynb_checkpoints/
-build/
-dist/
-*.egg-info/
-*__pycache__/
-data/
-
-.DS_store
+# ------------------------------------------------------------------------------
+# OS & Editor Files
+# ------------------------------------------------------------------------------
+.DS_Store
 *.idea/
 
-*.qza
-*.biom
-*.qzv
-*.DS_Store
+# ------------------------------------------------------------------------------
+# Python Cache & Build Artifacts
+# ------------------------------------------------------------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+build/
+dist/
 
+# ------------------------------------------------------------------------------
+# Jupyter Notebook Checkpoints
+# ------------------------------------------------------------------------------
+*.ipynb_checkpoints/
+
+# ------------------------------------------------------------------------------
+# QIIME 2 Artifacts
+# ------------------------------------------------------------------------------
+*.qza
+*.qzv
+*.biom
+
+# ------------------------------------------------------------------------------
+# Project-specific Data and Scripts (excluded from versioning)
+# ------------------------------------------------------------------------------
+data/
+data/kora/
+
+# Example scripts (not for version control)
 q2_gglasso/test.py
 /example/88soil/soil_example.py
 /example/atacama/atacama_example.py
 /example/atacama/tutorial_optimized.py
-
 /example/atacama/kora.py
-/data/kora/
 /example/atacama/api_atacama.py
