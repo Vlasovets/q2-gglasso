@@ -35,8 +35,4 @@ data/kora/
 
 # Example scripts (not for version control)
 q2_gglasso/test.py
-/example/88soil/soil_example.py
-/example/atacama/atacama_example.py
-/example/atacama/tutorial_optimized.py
-/example/atacama/kora.py
-/example/atacama/api_atacama.py
+/example

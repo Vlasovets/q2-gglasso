@@ -1,7 +1,7 @@
 """Tests for the heatmap visualization functionality in the q2-gglasso plugin.
 
 This module tests the heatmap creation and clustering functionality of the q2-gglasso
-plugin, verifying that the heatmap generation, labeling, and clustering functions
+plugin, verifying that the heatmap generation, labeling, and clustering functions 
 work as expected.
 """
 
@@ -9,104 +9,91 @@ import unittest
 import numpy as np
 import pandas as pd
 import zarr
+from tempfile import TemporaryDirectory
 
 try:
     from q2_gglasso._summarize._visualizer import (_make_heatmap, _get_order, _get_labels,
-                                                   hierarchical_clustering)
+                                                  hierarchical_clustering)
+    from gglasso.helper.data_generation import generate_precision_matrix, sample_covariance_matrix
 except ImportError:
-    raise ImportWarning('Qiime2 not installed.')
+    raise ImportWarning('Qiime2 or GGLasso not installed.')
 
 
 class TestUtil(unittest.TestCase):
-    """Test case for heatmap visualization functionality.
+    """Test case for heatmap visualization functionality."""
 
-    This test class verifies that the heatmap generation, clustering, and
-    labeling functions in the q2-gglasso plugin work correctly.
-    """
-
-    def test_heatmap(self):
-        """Test heatmap visualization functions.
-
-        This test performs a sequence of operations to verify that the heatmap
-        visualization functions work as expected, including:
-        - Loading solution data
-        - Getting labels for taxa
-        - Creating a data frame for visualization
-        - Computing clustering order
-        - Creating hierarchical clustering
-        """
-
-        sol = zarr.load(store="../../data/atacama-solution-adapt/problem.zip")
-        sol = zarr.load(store="data/atacama-solution-adapt/problem.zip")
-
-        labels_dict, labels_dict_reversed = _get_labels(solution=sol, clustered=False)
-
-        S = pd.DataFrame(sol['covariance'])
-
-        df = pd.DataFrame(S.stack(), columns=['covariance']).reset_index()
-        df.columns = ["taxa_y", "taxa_x", "covariance"]
-        df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
-
-        clust_order = _get_order(S, method='average', metric='euclidean')
-
-        asv_part = S.iloc[:-4, :-4]
-
-        clust_order = _get_order(asv_part, method='average', metric='euclidean')
-
-        labels_dict_new = {i: labels_dict[key] for i, key in enumerate(clust_order)}
-        labels_covs = {k: v for k, v in labels_dict.items() if k >= len(clust_order)}
-        labels_dict_new.update(labels_covs)
-
-        # We don't use labels_dict_reversed to avoid linting errors
-        # labels_dict_reversed = {len(labels_dict_new) - 1 - k: v for k, v in labels_dict_new.items()}
-
-        # Check the cluster order length
-        _ = len(clust_order)
-
-        # We don't use labels_dict_1 to avoid linting errors
-        # labels_dict_1 = {i: labels_dict[key] for i, key in enumerate(clust_order)}
-
-        re_asv_part = asv_part.iloc[clust_order, clust_order]
-
-        cov_asv_part = S.iloc[:-4, -4:].iloc[clust_order, :]
-        cov_part = S.iloc[-4:, -4:]
-
-        # Create the combined matrix
-        res = np.block([[re_asv_part.values, cov_asv_part.values],
-                        [cov_asv_part.T.values, cov_part.values]])
-
-        labels = list(re_asv_part.columns) + list(cov_part.columns)
-        # We don't use re_data to avoid linting errors
-        _ = pd.DataFrame(res, index=labels, columns=labels)
-
-        # Re-create matrix (duplicated intentionally in original code)
-        res = np.block([[re_asv_part.values, cov_asv_part.values],
-                        [cov_asv_part.T.values, cov_part.values]])
-
-        # Apply hierarchical clustering
-        _ = hierarchical_clustering(S, clust_order=clust_order, n_covariates=2)
-
-        # S_cl.columns = range(S_cl.columns.size)
-        # S_cl = S_cl.reset_index(drop=True)
-
-        # reset_dict = {i: labels_dict[key] for i, key in enumerate(clust_order)}
-        # reindexed_dict = {len(reset_dict) - 1 - k: v for k, v in reset_dict.items()}
-        #
-        # labels_dict = {i: labels_dict[key] for i, key in enumerate(clust_order)}
-        # labels_dict_reversed = {len(labels_dict) - 1 - k: v for k, v in labels_dict.items()}
-        #
-        # shifted_labels_dict = {k + 0.5: v for k, v in labels_dict.items()}
-        #
-        # S_cl = S_cl.T.reset_index(drop=True).T.reset_index(drop=True)
-        #
-        # df_cl = pd.DataFrame(S_cl.stack(), columns=['covariance']).reset_index()
-        # df_cl.columns = ["taxa_y", "taxa_x", "covariance"]
-        # df_cl = df_cl.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
-
-        # p1 = _make_heatmap(data=S, title="Sample covariance",
-        #                    width=500, height=50,
-        #                    label_size="25pt", labels_dict=labels_dict,
-        #                    labels_dict_reversed=labels_dict_reversed)
+    def setUp(self):
+        """Set up test data."""
+        # Create test data
+        self.n_features = 10
+        self.n_covariates = 2
+        np.random.seed(42)
+        
+        # Create a symmetric covariance matrix
+        cov_matrix = np.random.randn(self.n_features, self.n_features)
+        cov_matrix = cov_matrix @ cov_matrix.T  # Make it symmetric
+        
+        # Create synthetic data that matches expected format
+        p = self.n_features
+        M = 1  # Single matrix for this test
+        N = 10  # Sample size
+        
+        # Generate labels with ASVs and covariates
+        self.labels = [f'ASV_{i}' for i in range(self.n_features - self.n_covariates)]
+        self.labels.extend([f'Cov_{i}' for i in range(self.n_covariates)])
+        
+        # Create DataFrame with test data
+        self.test_data = pd.DataFrame(
+            cov_matrix, 
+            columns=self.labels, 
+            index=self.labels
+        )
+        
+    def test_heatmap_components(self):
+        """Test individual components of heatmap visualization."""
+        with TemporaryDirectory() as temp_dir:
+            # Create a temporary Zarr store with test data
+            store = zarr.DirectoryStore(f"{temp_dir}/test.zarr")
+            root = zarr.group(store=store)
+            
+            # Store test data and labels
+            root.create_dataset('covariance', data=self.test_data.values)
+            root.attrs['labels'] = self.labels
+            
+            # Test label dictionary generation
+            labels_dict, labels_dict_reversed = _get_labels(solution=root, clustered=False)
+            self.assertEqual(len(labels_dict), self.n_features)
+            self.assertEqual(len(labels_dict_reversed), self.n_features)
+            
+            # Test clustering order generation (ASVs only)
+            asv_data = self.test_data.iloc[:-self.n_covariates, :-self.n_covariates]
+            clust_order = _get_order(asv_data, method='average', metric='euclidean')
+            self.assertEqual(len(clust_order), self.n_features - self.n_covariates)
+            
+            # Test hierarchical clustering
+            clustered = hierarchical_clustering(
+                data=self.test_data,
+                clust_order=clust_order,
+                n_covariates=self.n_covariates
+            )
+            self.assertEqual(clustered.shape, self.test_data.shape)
+            
+            # Test heatmap visualization
+            # Convert matrix to long format for heatmap
+            df = pd.DataFrame(self.test_data.stack(), columns=['covariance']).reset_index()
+            df.columns = ["taxa_y", "taxa_x", "covariance"]
+            df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
+            
+            plot = _make_heatmap(
+                data=df,
+                title="Test covariance matrix",
+                width=500,
+                height=500,
+                label_size="10pt",
+                labels_dict=labels_dict,
+                labels_dict_reversed=labels_dict_reversed
+            )
+            self.assertIsNotNone(plot)
 
 
 if __name__ == '__main__':
