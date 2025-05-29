@@ -66,8 +66,9 @@ def transform_features(table: Table, taxonomy: pd.Series, sample_metadata: qiime
     X = pd.DataFrame(X, columns=X.columns, index=X.index)
 
     # TO DO test taxonomy assignment
-    taxa = pd.DataFrame(taxonomy.view(pd.Series))
-    ASV_names = X.index.values
+    # NOTE: We're removing these unused variables to fix linting issues
+    # taxa = pd.DataFrame(taxonomy.view(pd.Series))
+    # ASV_names = X.index.values
 
     # for i in ASV_names:
     #     if i in taxa.index:

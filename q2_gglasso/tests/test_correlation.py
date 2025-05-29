@@ -1,4 +1,9 @@
-import unittest
+"""Tests for the correlation functionality in q2-gglasso.
+
+This module contains tests for covariance and correlation calculation utilities.
+"""
+
+import unittes
 import pandas as pd
 import numpy as np
 
@@ -10,7 +15,9 @@ except ImportError:
 
 
 class TestUtil(unittest.TestCase):
+    """Test suite for correlation utility functions."""
     def test_scaling_to_correlation(self):
+        """Test that covariance matrix can be converted to correlation matrix."""
         table = pd.DataFrame([[1, 1, 7, 3],
                               [2, 6, 2, 4],
                               [5, 5, 3, 3],

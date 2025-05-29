@@ -1,4 +1,10 @@
-import unittest
+"""Tests for the Zarr file format functionality in the q2-gglasso plugin.
+
+This module tests the Zarr storage and retrieval functionality of the q2-gglasso plugin,
+ensuring that solution objects can be properly serialized and deserialized.
+"""
+
+import unittes
 import zarr
 import q2_gglasso as q2g
 import pandas as pd
@@ -13,7 +19,21 @@ except ImportError:
 
 
 class TestUtil(unittest.TestCase):
+    """Test case for Zarr file format functionality in the q2-gglasso plugin.
+
+    This test class verifies that the Zarr storage and retrieval functionality
+    works correctly for serializing and deserializing GGLasso solution objects.
+    """
+
     def test_zarr_format(self):
+        """Test Zarr file format for storing and retrieving GGLasso solutions.
+
+        This test:
+        1. Creates a sample GGLasso problem and solution
+        2. Saves the solution to a Zarr file
+        3. Loads the solution from the Zarr file
+        4. Verifies that the loaded solution matches the original
+        """
         table = pd.DataFrame([[1, 1, 7, 3],
                               [2, 6, 2, 4],
                               [5, 5, 3, 3],
@@ -31,14 +51,14 @@ class TestUtil(unittest.TestCase):
         # save GGLasso solution
         solution = P.__dict__['solution']
 
-        # write GGLasso solution to zarr format
+        # write GGLasso solution to zarr forma
         zipfile = str("problem.zip")
         store = zarr.ZipStore(zipfile, mode="w")
         root = zarr.open(store=store)
         q2g.to_zarr(P.__dict__, "problem", root)
         store.close()
 
-        # read GGLasso solution from zarr format
+        # read GGLasso solution from zarr forma
         store_new = zarr.ZipStore(str("problem.zip"), mode="r")
         root_new = zarr.open(store=store_new)
 

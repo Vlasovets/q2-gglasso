@@ -1,0 +1,13 @@
+version: '3'
+services:
+  q2-gglasso:
+    image: q2-gglasso:2025.4
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/data
+    working_dir: /data
+    command: bash -c "jupyter lab --ip 0.0.0.0 --no-browser --allow-root"

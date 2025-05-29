@@ -1,8 +1,8 @@
-import unittest
+import unittes
 import numpy as np
 import pandas as pd
 
-from q2_gglasso.utils import if_equal_dict
+from q2_gglasso.utils import if_equal_dic
 from gglasso.problem import glasso_problem
 from gglasso.problem import GGLassoEstimator
 from gglasso.helper.data_generation import generate_precision_matrix, sample_covariance_matrix
@@ -515,11 +515,12 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(equal, msg="Solutions from GGLasso and q2-gglasso are not identical")
         self.assertTrue(x, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver")
 
-    def test_modelselect_GGL_low(self, S=np.array(S_non_conforming), N=N, G=G,
-                                 lambda1_range=lambda1_range, lambda2_range=lambda2_range, mu1_range=mu1_range,
-                                 lambda1_min=lambda1_min, lambda1_max=lambda1_max, n_lambda1=n_lambda1,
-                                 lambda2_min=lambda2_min, lambda2_max=lambda2_max, n_lambda2=n_lambda2,
-                                 equal=False, best_lambda1=False, best_lambda2=False, mu_equal=False):
+    def test_modelselect_non_conforming_low(
+            self, S=np.array(S_non_conforming), N=N, G=G,
+            lambda1_range=lambda1_range, lambda2_range=lambda2_range, mu1_range=mu1_range,
+            lambda1_min=lambda1_min, lambda1_max=lambda1_max, n_lambda1=n_lambda1,
+            lambda2_min=lambda2_min, lambda2_max=lambda2_max, n_lambda2=n_lambda2,
+            equal=False, best_lambda1=False, best_lambda2=False, mu_equal=False):
         modelselect_params = {'lambda1_range': lambda1_range, 'lambda2_range': lambda2_range, 'mu1_range': mu1_range}
 
         P_org = glasso_problem(S=S, reg_params=modelselect_params, N=N, G=G, latent=True)
@@ -626,7 +627,6 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(best_mu, msg="Best chosen mu  from GGLasso and q2-gglasso are not the same")
         self.assertTrue(equal, msg="Solutions from GGLasso and q2-gglasso are not identical")
         self.assertTrue(x, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver")
-
 
 
 if __name__ == '__main__':

@@ -1,3 +1,10 @@
+"""Plugin setup module for QIIME 2 GGLasso.
+
+This module defines the QIIME 2 plugin interface for the q2-gglasso package,
+which provides implementations of Graphical Lasso algorithms for microbiome data analysis.
+It registers semantic types, formats, transformers, and methods for the plugin.
+"""
+
 import sys
 from os.path import dirname
 
@@ -60,7 +67,7 @@ plugin.register_semantic_type_to_format(
 plugin.methods.register_function(
     function=q2g.transform_features,
     inputs={"table": FeatureTable[Composition | Frequency | Design],
-            "taxonomy": FeatureData[Taxonomy],},
+            "taxonomy": FeatureData[Taxonomy], },
     parameters={'sample_metadata': Metadata, "transformation": Str, "pseudo_count": Int, "scale_metadata": Bool,
                 "add_metadata": Bool},
     outputs=[("transformed_table", FeatureTable[Frequency])],

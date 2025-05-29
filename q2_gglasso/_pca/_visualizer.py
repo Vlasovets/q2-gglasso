@@ -6,14 +6,12 @@ import qiime2
 import os
 import jinja2
 import warnings
-import zarr
 
 from bokeh.embed import components
 from bokeh.resources import INLINE
-from bokeh.layouts import gridplot, column, row, layout
+from bokeh.layouts import gridplot, column, row, layou
 from biom.table import Table
 from bokeh.plotting import figure, curdoc
-from biom.table import Table
 from q2_gglasso.utils import PCA, get_seq_depth
 from bokeh.models import ColumnDataSource, LinearColorMapper, ColorBar, Select, CustomJS
 from bokeh.models import Panel, Tabs
@@ -39,13 +37,32 @@ from bokeh.palettes import Spectral6, Blues8
 # sample_metadata = qiime2.Metadata.load("data/atacama-sample-metadata.tsv")
 # counts = df
 
+
 def project_covariates(counts=pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndarray, color_by=str):
+    """Project data onto principal component space with covariates.
+
+    Parameters
+    ----------
+    counts : pd.DataFrame
+        The count data to project.
+    metadata : pd.DataFrame
+        The metadata containing covariates.
+    L : np.ndarray
+        Low rank component from the GGLasso solution.
+    color_by : str
+        The metadata column to use for coloring the projection.
+
+    Returns
+    -------
+    bokeh.layouts.row
+        A Bokeh layout containing the PCA projection plot.
+    """
     proj, loadings, eigv = PCA(counts.dropna(), L, inverse=True)
     r = np.linalg.matrix_rank(L)
     eigv_sum = np.sum(eigv)
     var_exp = [(value / eigv_sum) for value in sorted(eigv, reverse=True)]
 
-    pc_columns = list('PC{0} ({1}%)'.format(i+1, str(100 * var_exp[i])[:4]) for i in range(0, r))
+    pc_columns = list('PC{0} ({1}%)'.format(i + 1, str(100 * var_exp[i])[:4]) for i in range(0, r))
     df_proj = pd.DataFrame(proj, columns=pc_columns, index=counts.index)
     df = df_proj.join(metadata)
 
@@ -81,7 +98,7 @@ def project_covariates(counts=pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndar
         var varName2 = select2.value;
         plot.title.text = varName1 + " vs " + varName2;
         ax1[0].axis_label = varName1;
-        ax2[0].axis_label = varName2; 
+        ax2[0].axis_label = varName2;
         source.data['x'] = source.data[varName1];
         source.data['y'] = source.data[varName2];
         source.change.emit();
@@ -106,6 +123,20 @@ def project_covariates(counts=pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndar
 
 
 def add_color_bar(color_map: LinearColorMapper, title: str = None):
+    """Create a color bar for the plot.
+
+    Parameters
+    ----------
+    color_map : LinearColorMapper
+        The color mapper to use for the color bar.
+    title : str, optional
+        The title of the color bar.
+
+    Returns
+    -------
+    bokeh.plotting.figure
+        A figure containing the color bar.
+    """
     color_bar_plot = figure(title=title, title_location="right",
                             height=50, width=50, toolbar_location=None, min_border=0,
                             outline_line_color=None)
@@ -116,10 +147,30 @@ def add_color_bar(color_map: LinearColorMapper, title: str = None):
     color_bar_plot.title.align = "center"
     color_bar_plot.title.text_font_size = '12pt'
 
-    return color_bar_plot
+    return color_bar_plo
 
 
 def make_plots(df: pd.DataFrame, col_name: str = None, n_components=int, proj=np.ndarray, eigv=np.ndarray):
+    """Create a grid of PCA plots.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The DataFrame containing the data.
+    col_name : str, optional
+        The column name to use for coloring.
+    n_components : in
+        The number of principal components to plot.
+    proj : np.ndarray
+        The projected data points.
+    eigv : np.ndarray
+        The eigenvalues for the principal components.
+
+    Returns
+    -------
+    bokeh.layouts.gridplo
+        A grid of PCA projection plots.
+    """
     t = np.arange(n_components)
     comb = list(itertools.combinations(t, 2))
 
@@ -158,6 +209,26 @@ def make_plots(df: pd.DataFrame, col_name: str = None, n_components=int, proj=np
 
 
 def pair_plot(counts: pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndarray, n_components=int, color_by=str):
+    """Create a pair plot of PCA projections.
+
+    Parameters
+    ----------
+    counts : pd.DataFrame
+        The count data to project.
+    metadata : pd.DataFrame
+        The metadata containing covariates.
+    L : np.ndarray
+        Low rank component from the GGLasso solution.
+    n_components : in
+        The number of principal components to include.
+    color_by : str
+        The metadata column to use for coloring the projection.
+
+    Returns
+    -------
+    bokeh.layouts.row
+        A row layout containing the pair plot.
+    """
     # TO DO: Add widget for columns selection
     plot_dict = dict()
     for col in metadata.columns:
@@ -171,7 +242,7 @@ def pair_plot(counts: pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndarray, n_c
 
         pca_plot = make_plots(df=plot_df, col_name=col, n_components=n_components, proj=proj, eigv=eigv)
 
-        plot_dict[col] = pca_plot
+        plot_dict[col] = pca_plo
 
     if color_by is None:
         warnings.warn("Coloring covariate has not been selected, "
@@ -186,6 +257,23 @@ def pair_plot(counts: pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndarray, n_c
 
 def pca(output_dir: str, table: Table, solution: zarr.hierarchy.Group, n_components: int = 3, color_by: str = None,
         sample_metadata: qiime2.Metadata = None):
+    """Generate PCA visualization from GGLasso solution.
+
+    Parameters
+    ----------
+    output_dir : str
+        The directory where visualization files will be written.
+    table : Table
+        The feature table containing sample data.
+    solution : zarr.hierarchy.Group
+        The GGLasso solution containing the low-rank component.
+    n_components : int, optional
+        The number of principal components to display, by default 3.
+    color_by : str, optional
+        The metadata column to use for coloring points, by default None.
+    sample_metadata : qiime2.Metadata, optional
+        The sample metadata, by default None.
+    """
     J_ENV = jinja2.Environment(
         loader=jinja2.PackageLoader('q2_gglasso._pca', 'assets')
     )

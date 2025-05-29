@@ -1,4 +1,10 @@
-import unittest
+"""Tests for the utility functions in the q2-gglasso plugin.
+
+This module contains tests for various utility functions in the q2-gglasso plugin.
+Currently, most tests are commented out and may be implemented in the future.
+"""
+
+import unittes
 import warnings
 from gglasso.helper.data_generation import generate_precision_matrix, sample_covariance_matrix
 
@@ -21,5 +27,4 @@ except ImportError:
 # def test_assertWarns(self):
 #     with self.assertWarnsRegex(Warning, 'The solution might have not reached global minimum!'):
 #         warnings.warn("The solution might have not reached global")
-### test biom editing
-
+# test biom editing

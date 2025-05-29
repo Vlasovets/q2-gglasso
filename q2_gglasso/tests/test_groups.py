@@ -1,4 +1,11 @@
-import unittest
+"""Tests for the group creation functionality in the q2-gglasso plugin.
+
+This module tests the group building functionality of the q2-gglasso plugin,
+specifically comparing the group arrays created by the plugin to those
+created directly by the GGLasso library to ensure consistency.
+"""
+
+import unittes
 import numpy as np
 import pandas as pd
 from biom.table import Table
@@ -13,8 +20,24 @@ except ImportError:
 
 
 class TestUtil(unittest.TestCase):
+    """Test case for building group arrays in the GGLasso plugin.
+
+    This test class verifies that the group array construction functionality
+    in q2-gglasso matches the behavior of the underlying GGLasso library.
+    """
 
     def test_build_blocks(self, equal=False):
+        """Test that group arrays built by q2-gglasso match those built by GGLasso.
+
+        This test creates sample tables, builds group arrays using both the
+        q2-gglasso function and the GGLasso library directly, and verifies tha
+        the resulting arrays are identical.
+
+        Parameters
+        ----------
+        equal : bool, default=False
+            A flag that gets set to True if the group arrays match.
+        """
 
         data1 = np.random.rand(4, 2)
         sample_ids1 = ['S%d' % i for i in range(2)]

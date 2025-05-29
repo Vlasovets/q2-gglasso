@@ -1,11 +1,11 @@
 import os
 import zarr
 import jinja2
-import bisect
+import bisec
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as pl
 
 from matplotlib.colors import ListedColormap
 from math import pi
@@ -28,7 +28,7 @@ def _get_bounds(nlabels: int):
     left = list(chain.from_iterable([list(range(nlabels)) for ii in range(nlabels)]))
     right = list(chain.from_iterable([list(range(1, nlabels + 1)) for ii in range(nlabels)]))
 
-    return bottom, top, left, right
+    return bottom, top, left, righ
 
 
 def _get_colors(df: pd.DataFrame()):
@@ -158,9 +158,9 @@ def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = N
     p.add_layout(color_bar, 'right')
     p.toolbar.autohide = True
     p.xaxis.ticker = [x + 0.5 for x in
-                      list(range(0, nlabels))]  ### shift label position to the center
+                      list(range(0, nlabels))]  # shift label position to the center
     p.yaxis.ticker = [x + 0.5 for x in list(range(0, nlabels))]
-    p.xaxis.major_label_overrides = shifted_labels_dict
+    p.xaxis.major_label_overrides = shifted_labels_dic
     p.yaxis.major_label_overrides = shifted_labels_dict_reversed
 
     hover = p.select(dict(type=HoverTool))
@@ -222,14 +222,48 @@ def _clust_data(data, n_cov=None, method: str = 'average', metric: str = 'euclid
 
     return clust_order
 
+
 def perform_clusterings(data, clust_order, n_cov=None):
+    """Perform hierarchical clustering on the data using the specified cluster order.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        The data to cluster.
+    clust_order : lis
+        The order of clusters.
+    n_cov : int, optional
+        Number of covariates, by default None.
+
+    Returns
+    -------
+    np.ndarray
+        The clustered data.
+    """
     clustered_data = hierarchical_clustering(data, clust_order=clust_order, n_cov=n_cov)
 
     result = reset_columns_and_index(clustered_data)
 
-    return result
+    return resul
+
 
 def update_labels_dict(labels_dict, clust_order, n_cov=None):
+    """Update the labels dictionary based on the cluster order.
+
+    Parameters
+    ----------
+    labels_dict : dic
+        Dictionary mapping indices to labels.
+    clust_order : lis
+        The order of clusters.
+    n_cov : int, optional
+        Number of covariates, by default None.
+
+    Returns
+    -------
+    dic
+        Updated labels dictionary.
+    """
     if n_cov is None:
         labels_asvs = {i: labels_dict[key] for i, key in enumerate(clust_order)}
         labels_dict_reversed = {len(labels_asvs) - 1 - k: v for k, v in labels_dict.items()}
@@ -240,8 +274,6 @@ def update_labels_dict(labels_dict, clust_order, n_cov=None):
         labels_dict_reversed = {len(labels_dict) - 1 - k: v for k, v in labels_dict.items()}
 
     return labels_dict, labels_dict_reversed
-
-
 
 
 def _solution_plot(solution: zarr.hierarchy.Group, width: int, height: int, label_size: str,
@@ -319,7 +351,7 @@ def _solution_plot(solution: zarr.hierarchy.Group, width: int, height: int, labe
                            label_size=label_size)
         tab3 = Panel(child=row(p3), title="Low-rank")
         tabs.append(tab3)
-    except:
+    except BaseException:
         print("NO low-rank solution has been found.")
 
     p4 = _make_stats(solution=solution, labels_dict=labels_dict)
@@ -334,6 +366,23 @@ def _solution_plot(solution: zarr.hierarchy.Group, width: int, height: int, labe
 
 def summarize(output_dir: str, solution: zarr.hierarchy.Group, n_cov: int = None,
               width: int = 1500, height: int = 1500, label_size: str = "5pt"):
+    """Generate summary visualization for a GGLasso solution.
+
+    Parameters
+    ----------
+    output_dir : str
+        Directory to write the visualization files.
+    solution : zarr.hierarchy.Group
+        The GGLasso solution to summarize.
+    n_cov : int, optional
+        Number of covariates, by default None.
+    width : int, optional
+        Width of the plot in pixels, by default 1500.
+    height : int, optional
+        Height of the plot in pixels, by default 1500.
+    label_size : str, optional
+        Font size for labels, by default "5pt".
+    """
     J_ENV = jinja2.Environment(
         loader=jinja2.PackageLoader('q2_gglasso._summarize', 'assets')
     )

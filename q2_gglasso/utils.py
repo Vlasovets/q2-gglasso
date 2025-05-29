@@ -1,3 +1,11 @@
+"""Utility functions for the q2-gglasso plugin.
+
+This module provides various helper functions for data manipulation,
+transformation, and mathematical operations used throughout the q2-gglasso plugin.
+It includes functions for array manipulation, data imputation, scaling,
+and other common operations needed for graphical lasso implementation.
+"""
+
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -87,7 +95,7 @@ def pep_metric(matrix: pd.DataFrame):
     positive_edges = np.sum(matrix > 0, axis=0)
     total_positives = np.sum(positive_edges) / 2
     pep_stat = np.round(total_positives / total_edges, 2)
-    return pep_stat
+    return pep_sta
 
 
 def if_2d_array(x=np.ndarray):
@@ -506,7 +514,7 @@ def to_zarr(obj, name, root, first=True):
 
     if isinstance(obj, dict):
         if first:
-            zz = root
+            zz = roo
         else:
             zz = root.create_group(name)
 
@@ -615,4 +623,4 @@ def correlated_PC(data=pd.DataFrame, metadata=pd.DataFrame, low_rank=np.ndarray,
                                   "rho": spearman_corr,
                                   "p_value": p_value}
 
-    return proj_dict
+    return proj_dic
