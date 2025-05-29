@@ -15,26 +15,24 @@ from gglasso.helper.basic_linalg import scale_array_by_diagonal
 
 !python setup.py install
 
-import subprocess
+!qiime dev refresh-cache
 
-subprocess.run(['qiime', 'dev', 'refresh-cache'])
-
-subprocess.run(['qiime', 'gglasso', 'summarize',
-               '--i-solution', 'data/atacama-solution-sgl.qza',
-               '--p-label-size', '25pt',
-               '--o-visualization', 'data/sgl-summary.qzv'])
+!qiime gglasso summarize \
+    --i-solution data/atacama-solution-sgl.qza \
+    --p-label-size 25pt \
+    --o-visualization data/sgl-summary.qzv
 
 
-subprocess.run(['qiime', 'gglasso', 'summarize',
-               '--i-solution', 'data/atacama-solution-slr.qza',
-               '--p-label-size', '25pt',
-               '--o-visualization', 'data/slr-summary.qzv'])
+!qiime gglasso summarize \
+    --i-solution data/atacama-solution-slr.qza \
+    --p-label-size 25pt \
+    --o-visualization data/slr-summary.qzv
 
-subprocess.run(['qiime', 'gglasso', 'summarize',
-               '--i-solution', 'data/atacama-solution-adapt.qza',
-               '--p-label-size', '25pt',
-               '--p-n-cov', '4',
-               '--o-visualization', 'data/adapt-summary.qzv'])
+!qiime gglasso summarize \
+    --i-solution data/atacama-solution-adapt.qza \
+    --p-label-size 25pt \
+    --p-n-cov 4 \
+    --o-visualization data/adapt-summary.qzv
 
 
 def rename_index_with_sum(df: pd.DataFrame):
