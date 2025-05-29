@@ -1,41 +1,26 @@
-import zarr
-import itertools
-import numpy as np
-import pandas as pd
-import qiime2
 import os
+import zarr
 import jinja2
 import warnings
+import itertools
+from typing import Optional, Dict, List, Union, Any
+import numpy as np
+from numpy.typing import NDArray
+import pandas as pd
+import qiime2
 
+from biom.table import Table
+from q2_gglasso.utils import PCA, get_seq_depth
+
+from bokeh.plotting import figure
+from bokeh.models import (
+    ColumnDataSource, LinearColorMapper, ColorBar,
+    Select, CustomJS, Panel, Tabs
+)
+from bokeh.layouts import gridplot, column, row
+from bokeh.palettes import Blues8
 from bokeh.embed import components
 from bokeh.resources import INLINE
-from bokeh.layouts import gridplot, column, row, layou
-from biom.table import Table
-from bokeh.plotting import figure, curdoc
-from q2_gglasso.utils import PCA, get_seq_depth
-from bokeh.models import ColumnDataSource, LinearColorMapper, ColorBar, Select, CustomJS
-from bokeh.models import Panel, Tabs
-from bokeh.palettes import Spectral6, Blues8
-
-# solution = zarr.load("data/atacama_low/problem.zip")
-# # # mapping = pd.read_csv("data/atacama-sample-metadata.tsv", sep='\t', index_col=0)
-# df = pd.read_csv(str("data/atacama-table_clr_small/small_clr_feature-table.tsv"), index_col=0, sep='\t')
-#
-#
-# # depth = counts.sum(axis=1)
-# # df['depth'] = depth.values
-# # df = df.fillna(0)
-# #
-# # df.columns
-# #
-# # from qiime2 import Artifact, sdk
-# #
-# # # # # # taxonomy = Artifact.load('data/classification.qza')
-# # table = Artifact.load('data/atacama-table_clr.qza')
-# # table = table.view(Table)
-# #
-# sample_metadata = qiime2.Metadata.load("data/atacama-sample-metadata.tsv")
-# counts = df
 
 
 def project_covariates(counts=pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndarray, color_by=str):
@@ -147,7 +132,7 @@ def add_color_bar(color_map: LinearColorMapper, title: str = None):
     color_bar_plot.title.align = "center"
     color_bar_plot.title.text_font_size = '12pt'
 
-    return color_bar_plo
+    return color_bar_plot
 
 
 def make_plots(df: pd.DataFrame, col_name: str = None, n_components=int, proj=np.ndarray, eigv=np.ndarray):
@@ -240,9 +225,7 @@ def pair_plot(counts: pd.DataFrame(), metadata=pd.DataFrame(), L=np.ndarray, n_c
 
         assert n_components < r, f"n_components is greater than the rank, got: {n_components}"
 
-        pca_plot = make_plots(df=plot_df, col_name=col, n_components=n_components, proj=proj, eigv=eigv)
-
-        plot_dict[col] = pca_plo
+        plot_dict[col] = make_plots(df=plot_df, col_name=col, n_components=n_components, proj=proj, eigv=eigv)
 
     if color_by is None:
         warnings.warn("Coloring covariate has not been selected, "

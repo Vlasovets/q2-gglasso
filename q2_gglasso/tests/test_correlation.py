@@ -3,7 +3,7 @@
 This module contains tests for covariance and correlation calculation utilities.
 """
 
-import unittes
+import unittest
 import pandas as pd
 import numpy as np
 

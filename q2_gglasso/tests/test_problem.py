@@ -1,8 +1,8 @@
-import unittes
+import unittest
 import numpy as np
 import pandas as pd
 
-from q2_gglasso.utils import if_equal_dic
+from q2_gglasso.utils import if_equal_dict
 from gglasso.problem import glasso_problem
 from gglasso.problem import GGLassoEstimator
 from gglasso.helper.data_generation import generate_precision_matrix, sample_covariance_matrix

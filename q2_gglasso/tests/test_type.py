@@ -4,11 +4,11 @@ This module tests the registration of semantic types and formats in the q2-gglas
 ensuring that they're properly registered and linked in the QIIME 2 framework.
 """
 
-import pytes
+import pytest
 from qiime2.plugin.testing import TestPluginBase
 
 from q2_gglasso._type import PairwiseFeatureData
-from q2_gglasso._format import PairwiseFeatureDataDirectoryForma
+from q2_gglasso._format import PairwiseFeatureDataDirectoryFormat
 
 
 class TestTypes(TestPluginBase):

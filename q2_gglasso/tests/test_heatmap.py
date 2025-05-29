@@ -5,7 +5,7 @@ plugin, verifying that the heatmap generation, labeling, and clustering function
 work as expected.
 """
 
-import unittes
+import unittest
 import numpy as np
 import pandas as pd
 import zarr

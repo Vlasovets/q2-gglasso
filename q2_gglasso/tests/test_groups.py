@@ -5,7 +5,7 @@ specifically comparing the group arrays created by the plugin to those
 created directly by the GGLasso library to ensure consistency.
 """
 
-import unittes
+import unittest
 import numpy as np
 import pandas as pd
 from biom.table import Table

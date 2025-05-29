@@ -4,7 +4,7 @@ This module tests the basic plugin setup functionality of the q2-gglasso plugin,
 ensuring that the plugin is correctly registered with the QIIME 2 framework.
 """
 
-import unittes
+import unittest
 
 from q2_gglasso.plugin_setup import plugin
 

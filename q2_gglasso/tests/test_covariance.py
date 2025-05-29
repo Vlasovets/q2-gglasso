@@ -3,7 +3,7 @@
 This module contains tests for covariance calculation and processing.
 """
 
-import unittes
+import unittest
 import pandas as pd
 import numpy as np
 

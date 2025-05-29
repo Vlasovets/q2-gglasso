@@ -1,13 +1,10 @@
 import os
 import zarr
 import jinja2
-import bisec
+import bisect
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as pl
-
-from matplotlib.colors import ListedColormap
 from math import pi
 from biom.table import Table
 from itertools import chain
@@ -28,7 +25,7 @@ def _get_bounds(nlabels: int):
     left = list(chain.from_iterable([list(range(nlabels)) for ii in range(nlabels)]))
     right = list(chain.from_iterable([list(range(1, nlabels + 1)) for ii in range(nlabels)]))
 
-    return bottom, top, left, righ
+    return bottom, top, left, right
 
 
 def _get_colors(df: pd.DataFrame()):
@@ -160,7 +157,7 @@ def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = N
     p.xaxis.ticker = [x + 0.5 for x in
                       list(range(0, nlabels))]  # shift label position to the center
     p.yaxis.ticker = [x + 0.5 for x in list(range(0, nlabels))]
-    p.xaxis.major_label_overrides = shifted_labels_dic
+    p.xaxis.major_label_overrides = shifted_labels_dict
     p.yaxis.major_label_overrides = shifted_labels_dict_reversed
 
     hover = p.select(dict(type=HoverTool))
@@ -244,7 +241,7 @@ def perform_clusterings(data, clust_order, n_cov=None):
 
     result = reset_columns_and_index(clustered_data)
 
-    return resul
+    return result
 
 
 def update_labels_dict(labels_dict, clust_order, n_cov=None):

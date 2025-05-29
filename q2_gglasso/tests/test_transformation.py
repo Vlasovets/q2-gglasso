@@ -4,7 +4,7 @@ This module tests the data transformation functionalities of the q2-gglasso plug
 focusing on the zero imputation transformation for compositional data analysis.
 """
 
-import unittes
+import unittest
 import numpy as np
 from biom.table import Table
 

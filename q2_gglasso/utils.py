@@ -95,7 +95,7 @@ def pep_metric(matrix: pd.DataFrame):
     positive_edges = np.sum(matrix > 0, axis=0)
     total_positives = np.sum(positive_edges) / 2
     pep_stat = np.round(total_positives / total_edges, 2)
-    return pep_sta
+    return pep_stat
 
 
 def if_2d_array(x=np.ndarray):
@@ -514,7 +514,7 @@ def to_zarr(obj, name, root, first=True):
 
     if isinstance(obj, dict):
         if first:
-            zz = roo
+            zz = root
         else:
             zz = root.create_group(name)
 

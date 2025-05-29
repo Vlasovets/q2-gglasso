@@ -4,7 +4,7 @@ This module tests the Zarr storage and retrieval functionality of the q2-gglasso
 ensuring that solution objects can be properly serialized and deserialized.
 """
 
-import unittes
+import unittest
 import zarr
 import q2_gglasso as q2g
 import pandas as pd
