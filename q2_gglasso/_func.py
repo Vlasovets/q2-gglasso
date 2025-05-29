@@ -472,17 +472,17 @@ def solve_problem(covariance_matrix: pd.DataFrame | np.ndarray, n_samples: list 
     # if 2d array => solve SGL
     if S.ndim == 2:
     
-            if latent:
-                print("\n----SOLVING SINGLE GRAPHICAL LASSO PROBLEM WITH LATENT VARIABLES-----")
+        if latent:
+            print("\n----SOLVING SINGLE GRAPHICAL LASSO PROBLEM WITH LATENT VARIABLES-----")
 
-                if mu1 is not None:
-                    mu1_range = np.array([mu1]) if isinstance(mu1, (int, float)) else np.array(mu1)
-                else:
-                    mu1_range = np.linspace(mu1_min, mu1_max, n_mu1) if mu1_min is not None else None
+            if mu1 is not None:
+                mu1_range = np.array([mu1]) if isinstance(mu1, (int, float)) else np.array(mu1)
+            else:
+                mu1_range = np.linspace(mu1_min, mu1_max, n_mu1) if mu1_min is not None else None
 
-                P = solve_SGL(S=S, N=n_samples, latent=latent, model_selection=model_selection,
-                              lambda1=lambda1, mu1=mu1_range,
-                              lambda1_mask=lambda1_mask, gamma=gamma)
+            P = solve_SGL(S=S, N=n_samples, latent=latent, model_selection=model_selection,
+                            lambda1=lambda1, mu1=mu1_range,
+                            lambda1_mask=lambda1_mask, gamma=gamma)
 
         else:
             print("----SOLVING SINGLE GRAPHICAL LASSO PROBLEM-----")

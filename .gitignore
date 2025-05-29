@@ -31,8 +31,6 @@ dist/
 # Project-specific Data and Scripts (excluded from versioning)
 # ------------------------------------------------------------------------------
 data/
-data/kora/
-
-# Example scripts (not for version control)
+example/
 q2_gglasso/test.py
-/example
+# ------------------------------------------------------------------------------

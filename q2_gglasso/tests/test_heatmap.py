@@ -1,7 +1,7 @@
 """Tests for the heatmap visualization functionality in the q2-gglasso plugin.
 
 This module tests the heatmap creation and clustering functionality of the q2-gglasso
-plugin, verifying that the heatmap generation, labeling, and clustering functions 
+plugin, verifying that the heatmap generation, labeling, and clustering functions
 work as expected.
 """
 
@@ -12,8 +12,8 @@ import zarr
 from tempfile import TemporaryDirectory
 
 try:
-    from q2_gglasso._summarize._visualizer import (_make_heatmap, _get_order, _get_labels,
-                                                  hierarchical_clustering)
+    from q2_gglasso._summarize._visualizer import (
+        _make_heatmap, _get_order, _get_labels, hierarchical_clustering)
     from gglasso.helper.data_generation import generate_precision_matrix, sample_covariance_matrix
 except ImportError:
     raise ImportWarning('Qiime2 or GGLasso not installed.')
@@ -32,12 +32,7 @@ class TestUtil(unittest.TestCase):
         # Create a symmetric covariance matrix
         cov_matrix = np.random.randn(self.n_features, self.n_features)
         cov_matrix = cov_matrix @ cov_matrix.T  # Make it symmetric
-        
-        # Create synthetic data that matches expected format
-        p = self.n_features
-        M = 1  # Single matrix for this test
-        N = 10  # Sample size
-        
+
         # Generate labels with ASVs and covariates
         self.labels = [f'ASV_{i}' for i in range(self.n_features - self.n_covariates)]
         self.labels.extend([f'Cov_{i}' for i in range(self.n_covariates)])
@@ -55,16 +50,16 @@ class TestUtil(unittest.TestCase):
             # Create a temporary Zarr store with test data
             store = zarr.DirectoryStore(f"{temp_dir}/test.zarr")
             root = zarr.group(store=store)
-            
+
             # Store test data and labels
             root.create_dataset('covariance', data=self.test_data.values)
             root.attrs['labels'] = self.labels
-            
+
             # Test label dictionary generation
             labels_dict, labels_dict_reversed = _get_labels(solution=root, clustered=False)
             self.assertEqual(len(labels_dict), self.n_features)
             self.assertEqual(len(labels_dict_reversed), self.n_features)
-            
+
             # Test clustering order generation (ASVs only)
             asv_data = self.test_data.iloc[:-self.n_covariates, :-self.n_covariates]
             clust_order = _get_order(asv_data, method='average', metric='euclidean')

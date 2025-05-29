@@ -1,3 +1,9 @@
+"""Tests for q2_gglasso plugin problem solving functionality.
+
+This module tests the various problem solving methods and their integration
+with QIIME2.
+"""
+
 import unittest
 import numpy as np
 import pandas as pd
@@ -5,8 +11,15 @@ import pandas as pd
 from q2_gglasso.utils import if_equal_dict
 from gglasso.problem import glasso_problem
 from gglasso.problem import GGLassoEstimator
-from gglasso.helper.data_generation import generate_precision_matrix, sample_covariance_matrix
-from gglasso.helper.ext_admm_helper import create_group_array, construct_indexer, check_G
+from gglasso.helper.data_generation import (
+    generate_precision_matrix,
+    sample_covariance_matrix
+)
+from gglasso.helper.ext_admm_helper import (
+    create_group_array,
+    construct_indexer,
+    check_G
+)
 
 try:
     from q2_gglasso._func import solve_problem
@@ -20,7 +33,8 @@ class TestUtil(unittest.TestCase):
     N = 10
     K = 3
 
-    Sigma, Theta = generate_precision_matrix(p=p, M=1, style='erdos', prob=0.1, seed=1234)
+    Sigma, Theta = generate_precision_matrix(
+        p=p, M=1, style='erdos', prob=0.1, seed=1234)
     S, sample = sample_covariance_matrix(Sigma, N)
 
     S_SGL = S
@@ -30,14 +44,16 @@ class TestUtil(unittest.TestCase):
     M = 8
     B = int(p / 8)
 
-    Sigma, Theta = generate_precision_matrix(p=p, M=M, style='powerlaw', gamma=2.8, prob=0.1, seed=3456)
+    Sigma, Theta = generate_precision_matrix(
+        p=p, M=M, style='powerlaw', gamma=2.8, prob=0.1, seed=3456)
     all_obs = dict()
     S_non_conforming = list()
     for k in np.arange(K):
         _, obs = sample_covariance_matrix(Sigma, N, seed=456)
 
         # drop the k-th block starting from the end
-        all_obs[k] = pd.DataFrame(obs).drop(np.arange(p - (k + 1) * B, p - k * B), axis=0)
+        drop_range = np.arange(p - (k + 1) * B, p - k * B)
+        all_obs[k] = pd.DataFrame(obs).drop(drop_range, axis=0)
         cov = np.cov(all_obs[k], bias=True)
         S_non_conforming.append(cov)
 
@@ -83,8 +99,14 @@ class TestUtil(unittest.TestCase):
         P_org.solve()
         ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
 
-        P_q2 = solve_problem(covariance_matrix=S, n_samples=N, lambda1_min=lambda1, lambda1_max=lambda1, n_lambda1=1,
-                             mu1=mu1, latent=True)
+        P_q2 = solve_problem(
+            covariance_matrix=S, 
+            n_samples=N, 
+            lambda1_min=lambda1, 
+            lambda1_max=lambda1, 
+            n_lambda1=1,
+            mu1=mu1, 
+            latent=True)
         ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
 
         if (P_org.solution.precision_ == P_q2.solution.precision_).all():
@@ -97,13 +119,27 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(equal_low, msg="Low-rank solutions from GGLasso and q2-gglasso are not identical.")
         self.assertEqual(ebic_org, ebic_q2, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver.")
 
-    def test_GGL(self, S=S_MGL, N=N, lambda1=lambda1_min, lambda2=lambda2_min, equal=False):
-        P_org = glasso_problem(S=S, reg_params={'lambda1': lambda1, 'lambda2': lambda2}, N=N, latent=False, reg='GGL')
+    def test_GGL(self, S=S_MGL, N=N, lambda1=lambda1_min, lambda2=lambda2_min, 
+               equal=False):
+        P_org = glasso_problem(
+            S=S, 
+            reg_params={'lambda1': lambda1, 'lambda2': lambda2}, 
+            N=N, 
+            latent=False, 
+            reg='GGL'
+        )
         P_org.solve()
         ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
 
-        P_q2 = solve_problem(covariance_matrix=S, n_samples=N, lambda1_min=lambda1, lambda1_max=lambda1, n_lambda1=1,
-                             lambda2_min=lambda2, lambda2_max=lambda2, n_lambda2=1)
+        P_q2 = solve_problem(
+            covariance_matrix=S, 
+            n_samples=N, 
+            lambda1_min=lambda1, 
+            lambda1_max=lambda1, 
+            n_lambda1=1,
+            lambda2_min=lambda2, 
+            lambda2_max=lambda2, 
+            n_lambda2=1)
         ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
 
         if (P_org.solution.precision_ == P_q2.solution.precision_).all():
@@ -112,15 +148,28 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(equal, msg="Solutions from GGLasso and q2-gglasso are not identical.")
         self.assertEqual(ebic_org, ebic_q2, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver")
 
-    def test_GGL_low(self, S=S_MGL, N=N, lambda1=lambda1_min, lambda2=lambda2_min, mu1=mu1, equal=False, equal_low=False):
-        P_org = glasso_problem(S=S, reg_params={'lambda1': lambda1, 'lambda2': lambda2, 'mu1': mu1},
-                               N=N, latent=True, reg='GGL')
+    def test_GGL_low(self, S=S_MGL, N=N, lambda1=lambda1_min, lambda2=lambda2_min, 
+                  mu1=mu1, equal=False, equal_low=False):
+        P_org = glasso_problem(
+            S=S, 
+            reg_params={'lambda1': lambda1, 'lambda2': lambda2, 'mu1': mu1},
+            N=N, 
+            latent=True, 
+            reg='GGL')
         P_org.solve()
         ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
 
-        P_q2 = solve_problem(covariance_matrix=S, n_samples=N, latent=True,
-                             lambda1_min=lambda1, lambda1_max=lambda1, n_lambda1=1,
-                             lambda2_min=lambda2, lambda2_max=lambda2, n_lambda2=1, mu1=mu1)
+        P_q2 = solve_problem(
+            covariance_matrix=S, 
+            n_samples=N, 
+            latent=True,
+            lambda1_min=lambda1, 
+            lambda1_max=lambda1, 
+            n_lambda1=1,
+            lambda2_min=lambda2, 
+            lambda2_max=lambda2, 
+            n_lambda2=1, 
+            mu1=mu1)
         ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
 
         if (P_org.solution.precision_ == P_q2.solution.precision_).all():
@@ -138,8 +187,16 @@ class TestUtil(unittest.TestCase):
         P_org.solve()
         ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
 
-        P_q2 = solve_problem(covariance_matrix=S, n_samples=N, lambda1_min=lambda1, lambda1_max=lambda1, n_lambda1=1,
-                             lambda2_min=lambda2, lambda2_max=lambda2, n_lambda2=1, reg='FGL')
+        P_q2 = solve_problem(
+            covariance_matrix=S, 
+            n_samples=N,
+            lambda1_min=lambda1, 
+            lambda1_max=lambda1, 
+            n_lambda1=1,
+            lambda2_min=lambda2, 
+            lambda2_max=lambda2, 
+            n_lambda2=1, 
+            reg='FGL')
         ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
 
         if (P_org.solution.precision_ == P_q2.solution.precision_).all():
@@ -148,55 +205,29 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(equal, msg="Solutions from GGLasso and q2-gglasso are not identical.")
         self.assertEqual(ebic_org, ebic_q2, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver")
 
-    def test_FGL_low(self, S=S_MGL, N=N, lambda1=lambda1_min, lambda2=lambda2_min, mu1=mu1, equal=False, equal_low=False):
-        P_org = glasso_problem(S=S, reg_params={'lambda1': lambda1, 'lambda2': lambda2, 'mu1': mu1},
-                               N=N, latent=True, reg='FGL')
+    def test_FGL_low(self, S=S_MGL, N=N, lambda1=lambda1_min, lambda2=lambda2_min, 
+                  mu1=mu1, equal=False, equal_low=False):
+        P_org = glasso_problem(
+            S=S, 
+            reg_params={'lambda1': lambda1, 'lambda2': lambda2, 'mu1': mu1},
+            N=N, 
+            latent=True, 
+            reg='FGL')
         P_org.solve()
         ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
 
-        P_q2 = solve_problem(covariance_matrix=S, n_samples=N, latent=True, reg='FGL',
-                             lambda1_min=lambda1, lambda1_max=lambda1, n_lambda1=1,
-                             lambda2_min=lambda2, lambda2_max=lambda2, n_lambda2=1, mu1=mu1)
-        ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
-
-        if (P_org.solution.precision_ == P_q2.solution.precision_).all():
-            equal = True
-
-        if (P_org.solution.lowrank_ == P_q2.solution.lowrank_).all():
-            equal_low = True
-
-        self.assertTrue(equal, msg="Solutions from GGLasso and q2-gglasso are not identical.")
-        self.assertTrue(equal_low, msg="Low-rank solutions from GGLasso and q2-gglasso are not identical.")
-        self.assertEqual(ebic_org, ebic_q2, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver")
-
-    def test_non_conforming(self, S=np.array(S_non_conforming), N=N, lambda1=lambda1_min, lambda2=lambda2_min, G=G, equal=True):
-        P_org = glasso_problem(S=S, N=N, G=G, reg_params={'lambda1': lambda1, 'lambda2': lambda2}, latent=False)
-        P_org.solve()
-        ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
-
-        P_q2 = solve_problem(covariance_matrix=S, n_samples=N, group_array=G,
-                             lambda1_min=lambda1, lambda1_max=lambda1, n_lambda1=1,
-                             lambda2_min=lambda2, lambda2_max=lambda2, n_lambda2=1,
-                             non_conforming=True)
-        ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
-
-        if (P_org.solution.precision_ == P_q2.solution.precision_).all():
-            equal = True
-
-        self.assertTrue(equal, msg="Solutions from GGLasso and q2-gglasso are not identical.")
-        self.assertEqual(ebic_org, ebic_q2, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver")
-
-    def test_non_conforming_low(self, S=np.array(S_non_conforming), N=N, lambda1=lambda1_min, lambda2=lambda2_min, mu1=mu1, G=G,
-                                equal=False, equal_low=False):
-        P_org = glasso_problem(S=S, N=N, G=G, reg_params={'lambda1': lambda1, 'lambda2': lambda2, 'mu1': mu1},
-                               latent=True)
-        P_org.solve()
-        ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
-
-        P_q2 = solve_problem(covariance_matrix=S, n_samples=N, group_array=G,
-                             lambda1_min=lambda1, lambda1_max=lambda1, n_lambda1=1,
-                             lambda2_min=lambda2, lambda2_max=lambda2, n_lambda2=1,
-                             mu1=mu1, non_conforming=True, latent=True)
+        P_q2 = solve_problem(
+            covariance_matrix=S, 
+            n_samples=N, 
+            latent=True, 
+            reg='FGL',
+            lambda1_min=lambda1, 
+            lambda1_max=lambda1, 
+            n_lambda1=1,
+            lambda2_min=lambda2, 
+            lambda2_max=lambda2, 
+            n_lambda2=1, 
+            mu1=mu1)
         ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
 
         if (P_org.solution.precision_ == P_q2.solution.precision_).all():
@@ -209,12 +240,76 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(equal_low, msg="Low-rank solutions from GGLasso and q2-gglasso are not identical.")
         self.assertEqual(ebic_org, ebic_q2, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver")
 
-    def test_SGL_mask(self, S=S_SGL, N=N, lambda1=lambda1_min, lambda1_mask=lambda1_mask, equal=False):
-        P_org = glasso_problem(S=S, reg_params={'lambda1': lambda1, 'lambda1_mask': lambda1_mask}, N=N, latent=False)
+    def test_non_conforming(self, S=np.array(S_non_conforming), N=N, lambda1=lambda1_min, 
+                        lambda2=lambda2_min, G=G, equal=True):
+        P_org = glasso_problem(
+            S=S, 
+            N=N, 
+            G=G, 
+            reg_params={'lambda1': lambda1, 'lambda2': lambda2}, 
+            latent=False)
         P_org.solve()
         ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
 
-        P_q2 = solve_problem(covariance_matrix=S, n_samples=N, lambda1_min=lambda1, lambda1_mask=lambda1_mask)
+        P_q2 = solve_problem(
+    covariance_matrix=S, n_samples=N, group_array=G,
+    lambda1_min=lambda1, lambda1_max=lambda1, n_lambda1=1,
+    lambda2_min=lambda2, lambda2_max=lambda2, n_lambda2=1,
+    non_conforming=True)
+        ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
+
+        if (P_org.solution.precision_ == P_q2.solution.precision_).all():
+            equal = True
+
+        self.assertTrue(equal, msg="Solutions from GGLasso and q2-gglasso are not identical.")
+        self.assertEqual(ebic_org, ebic_q2, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver")
+
+    def test_non_conforming_low(
+            self, S=np.array(S_non_conforming), N=N, lambda1=lambda1_min,
+            lambda2=lambda2_min, mu1=mu1, G=G, equal=False, equal_low=False):
+        P_org = glasso_problem(
+            S=S, 
+            N=N, 
+            G=G, 
+            reg_params={'lambda1': lambda1, 'lambda2': lambda2, 'mu1': mu1},
+            latent=True)
+        P_org.solve()
+        ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
+
+        P_q2 = solve_problem(
+    covariance_matrix=S, n_samples=N, group_array=G,
+    lambda1_min=lambda1, lambda1_max=lambda1, n_lambda1=1,
+    lambda2_min=lambda2, lambda2_max=lambda2, n_lambda2=1,
+    mu1=mu1, non_conforming=True, latent=True)
+        ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
+
+        if (P_org.solution.precision_ == P_q2.solution.precision_).all():
+            equal = True
+
+        if (P_org.solution.lowrank_ == P_q2.solution.lowrank_).all():
+            equal_low = True
+
+        self.assertTrue(equal, msg="Solutions from GGLasso and q2-gglasso are not identical.")
+        self.assertTrue(equal_low, msg="Low-rank solutions from GGLasso and q2-gglasso are not identical.")
+        self.assertEqual(ebic_org, ebic_q2, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver")
+
+    def test_SGL_mask(self, S=S_SGL, N=N, lambda1=lambda1_min, 
+                    lambda1_mask=lambda1_mask, equal=False):
+        P_org = glasso_problem(
+            S=S, 
+            reg_params={'lambda1': lambda1, 'lambda1_mask': lambda1_mask}, 
+            N=N, 
+            latent=False
+        )
+        P_org.solve()
+        ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
+
+        P_q2 = solve_problem(
+            covariance_matrix=S, 
+            n_samples=N, 
+            lambda1_min=lambda1, 
+            lambda1_mask=lambda1_mask
+        )
         ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
 
         if (P_org.solution.precision_ == P_q2.solution.precision_).all():
@@ -223,15 +318,19 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(equal, msg="Solutions from GGLasso and q2-gglasso are not identical")
         self.assertEqual(ebic_org, ebic_q2, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver")
 
-    def test_SGL_mask_low(self, S=S_SGL, N=N, lambda1=lambda1_min, mu1=mu1, lambda1_mask=lambda1_mask,
-                          equal=False, equal_low=False):
-        P_org = glasso_problem(S=S, reg_params={'lambda1': lambda1, "mu1": mu1, "lambda1_mask": lambda1_mask},
-                               N=N, latent=True)
+    def test_SGL_mask_low(self, S=S_SGL, N=N, lambda1=lambda1_min, mu1=mu1,
+                          lambda1_mask=lambda1_mask, equal=False, equal_low=False):
+        P_org = glasso_problem(
+            S=S, 
+            reg_params={'lambda1': lambda1, "mu1": mu1, "lambda1_mask": lambda1_mask},
+            N=N, 
+            latent=True)
         P_org.solve()
         ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
 
-        P_q2 = solve_problem(covariance_matrix=S, n_samples=N, lambda1_min=lambda1, mu1=mu1,
-                             lambda1_mask=lambda1_mask, latent=True)
+        P_q2 = solve_problem(
+    covariance_matrix=S, n_samples=N, 
+    lambda1_min=lambda1, mu1=mu1, lambda1_mask=lambda1_mask, latent=True)
         ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
 
         if (P_org.solution.precision_ == P_q2.solution.precision_).all():
@@ -253,8 +352,9 @@ class TestUtil(unittest.TestCase):
         P_org.model_selection(modelselect_params=modelselect_params, method='eBIC')
         ebic_org = P_org.modelselect_stats["BIC"]
 
-        P_q2 = solve_problem(covariance_matrix=S, n_samples=N, lambda1_min=lambda1_min, lambda1_max=lambda1_max,
-                             n_lambda1=n_lambda1)
+        P_q2 = solve_problem(
+    covariance_matrix=S, n_samples=N, 
+    lambda1_min=lambda1_min, lambda1_max=lambda1_max, n_lambda1=n_lambda1)
         ebic_q2 = P_q2.modelselect_stats["BIC"]
 
         x = if_equal_dict(ebic_org, ebic_q2)
@@ -272,9 +372,10 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(equal, msg="Solutions from GGLasso and q2-gglasso are not identical")
         self.assertTrue(x, msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver")
 
-    def test_modelselect_SGL_low(self, S=S_SGL, N=N, lambda1_range=lambda1_range, mu1_range=mu1_range,
-                                 lambda1_min=lambda1_min, lambda1_max=lambda1_max, n_lambda1=n_lambda1,
-                                 equal=False, best_lambda=False, best_mu=False):
+    def test_modelselect_SGL_low(
+            self, S=S_SGL, N=N, lambda1_range=lambda1_range, mu1_range=mu1_range,
+            lambda1_min=lambda1_min, lambda1_max=lambda1_max, n_lambda1=n_lambda1,
+            equal=False, best_lambda=False, best_mu=False):
         modelselect_params = {'lambda1_range': lambda1_range, 'mu1_range': mu1_range}
 
         P_org = glasso_problem(S=S, reg_params=modelselect_params, N=N, latent=True)
