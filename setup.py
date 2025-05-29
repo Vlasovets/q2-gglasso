@@ -21,6 +21,10 @@ VERSION = "0.0.1"
 
 here = os.path.abspath(os.path.dirname("__file__"))
 
+# Read requirements from file
+with open('requirements.txt') as f:
+    requirements = f.read().splitlines()
+
 setup(
     name="q2-gglasso",
     version=versioneer.get_version(),
@@ -37,4 +41,5 @@ setup(
     },
     package_data={'q2_gglasso': ['citations.bib', '_summarize/assets/*.html', '_summarize/form/*.png']},
     zip_safe=False,
+    install_requires=requirements,
 )
