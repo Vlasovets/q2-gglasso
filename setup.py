@@ -43,25 +43,5 @@ setup(
             '_summarize/form/*.png'
         ]
     },
-    zip_safe=False,
-    install_requires=[
-        "numpy>=1.17.3",
-        "numba>=0.46.0",
-        "scipy>=0.11.0",
-        "scikit-learn>=0.24.1",
-        "zarr>=2.11.1",
-        "setuptools>=59.8.0",
-        "pytest>=7.0.1",
-        "bokeh>=2.4.2",
-        "jupyterlab>=3.0.0",
-        "versioneer",
-        "jinja2",
-        "pandas",
-        "biom-format",
-        "calysto-bash",
-        "sphinx-exercise",
-        "jupyter-book",
-        "git+https://github.com/qiime2/sphinx-ext-qiime2",
-        "git+https://github.com/fabian-sp/GGLasso.git@master"
-    ]
+    zip_safe=False
 )
