@@ -1,53 +1,111 @@
-name: test and build
+name: Test and lint
 
 on:
   pull_request:
-    types: [ labeled ] # turn off CI/CD for now
-    branches:
-      - main
+    branches: ["main"]
   push:
+    branches: ["main"]
 
 jobs:
-  if: ${{ github.event.label.name == 'bug' }} # turn off CI/CD for now
+  build-and-test-qiime2-amplicon-2025-4:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-13]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Conda
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        activate-environment: q2-gglasso-qiime2-amplicon-2025.4
+        environment-file: environment-files/q2-gglasso-qiime2-amplicon-2025.4.yml
+        auto-activate-base: false
+
+    - name: Install plugin
+      shell: bash -l {0}
+      run: make install
+
+    - name: Run tests
+      shell: bash -l {0}
+      run: make test
+
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: checkout source
+      uses: actions/checkout@v3
 
-    - name: set up python 3.8
-      uses: actions/setup-python@v1
+    - name: set up python 3.11
+      uses: actions/setup-python@v4
       with:
-        python-version: 3.8
+        python-version: 3.11
 
     - name: install dependencies
-      run: pip install -q flake8
+      run: |
+        python -m pip install --upgrade pip
+        pip install -q https://github.com/qiime2/q2lint/archive/master.zip
+        pip install -q flake8
 
-    - name: lint
+    - name: run flake8
       run: flake8
 
-  build-and-test:
-    needs: [lint]
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        # necessary for versioneer
-        fetch-depth: 0
+    - name: run q2lint
+      run: q2lint
 
-    - name: Hack - template coverage output path
-      run: echo "COV=coverage xml -o $GITHUB_WORKSPACE/coverage.xml" >> $GITHUB_ENV
 
-    - uses: qiime2/action-library-packaging@alpha1
-      with:
-        package-name: q2-gglasso
-        additional-tests: ${{ env.COV }}
-        build-target: dev
-        library-token: ${{ secrets.LIBRARY_TOKEN }}
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
-      with:
-        fail_ci_if_error: true
+# name: test and build
+
+# on:
+#   pull_request:
+#     types: [ labeled ] # turn off CI/CD for now
+#     branches:
+#       - main
+#   push:
+
+# jobs:
+#   if: ${{ github.event.label.name == 'bug' }} # turn off CI/CD for now
+#   lint:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - uses: actions/checkout@v2
+
+#     - name: set up python 3.8
+#       uses: actions/setup-python@v1
+#       with:
+#         python-version: 3.8
+
+#     - name: install dependencies
+#       run: pip install -q flake8
+
+#     - name: lint
+#       run: flake8
+
+#   build-and-test:
+#     needs: [lint]
+#     strategy:
+#       matrix:
+#         os: [ubuntu-latest, macos-latest]
+#     runs-on: ${{ matrix.os }}
+#     steps:
+#     - uses: actions/checkout@v2
+#       with:
+#         # necessary for versioneer
+#         fetch-depth: 0
+
+#     - name: Hack - template coverage output path
+#       run: echo "COV=coverage xml -o $GITHUB_WORKSPACE/coverage.xml" >> $GITHUB_ENV
+
+#     - uses: qiime2/action-library-packaging@alpha1
+#       with:
+#         package-name: q2-gglasso
+#         additional-tests: ${{ env.COV }}
+#         build-target: dev
+#         library-token: ${{ secrets.LIBRARY_TOKEN }}
+
+#     - name: Upload coverage to Codecov
+#       uses: codecov/codecov-action@v2
+#       with:
+#         fail_ci_if_error: true
