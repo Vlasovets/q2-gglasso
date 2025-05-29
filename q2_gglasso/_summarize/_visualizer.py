@@ -5,6 +5,8 @@ import bisect
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 from math import pi
 from biom.table import Table
 from itertools import chain

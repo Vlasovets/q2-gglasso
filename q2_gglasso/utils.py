@@ -623,4 +623,4 @@ def correlated_PC(data=pd.DataFrame, metadata=pd.DataFrame, low_rank=np.ndarray,
                                   "rho": spearman_corr,
                                   "p_value": p_value}
 
-    return proj_dic
+    return proj_dict

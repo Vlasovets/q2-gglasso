@@ -12,7 +12,7 @@ import zarr
 
 try:
     from q2_gglasso._summarize._visualizer import (_make_heatmap, _get_order, _get_labels,
-                                               hierarchical_clustering)
+                                                   hierarchical_clustering)
 except ImportError:
     raise ImportWarning('Qiime2 not installed.')
 
