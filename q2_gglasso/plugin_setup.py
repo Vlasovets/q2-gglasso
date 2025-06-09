@@ -217,7 +217,7 @@ plugin.methods.register_function(
             "Low-rank regularization parameter."
             "Only needs to be specified if latent=True."
         ),
-        "adapt_lambda1": (
+        "weights": (
             "Array (p,p), non-negative, symmetric."
             "The lambda1 parameter is multiplied element-wise with this array, thus lambda1 has to be provided."
         ),

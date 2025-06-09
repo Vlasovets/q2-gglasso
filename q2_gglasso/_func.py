@@ -383,11 +383,11 @@ def solve_non_conforming(S: np.ndarray, N: list, G: list, latent: bool = None,
 
 
 def solve_problem(covariance_matrix: pd.DataFrame | np.ndarray, n_samples: list | int | float, latent: bool = None,
-                      lambda1_min: float = None, lambda1_max: float = None, n_lambda1: int = 1,
-                      lambda2_min: float = None, lambda2_max: float = None, n_lambda2: int = 1,
-                      mu1_min: float = None, mu1_max: float = None, n_mu1: int = 1,
-                      adapt_lambda1: list = None, non_conforming: bool = None, gamma: float = 0.01,
-                      group_array: list = None, reg: str = 'GGL') -> glasso_problem:
+                  lambda1_min: float = None, lambda1_max: float = None, n_lambda1: int = 1,
+                  lambda2_min: float = None, lambda2_max: float = None, n_lambda2: int = 1,
+                  mu1_min: float = None, mu1_max: float = None, n_mu1: int = 1,
+                  weights: list = None, non_conforming: bool = None, gamma: float = 0.01,
+                  group_array: list = None, reg: str = 'GGL') -> glasso_problem:
     """
     Solve Graphical Lasso problem.
 
@@ -427,7 +427,7 @@ def solve_problem(covariance_matrix: pd.DataFrame | np.ndarray, n_samples: list 
         Only needs to be specified if 'latent=True'.
     n_mu1: int
         A range of 'mu1'.
-    adapt_lambda1: list, optional
+    weights: list, optional
         List of elements and associated weights which will be multiplied by 'lambda1' during regularization;
         The 'lambda1' parameter is multiplied element-wise with list. Only available for SGL;
         List must be provided in the format: (entry, weight), where entry is a string, and weight is a float;
@@ -463,15 +463,14 @@ def solve_problem(covariance_matrix: pd.DataFrame | np.ndarray, n_samples: list 
     model_selection = h_params["model_selection"]
     lambda1, lambda2, mu1 = h_params["lambda1"], h_params["lambda2"], h_params["mu1"]
 
-    if adapt_lambda1 is None:
+    if weights is None:
         lambda1_mask = None
     else:
-        lambda1_mask = get_lambda_mask(adapt_lambda1=adapt_lambda1,
+        lambda1_mask = get_lambda_mask(weights=weights,
                                        covariance_matrix=covariance_matrix)
 
     # if 2d array => solve SGL
     if S.ndim == 2:
-    
         if latent:
             print("\n----SOLVING SINGLE GRAPHICAL LASSO PROBLEM WITH LATENT VARIABLES-----")
 
@@ -481,8 +480,8 @@ def solve_problem(covariance_matrix: pd.DataFrame | np.ndarray, n_samples: list 
                 mu1_range = np.linspace(mu1_min, mu1_max, n_mu1) if mu1_min is not None else None
 
             P = solve_SGL(S=S, N=n_samples, latent=latent, model_selection=model_selection,
-                            lambda1=lambda1, mu1=mu1_range,
-                            lambda1_mask=lambda1_mask, gamma=gamma)
+                      lambda1=lambda1, mu1=mu1_range,
+                      lambda1_mask=lambda1_mask, gamma=gamma)
 
         else:
             print("----SOLVING SINGLE GRAPHICAL LASSO PROBLEM-----")
@@ -523,7 +522,17 @@ def solve_problem(covariance_matrix: pd.DataFrame | np.ndarray, n_samples: list 
                               model_selection=model_selection,
                               lambda1=lambda1, lambda2=lambda2, mu1=mu1, gamma=gamma)
 
-    labels = list(covariance_matrix.columns)
+    # labels = list(covariance_matrix.columns)
+    # Handle both pandas DataFrame and numpy ndarray for labels
+    if hasattr(covariance_matrix, 'columns'):
+        labels = list(covariance_matrix.columns)
+    else:
+        # When covariance_matrix is a numpy array, create numbered labels
+        if S.ndim == 2:
+            labels = [f"Feature_{i}" for i in range(S.shape[0])]
+        else:  # For 3D arrays
+            labels = [f"Feature_{i}" for i in range(S.shape[1])]
+
     labels_range = range(len(labels))
     P.__dict__["labels"] = dict(zip(labels_range, labels))
 
