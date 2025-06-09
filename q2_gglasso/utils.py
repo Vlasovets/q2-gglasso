@@ -13,14 +13,16 @@ import warnings
 
 
 def flatten_array(x):
-    """
-    Flatten a NumPy array.
+    """Flatten a NumPy array.
 
-    Parameters:
+    Parameters
+    ----------
     - x: The input array.
 
-    Returns:
+    Returns
+    -------
     - np.ndarray: A flattened version of the input array.
+
     """
     x = np.array(x)
     x = x.flatten()
@@ -28,14 +30,16 @@ def flatten_array(x):
 
 
 def list_to_array(x=list):
-    """
-    Convert a list to a NumPy array.
+    """Convert a list to a NumPy array.
 
-    Parameters:
+    Parameters
+    ----------
     - x (list): The input list.
 
-    Returns:
+    Returns
+    -------
     - np.ndarray or scalar: A NumPy array if the list has more than one element, or a scalar if it has only one element.
+
     """
     if isinstance(x, list):
         x = np.array(x)
@@ -46,14 +50,16 @@ def list_to_array(x=list):
 
 
 def numeric_to_list(x):
-    """
-    Convert a numeric value or None to a list.
+    """Convert a numeric value or None to a list.
 
-    Parameters:
+    Parameters
+    ----------
     - x (int, float, or None): The input value.
 
-    Returns:
+    Returns
+    -------
     - list: A list containing the input value. If the input is already a list or None, it is returned as is.
+
     """
     if (isinstance(x, (int, float))) or (x is None):
         x = [x]
@@ -61,15 +67,17 @@ def numeric_to_list(x):
 
 
 def if_equal_dict(a, b):
-    """
-    Check if the values for each key in two dictionaries are equal.
+    """Check if the values for each key in two dictionaries are equal.
 
-    Parameters:
+    Parameters
+    ----------
     - a (dict): The first dictionary.
     - b (dict): The second dictionary.
 
-    Returns:
+    Returns
+    -------
     - bool: True if the values for each key are equal, False otherwise.
+
     """
     x = True
     for key in a.keys():
@@ -81,15 +89,18 @@ def if_equal_dict(a, b):
 
 
 def pep_metric(matrix: pd.DataFrame):
-    """
-        Calculate the Positive Edge Proportion (PEP) metric for a given adjacency matrix.
-        The ratio of the number of positive edges to the total number of edges.
+    """Calculate the Positive Edge Proportion (PEP) metric for a given adjacency matrix.
 
-        Parameters:
+    The ratio of the number of positive edges to the total number of edges.
+
+    Parameters
+    ----------
         - matrix (pd.DataFrame): The adjacency matrix representing interactions between nodes.
 
-        Returns:
+    Returns
+    -------
         - float: The Positive Edge Proportion (PEP) metric, rounded to two decimal places.
+
     """
     total_edges = np.count_nonzero(matrix) / 2
     positive_edges = np.sum(matrix > 0, axis=0)
@@ -99,14 +110,16 @@ def pep_metric(matrix: pd.DataFrame):
 
 
 def if_2d_array(x=np.ndarray):
-    """
-    Ensure input array is 2D.
+    """Ensure input array is 2D.
 
-    Parameters:
+    Parameters
+    ----------
     - x (numpy.ndarray): The input array.
 
-    Returns:
+    Returns
+    -------
     - numpy.ndarray: The input array as a 2D array.
+
     """
     #  if 3d array of shape (1,p,p),
     #  make it 2d array of shape (p,p).
@@ -116,14 +129,16 @@ def if_2d_array(x=np.ndarray):
 
 
 def reset_columns_and_index(df):
-    """
-    Reset column indices and drop the existing row index.
+    """Reset column indices and drop the existing row index.
 
-    Parameters:
+    Parameters
+    ----------
     - df (pd.DataFrame): The input DataFrame.
 
-    Returns:
+    Returns
+    -------
     - pd.DataFrame: The DataFrame with reset column indices and dropped row index.
+
     """
     df.columns = range(df.columns.size)  # reset columns
     df = df.reset_index(drop=True)  # reset indices
@@ -132,18 +147,20 @@ def reset_columns_and_index(df):
 
 
 def if_all_none(lambda1, lambda2, mu1):
-    """
-        Check if all hyperparameters (lambda1, lambda2, mu1) are None and set default values if needed.
+    """Check if all hyperparameters (lambda1, lambda2, mu1) are None and set default values if needed.
 
-        Parameters:
+    Parameters
+    ----------
         - lambda1: The value or list of values for lambda1.
         - lambda2: The value or list of values for lambda2.
         - mu1: The value or list of values for mu1.
 
-        Returns:
+    Returns
+    -------
         - tuple: A tuple containing updated values for lambda1, lambda2, and mu1.
 
-        If all hyperparameters are None, default values are set and a message is printed.
+    If all hyperparameters are None, default values are set and a message is printed.
+
     """
     if lambda1 is None and lambda2 is None and mu1 is None:
         lambda1 = np.logspace(0, -3, 10)
@@ -151,24 +168,26 @@ def if_all_none(lambda1, lambda2, mu1):
         mu1 = np.logspace(2, -1, 10)
 
         print("Setting default hyperparameters:")
-        print('\tlambda1 range: [%s]' % ', '.join(map(str, lambda1)))
-        print('\tlambda2 range: [%s]' % ', '.join(map(str, lambda2)))
-        print('\tmu1 range: [%s]\n' % ', '.join(map(str, mu1)))
+        print("\tlambda1 range: [%s]" % ", ".join(map(str, lambda1)))
+        print("\tlambda2 range: [%s]" % ", ".join(map(str, lambda2)))
+        print("\tmu1 range: [%s]\n" % ", ".join(map(str, mu1)))
 
     return lambda1, lambda2, mu1
 
 
 def if_model_selection(lambda1, lambda2, mu1):
-    """
-    Check if model selection is enabled based on the provided lambda and mu values.
+    """Check if model selection is enabled based on the provided lambda and mu values.
 
-    Parameters:
+    Parameters
+    ----------
     - lambda1: The value or list of values for lambda1.
     - lambda2: The value or list of values for lambda2.
     - mu1: The value or list of values for mu1.
 
-    Returns:
+    Returns
+    -------
     - bool: True if model selection is enabled (multiple values for lambda1, lambda2, or mu1), False otherwise.
+
     """
     lambda1 = numeric_to_list(lambda1)
     lambda2 = numeric_to_list(lambda2)
@@ -182,19 +201,20 @@ def if_model_selection(lambda1, lambda2, mu1):
 
 
 def get_seq_depth(counts):
-    """
-    Calculate and scale sequencing depth from count data.
+    """Calculate and scale sequencing depth from count data.
 
-    Parameters:
+    Parameters
+    ----------
     - counts (numpy.ndarray or pandas.DataFrame): A 2D array or DataFrame where rows represent features and columns represent samples.
 
-    Returns:
+    Returns
+    -------
     - numpy.ndarray: Scaled sequencing depth values.
 
     The sequencing depth is calculated by summing counts across features or samples based on the larger dimension.
     The depth values are then scaled to the range [0, 1].
-    """
 
+    """
     p, n = counts.shape
     if p >= n:
         depth = counts.sum(axis=0)
@@ -205,22 +225,24 @@ def get_seq_depth(counts):
 
 
 def get_range(lower_bound, upper_bound, n):
-    """
-        Generate a logarithmic range of values between lower_bound and upper_bound.
+    """Generate a logarithmic range of values between lower_bound and upper_bound.
 
-        Parameters:
+    Parameters
+    ----------
         - lower_bound (float or None): The lower bound of the range. If None, a default value of 1e-3 is used.
         - upper_bound (float or None): The upper bound of the range. If None, a default value of 1 is used.
         - n (int): The number of values to generate in the logarithmic range.
 
-        Returns:
+    Returns
+    -------
         - list: A list of n logarithmically spaced values between lower_bound and upper_bound.
           If both lower_bound and upper_bound are None, the list contains a single element [None].
 
-        Example:
-            get_range(0, 2, 5)
-            [1e-3, 0.01, 0.1, 1.0, 10.0]
-        """
+    Example:
+        get_range(0, 2, 5)
+        [1e-3, 0.01, 0.1, 1.0, 10.0]
+
+    """
     if (lower_bound is None) and (upper_bound is None):
         range = [None]
     else:
@@ -232,12 +254,21 @@ def get_range(lower_bound, upper_bound, n):
     return range
 
 
-def get_hyperparameters(lambda1_min, lambda1_max, lambda2_min, lambda2_max, mu1_min, mu1_max,
-                        n_lambda1: int = 1, n_lambda2: int = 1, n_mu1: int = 1):
-    """
-       Generate hyperparameters for a model based on specified ranges.
+def get_hyperparameters(
+    lambda1_min,
+    lambda1_max,
+    lambda2_min,
+    lambda2_max,
+    mu1_min,
+    mu1_max,
+    n_lambda1: int = 1,
+    n_lambda2: int = 1,
+    n_mu1: int = 1,
+):
+    """Generate hyperparameters for a model based on specified ranges.
 
-       Parameters:
+    Parameters
+    ----------
        - lambda1_min (float): The minimum value for lambda1.
        - lambda1_max (float): The maximum value for lambda1.
        - lambda2_min (float): The minimum value for lambda2.
@@ -248,16 +279,21 @@ def get_hyperparameters(lambda1_min, lambda1_max, lambda2_min, lambda2_max, mu1_
        - n_lambda2 (int, optional): The number of values to generate for lambda2 (default is 1).
        - n_mu1 (int, optional): The number of values to generate for mu1 (default is 1).
 
-       Returns:
+    Returns
+    -------
        - dict: A dictionary containing model hyperparameters:
          - 'model_selection' (bool): True if multiple values for any hyperparameter, False if all hyperparameters have a single value.
          - 'lambda1' (float or array): The generated values for lambda1.
          - 'lambda2' (float or array): The generated values for lambda2.
          - 'mu1' (float or array): The generated values for mu1.
-        """
 
-    lambda1 = get_range(lower_bound=lambda1_min, upper_bound=lambda1_max, n=n_lambda1)
-    lambda2 = get_range(lower_bound=lambda2_min, upper_bound=lambda2_max, n=n_lambda2)
+    """
+    lambda1 = get_range(
+        lower_bound=lambda1_min, upper_bound=lambda1_max, n=n_lambda1
+    )
+    lambda2 = get_range(
+        lower_bound=lambda2_min, upper_bound=lambda2_max, n=n_lambda2
+    )
     mu1 = get_range(lower_bound=mu1_min, upper_bound=mu1_max, n=n_mu1)
 
     model_selection = True
@@ -279,30 +315,40 @@ def get_hyperparameters(lambda1_min, lambda1_max, lambda2_min, lambda2_max, mu1_
 
         model_selection = False
 
-    h_params = {"model_selection": model_selection, "lambda1": lambda1, "lambda2": lambda2,
-                "mu1": mu1}
+    h_params = {
+        "model_selection": model_selection,
+        "lambda1": lambda1,
+        "lambda2": lambda2,
+        "mu1": mu1,
+    }
 
     return h_params
 
 
 def get_lambda_mask(adapt_lambda1: list, covariance_matrix: pd.DataFrame):
-    """
-        Generate a lambda mask based on adaptive lambda values.
+    """Generate a lambda mask based on adaptive lambda values.
 
-        Parameters:
+    Parameters
+    ----------
         - adapt_lambda1 (list): A list containing pairs of strings and corresponding lambda values to adapt.
           The strings represent patterns to match in index and column labels of the covariance_matrix.
           The lambda values are applied to the elements in the covariance_matrix that match the patterns.
         - covariance_matrix (pd.DataFrame): The covariance matrix to which adaptive lambda values will be applied.
 
-        Returns:
+    Returns
+    -------
         - np.ndarray: A masked version of the covariance matrix with adaptive lambda values.
+
     """
-
     mask = np.ones(covariance_matrix.shape)
-    adapt_dict = {adapt_lambda1[i]: adapt_lambda1[i + 1] for i in range(0, len(adapt_lambda1), 2)}
+    adapt_dict = {
+        adapt_lambda1[i]: adapt_lambda1[i + 1]
+        for i in range(0, len(adapt_lambda1), 2)
+    }
 
-    mask_df = pd.DataFrame(mask, index=covariance_matrix.index, columns=covariance_matrix.columns)
+    mask_df = pd.DataFrame(
+        mask, index=covariance_matrix.index, columns=covariance_matrix.columns
+    )
     for key, item in adapt_dict.items():
         x_ix = mask_df.index.str.endswith(key)
         x_col = mask_df.columns[mask_df.columns.to_series().str.endswith(key)]
@@ -315,17 +361,18 @@ def get_lambda_mask(adapt_lambda1: list, covariance_matrix: pd.DataFrame):
 
 
 def check_lambda_path(P, mgl_problem=False):
-    """
-        Check if optimal lambda values are on the edges of their respective intervals.
+    """Check if optimal lambda values are on the edges of their respective intervals.
 
-        Parameters:
+    Parameters
+    ----------
         - P: The problem instance containing model selection parameters and statistics.
         - mgl_problem (bool, optional): Indicates whether the problem is a multi-group lasso problem (default is False).
 
-        Returns:
+    Returns
+    -------
         - bool: True if the optimal lambda values are on the edges of their intervals, False otherwise.
 
-        Warnings:
+    Warnings:
         - Issues warnings if the optimal lambda values are on the edge of their intervals.
 
     """
@@ -338,11 +385,15 @@ def check_lambda_path(P, mgl_problem=False):
 
     if lambda1_opt == lambda1_min:
         boundary_lambdas = True
-        warnings.warn("lambda is on the edge of the interval, try SMALLER lambda1")
+        warnings.warn(
+            "lambda is on the edge of the interval, try SMALLER lambda1"
+        )
 
     elif lambda1_opt == lambda1_max:
         boundary_lambdas = True
-        warnings.warn("lambda is on the edge of the interval, try BIGGER lambda1")
+        warnings.warn(
+            "lambda is on the edge of the interval, try BIGGER lambda1"
+        )
 
     if mgl_problem:
         lambda2_opt = P.modelselect_stats["BEST"]["lambda2"]
@@ -351,27 +402,28 @@ def check_lambda_path(P, mgl_problem=False):
 
         if lambda2_opt == lambda2_min:
             boundary_lambdas = True
-            warnings.warn("lambda is on the edge of the interval, try SMALLER lambda2")
+            warnings.warn(
+                "lambda is on the edge of the interval, try SMALLER lambda2"
+            )
 
         elif lambda2_opt == lambda2_max:
             boundary_lambdas = True
-            warnings.warn("lambda is on the edge of the interval, try BIGGER lambda2")
+            warnings.warn(
+                "lambda is on the edge of the interval, try BIGGER lambda2"
+            )
 
     return boundary_lambdas
 
 
 def normalize(X):
-    """
-    transforms to the simplex
+    """Transforms to the simplex
     X should be of a pd.DataFrame of form (p,N)
     """
     return X / X.sum(axis=0)
 
 
 def geometric_mean(x, positive=False):
-    """
-    calculates the geometric mean of a vector
-    """
+    """Calculate the geometric mean of a vector."""
     assert not np.all(x == 0)
 
     if positive:
@@ -382,8 +434,8 @@ def geometric_mean(x, positive=False):
 
 
 def log_transform(X, transformation=str, eps=0.1):
-    """
-    log transform, scaled with geometric mean
+    """Log transform, scaled with geometric mean.
+
     X should be a pd.DataFrame of form (p,N)
     """
     if transformation == "clr":
@@ -400,39 +452,44 @@ def log_transform(X, transformation=str, eps=0.1):
 
 
 def zero_imputation(df: pd.DataFrame, pseudo_count: int = 1):
-    """
-    Perform zero imputation on a DataFrame by adding a pseudo count to zero values and scaling.
+    """Perform zero imputation on a DataFrame by adding a pseudo count to zero values and scaling.
 
-    Parameters:
+    Parameters
+    ----------
     - df (pd.DataFrame): The input DataFrame with potentially zero values.
     - pseudo_count (int, optional): The pseudo count added to zero values (default is 1).
 
-    Returns:
+    Returns
+    -------
     - pd.DataFrame: The DataFrame after zero imputation.
+
     """
     X = df.copy()
     original_sum = X.sum(axis=0)  # sum in a sample (axis=0 if p, N matrix)
     for col in X.columns:
         X[col].replace(to_replace=0, value=pseudo_count, inplace=True)
     shifted_sum = X.sum(axis=0)
-    scaling_parameter = original_sum.div(shifted_sum)  # you need to scale as you added 1 to zeros
+    scaling_parameter = original_sum.div(
+        shifted_sum
+    )  # you need to scale as you added 1 to zeros
     X = X.mul(scaling_parameter, axis=1)
 
     return X
 
 
 def rename_index_with_sum(df: pd.DataFrame):
-    """
-    Rename the index of a DataFrame based on the relative abundance.
+    """Rename the index of a DataFrame based on the relative abundance.
     New index values are generated with the format "ASV" followed by the top abundance among all the features.
 
-    Parameters:
+    Parameters
+    ----------
     - df: pandas DataFrame. The DataFrame to be modified.
 
-    Returns:
+    Returns
+    -------
     - df: pandas DataFrame. The modified DataFrame with the renamed index.
-    """
 
+    """
     # Calculate the sum of each row and rename the index
     row_sum = df.sum(axis=1)
     df.rename(index=row_sum, inplace=True)
@@ -450,27 +507,30 @@ def rename_index_with_sum(df: pd.DataFrame):
 
 
 def remove_biom_header(file_path):
-    """
-    Remove the header line from a BIOM file.
+    """Remove the header line from a BIOM file.
 
-    Parameters:
+    Parameters
+    ----------
     - file_path (str): The path to the BIOM file.
+
     """
-    with open(str(file_path), 'r') as fin:
+    with open(str(file_path), "r") as fin:
         data = fin.read().splitlines(True)
-    with open(str(file_path), 'w') as fout:
+    with open(str(file_path), "w") as fout:
         fout.writelines(data[1:])
 
 
 def calculate_seq_depth(data=pd.DataFrame):
-    """
-    Calculate and scale sequencing depth from count data.
+    """Calculate and scale sequencing depth from count data.
 
-    Parameters:
+    Parameters
+    ----------
     - data (pd.DataFrame): A DataFrame where rows represent samples and columns represent features.
 
-    Returns:
+    Returns
+    -------
     - pd.DataFrame: A DataFrame containing scaled sequencing depth values.
+
     """
     x = data.sum(axis=1)
     x_scaled = (x - x.min()) / (x.max() - x.min())
@@ -479,17 +539,20 @@ def calculate_seq_depth(data=pd.DataFrame):
 
 
 def single_hyperparameters(model_selection, lambda1, lambda2=None, mu1=None):
-    """
-    Convert hyperparameters to single values if model selection is not enabled.
+    """Convert hyperparameters to single values if model selection is not enabled.
 
-    Parameters:
+    Parameters
+    ----------
     - model_selection (bool): Indicates whether model selection is enabled.
     - lambda1: The value or list of values for lambda1.
     - lambda2: The value or list of values for lambda2 (default is None).
     - mu1: The value or list of values for mu1 (default is None).
 
-    Returns:
-    - tuple: A tuple containing single values for lambda1, lambda2, and mu1 if model selection is not enabled.
+    Returns
+    -------
+    - tuple: A tuple containing single values for lambda1, lambda2,
+    and mu1 if model selection is not enabled.
+
     """
     if model_selection is False:
         lambda1 = np.array(lambda1).item()
@@ -499,18 +562,19 @@ def single_hyperparameters(model_selection, lambda1, lambda2=None, mu1=None):
 
 
 def to_zarr(obj, name, root, first=True):
-    """
-        Convert a GGLasso object to a zarr file with a tree structure.
+    """Convert a GGLasso object to a zarr file with a tree structure.
 
-        Parameters:
-        - obj: The GGLasso object or dictionary to be converted.
-        - name (str): The name to use for the current level in the zarr hierarchy.
-        - root (zarr.Group): The root group to create the zarr hierarchy.
-        - first (bool, optional): Indicates whether it is the first level (default is True).
+    Parameters
+    ----------
+    - obj: The GGLasso object or dictionary to be converted.
+    - name (str): The name to use for the current level in the zarr hierarchy.
+    - root (zarr.Group): The root group to create the zarr hierarchy.
+    - first (bool, optional): Indicates whether it is the first level (default is True).
+
     """
     # name 'S' is dedicated for some internal usage in zarr notation and cannot be accessed as a key while reading
     if name == "S":
-        name = 'covariance'
+        name = "covariance"
 
     if isinstance(obj, dict):
         if first:
@@ -540,19 +604,21 @@ def to_zarr(obj, name, root, first=True):
 
 
 def PCA(X, L, inverse=True):
-    """
-        Perform Principal Component Analysis (PCA).
+    """Perform Principal Component Analysis (PCA).
 
-        Parameters:
-        - X (pd.DataFrame or np.ndarray): The input data.
-        - L (np.ndarray): The Laplacian matrix used in PCA.
-        - inverse (bool, optional): If True, perform inverse PCA (default is True).
+    Parameters
+    ----------
+    - X (pd.DataFrame or np.ndarray): The input data.
+    - L (np.ndarray): The Laplacian matrix used in PCA.
+    - inverse (bool, optional): If True, perform inverse PCA (default is True).
 
-        Returns:
-        - tuple: A tuple containing the PCA results:
-            - np.ndarray: The projected data.
-            - np.ndarray: The loadings matrix.
-            - np.ndarray: The eigenvalues.
+    Returns
+    -------
+    - tuple: A tuple containing the PCA results:
+        - np.ndarray: The projected data.
+        - np.ndarray: The loadings matrix.
+        - np.ndarray: The eigenvalues.
+
     """
     sig, V = np.linalg.eigh(L)
 
@@ -573,19 +639,25 @@ def PCA(X, L, inverse=True):
     return zu, loadings, np.round(sig[ind].squeeze(), 3)
 
 
-def correlated_PC(data=pd.DataFrame, metadata=pd.DataFrame, low_rank=np.ndarray,
-                  corr_bound=float, alpha: float = 0.05):
-    """
-    Identify and analyze correlated principal components based on Spearman correlation.
+def correlated_PC(
+    data=pd.DataFrame,
+    metadata=pd.DataFrame,
+    low_rank=np.ndarray,
+    corr_bound=float,
+    alpha: float = 0.05,
+):
+    """Identify and analyze correlated principal components based on Spearman correlation.
 
-    Parameters:
+    Parameters
+    ----------
     - data (pd.DataFrame): The input data with features.
     - metadata (pd.DataFrame): The metadata used for correlation analysis.
     - low_rank (np.ndarray): The low-rank matrix for Principal Component Analysis (PCA).
     - corr_bound (float): The absolute correlation threshold for considering a correlation as significant.
     - alpha (float, optional): The significance level for hypothesis testing (default is 0.05).
 
-    Returns:
+    Returns
+    -------
     - dict: A dictionary containing information about correlated principal components for each metadata column:
         - key (str): The metadata column name.
         - value (dict): Sub-dictionary with information about correlated principal components:
@@ -594,8 +666,8 @@ def correlated_PC(data=pd.DataFrame, metadata=pd.DataFrame, low_rank=np.ndarray,
             - "eigenvalue" (float): The eigenvalue of the principal component.
             - "rho" (float): Spearman correlation coefficient.
             - "p_value" (float): P-value for the correlation test.
-    """
 
+    """
     proj_dict = dict()
     seq_depth = calculate_seq_depth(data)
     r = np.linalg.matrix_rank(low_rank)
@@ -605,22 +677,27 @@ def correlated_PC(data=pd.DataFrame, metadata=pd.DataFrame, low_rank=np.ndarray,
         df = df.dropna()
         print(col, ":", df.shape)
 
-        proj, loadings, eigv = PCA(df.iloc[:, :-1], low_rank,
-                                   inverse=True)  # exclude feature column :-1
+        proj, loadings, eigv = PCA(
+            df.iloc[:, :-1], low_rank, inverse=True
+        )  # exclude feature column :-1
 
         df = df.join(seq_depth)
 
         for j in range(0, r):
             spearman_corr = stats.spearmanr(df[col], proj[:, j])[0]
             p_value = stats.spearmanr(df[col], proj[:, j])[1]
-            print("Spearman correlation between {0} and {1} component: "
-                  "{2}, p-value: {3}".format(col, j + 1, spearman_corr, p_value))
+            print(
+                "Spearman correlation between {0} and {1} component: "
+                "{2}, p-value: {3}".format(col, j + 1, spearman_corr, p_value)
+            )
 
             if (np.absolute(spearman_corr) > corr_bound) and (p_value < alpha):
-                proj_dict[col] = {"PC {0}".format(j + 1): proj[:, j],
-                                  "data": df,
-                                  "eigenvalue": eigv[j],
-                                  "rho": spearman_corr,
-                                  "p_value": p_value}
+                proj_dict[col] = {
+                    "PC {0}".format(j + 1): proj[:, j],
+                    "data": df,
+                    "eigenvalue": eigv[j],
+                    "rho": spearman_corr,
+                    "p_value": p_value,
+                }
 
     return proj_dict

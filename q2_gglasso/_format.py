@@ -1,9 +1,4 @@
 import qiime2.plugin.model as model
-from qiime2.plugin import ValidationError
-import pandas as pd
-from itertools import combinations
-import zarr
-import numpy as np
 
 
 class TensorDataFormat(model.BinaryFileFormat):
@@ -11,6 +6,7 @@ class TensorDataFormat(model.BinaryFileFormat):
 
     This format is used to store multi-dimensional data for GGLasso operations.
     """
+
     def validate(self, level):
         """Validate the tensor data format.
 
@@ -18,12 +14,14 @@ class TensorDataFormat(model.BinaryFileFormat):
         ----------
         level : str
             The level of validation to perform.
+
         """
         pass
 
 
-TensorDataDirectoryFormat = model.SingleFileDirectoryFormat('TensorDataDirectoryFormat',
-                                                            'tensor.zip', format=TensorDataFormat)
+TensorDataDirectoryFormat = model.SingleFileDirectoryFormat(
+    "TensorDataDirectoryFormat", "tensor.zip", format=TensorDataFormat
+)
 
 
 class GGLassoDataFormat(model.TextFileFormat):
@@ -31,6 +29,7 @@ class GGLassoDataFormat(model.TextFileFormat):
 
     This format handles text-based data for GGLasso analyses.
     """
+
     def validate(self, level):
         """Validate the GGLasso data format.
 
@@ -38,12 +37,16 @@ class GGLassoDataFormat(model.TextFileFormat):
         ----------
         level : str
             The level of validation to perform.
+
         """
         pass
 
 
 PairwiseFeatureDataDirectoryFormat = model.SingleFileDirectoryFormat(
-    'PairwiseFeatureDataDirectoryFormat', 'pairwise_comparisons.tsv', GGLassoDataFormat)
+    "PairwiseFeatureDataDirectoryFormat",
+    "pairwise_comparisons.tsv",
+    GGLassoDataFormat,
+)
 
 
 class ZarrProblemFormat(model.BinaryFileFormat):
@@ -51,6 +54,7 @@ class ZarrProblemFormat(model.BinaryFileFormat):
 
     This format stores GGLasso problem data using the Zarr array format.
     """
+
     def validate(self, level):
         """Validate the Zarr problem format.
 
@@ -58,9 +62,11 @@ class ZarrProblemFormat(model.BinaryFileFormat):
         ----------
         level : str
             The level of validation to perform.
+
         """
         pass
 
 
-GGLassoProblemDirectoryFormat = model.SingleFileDirectoryFormat('GGLassoProblemDirectoryFormat',
-                                                                'problem.zip', format=ZarrProblemFormat)
+GGLassoProblemDirectoryFormat = model.SingleFileDirectoryFormat(
+    "GGLassoProblemDirectoryFormat", "problem.zip", format=ZarrProblemFormat
+)

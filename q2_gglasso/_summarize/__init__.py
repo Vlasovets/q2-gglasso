@@ -8,6 +8,6 @@
 
 """Summarize visualizations for the q2-gglasso plugin."""
 
-from ._visualizer import (summarize)
+from ._visualizer import summarize
 
-__all__ = ['summarize']
+__all__ = ["summarize"]

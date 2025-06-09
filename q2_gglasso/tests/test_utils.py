@@ -5,12 +5,11 @@ Currently, most tests are commented out and may be implemented in the future.
 """
 
 import unittest
-import warnings
 
 try:
     from q2_gglasso._func import solve_problem
 except ImportError:
-    raise ImportWarning('Qiime2 not installed.')
+    raise ImportWarning("Qiime2 not installed.")
 
 
 class TestUtil(unittest.TestCase):
@@ -21,5 +20,5 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
