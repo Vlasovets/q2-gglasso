@@ -119,8 +119,6 @@ def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = N
                   width: int = 1500, height: int = 1500, label_size: str = "5pt",
                   title_size: str = "24pt", not_low_rank: bool = True):
     nlabels = len(labels_dict)
-    shifted_labels_dict = {k + 0.5: v for k, v in labels_dict.items()}
-    shifted_labels_dict_reversed = {k + 0.5: v for k, v in labels_dict_reversed.items()}
 
     df = data.iloc[::-1]  # rotate the diagonal
     df = pd.DataFrame(df.stack(), columns=['covariance']).reset_index()
@@ -143,7 +141,7 @@ def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = N
 
     bokeh_tools = ["save, zoom_in, zoom_out, wheel_zoom, box_zoom, crosshair, reset, hover"]
 
-    p = figure(plot_width=width, plot_height=height, x_range=(0, nlabels), y_range=(0, nlabels),
+    p = figure(width=width, height=height, x_range=(0, nlabels), y_range=(0, nlabels),
                title=title, title_location='above', x_axis_location="below",
                tools=bokeh_tools, toolbar_location='left')
 
@@ -156,11 +154,20 @@ def _make_heatmap(data: pd.DataFrame(), title: str = None, labels_dict: dict = N
     p.title.text_font_size = title_size
     p.add_layout(color_bar, 'right')
     p.toolbar.autohide = True
-    p.xaxis.ticker = [x + 0.5 for x in
-                      list(range(0, nlabels))]  # shift label position to the center
-    p.yaxis.ticker = [x + 0.5 for x in list(range(0, nlabels))]
-    p.xaxis.major_label_overrides = shifted_labels_dict
-    p.yaxis.major_label_overrides = shifted_labels_dict_reversed
+    
+    # Fix for Bokeh 3.7+ compatibility
+    # Use integer tickers instead of floats
+    p.xaxis.ticker = list(range(nlabels))
+    p.yaxis.ticker = list(range(nlabels))
+    
+    # Convert all dictionary keys to strings to work with Bokeh 3.7+
+    # This is required as Bokeh 3.7+ needs string keys for major_label_overrides
+    # Also ensure all values are strings as well for full compatibility
+    str_labels_dict = {str(k): str(v) for k, v in labels_dict.items()}
+    str_labels_dict_reversed = {str(k): str(v) for k, v in labels_dict_reversed.items()}
+    
+    p.xaxis.major_label_overrides = str_labels_dict
+    p.yaxis.major_label_overrides = str_labels_dict_reversed
 
     hover = p.select(dict(type=HoverTool))
     hover.tooltips = [
