@@ -12,7 +12,7 @@ try:
     from q2_gglasso.utils import zero_imputation
 
 except ImportError:
-    raise ImportWarning('Qiime2 not installed.')
+    raise ImportWarning("Qiime2 not installed.")
 
 
 class TestUtil(unittest.TestCase):
@@ -36,16 +36,26 @@ class TestUtil(unittest.TestCase):
         equal : bool, default=False
             A flag that gets set to True if the column sums before and
             after imputation are equal.
+
         """
         data = np.array([[0, 0.1], [0.5, 0.1], [0.3, 0], [0.2, 0.8]])
-        sample_ids = ['S%d' % i for i in range(2)]
-        observ_ids = ['O%d' % i for i in range(4)]
-        sample_metadata = [{'environment': 'A'}, {'environment': 'B'}]
-        observ_metadata = [{'taxonomy': ['Bacteria', 'Firmicutes']},
-                           {'taxonomy': ['Bacteria', 'Firmicutes']},
-                           {'taxonomy': ['Bacteria', 'Proteobacteria']},
-                           {'taxonomy': ['Bacteria', 'Proteobacteria']}]
-        table = Table(data, observ_ids, sample_ids, observ_metadata, sample_metadata, table_id='Example Table')
+        sample_ids = ["S%d" % i for i in range(2)]
+        observ_ids = ["O%d" % i for i in range(4)]
+        sample_metadata = [{"environment": "A"}, {"environment": "B"}]
+        observ_metadata = [
+            {"taxonomy": ["Bacteria", "Firmicutes"]},
+            {"taxonomy": ["Bacteria", "Firmicutes"]},
+            {"taxonomy": ["Bacteria", "Proteobacteria"]},
+            {"taxonomy": ["Bacteria", "Proteobacteria"]},
+        ]
+        table = Table(
+            data,
+            observ_ids,
+            sample_ids,
+            observ_metadata,
+            sample_metadata,
+            table_id="Example Table",
+        )
 
         X = table.to_dataframe()
         X = X.sparse.to_dense()
@@ -60,5 +70,5 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(equal, msg="Subcomposition coherence not fulfilled.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

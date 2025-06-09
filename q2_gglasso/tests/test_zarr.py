@@ -15,7 +15,7 @@ try:
     from q2_gglasso._func import solve_problem
 
 except ImportError:
-    raise ImportWarning('Qiime2 not installed.')
+    raise ImportWarning("Qiime2 not installed.")
 
 
 class TestUtil(unittest.TestCase):
@@ -34,22 +34,21 @@ class TestUtil(unittest.TestCase):
         3. Loads the solution from the Zarr file
         4. Verifies that the loaded solution matches the original
         """
-        table = pd.DataFrame([[1, 1, 7, 3],
-                              [2, 6, 2, 4],
-                              [5, 5, 3, 3],
-                              [3, 2, 8, 1]],
-                             index=['s1', 's2', 's3', 's4'],
-                             columns=['o1', 'o2', 'o3', 'o4'])
+        table = pd.DataFrame(
+            [[1, 1, 7, 3], [2, 6, 2, 4], [5, 5, 3, 3], [3, 2, 8, 1]],
+            index=["s1", "s2", "s3", "s4"],
+            columns=["o1", "o2", "o3", "o4"],
+        )
 
         S = np.cov(table.values)
         n_samples = table.shape[0]
-        reg_params = {'lambda1': [0.5, 0.01], "mu1": [0.5, 0.1]}
+        reg_params = {"lambda1": [0.5, 0.01], "mu1": [0.5, 0.1]}
 
         P = glasso_problem(S, N=n_samples, latent=True)
         P.model_selection(modelselect_params=reg_params)
 
         # save GGLasso solution
-        solution = P.__dict__['solution']
+        solution = P.__dict__["solution"]
 
         # write GGLasso solution to zarr forma
         zipfile = str("problem.zip")
@@ -75,8 +74,10 @@ class TestUtil(unittest.TestCase):
                     else:
                         x = False
 
-        self.assertTrue(x, msg="The content of zarr file is not equal to GGLasso solution.")
+        self.assertTrue(
+            x, msg="The content of zarr file is not equal to GGLasso solution."
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

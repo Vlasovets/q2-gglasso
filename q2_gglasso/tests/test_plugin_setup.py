@@ -18,8 +18,8 @@ class PluginSetupTests(unittest.TestCase):
 
     def test_plugin_setup(self):
         """Test that the plugin name is correctly set to 'gglasso'."""
-        self.assertEqual(plugin.name, 'gglasso')
+        self.assertEqual(plugin.name, "gglasso")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
