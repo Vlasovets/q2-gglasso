@@ -5,15 +5,15 @@ which provides implementations of Graphical Lasso algorithms for microbiome data
 It registers semantic types, formats, transformers, and methods for the plugin.
 """
 
-import sys
-from os.path import dirname
+# import sys
+# from os.path import dirname
 
 # make sure you are in the correct directory
 # q2_gglasso_dir = dirname(os.getcwd())
-q2_gglasso_dir = dirname("/opt/project/")
-sys.path.append(q2_gglasso_dir)
+# q2_gglasso_dir = dirname("/opt/project/")
+# sys.path.append(q2_gglasso_dir)
 
-print(sys.path)
+# print(sys.path)
 
 import importlib
 import q2_gglasso as q2g

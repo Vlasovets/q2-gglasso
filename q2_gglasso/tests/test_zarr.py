@@ -12,7 +12,7 @@ import numpy as np
 from gglasso.problem import glasso_problem
 
 try:
-    from q2_gglasso._func import solve_problem
+    from q2_gglasso._func import solve_problem   # noqa: F401
 
 except ImportError:
     raise ImportWarning("Qiime2 not installed.")
