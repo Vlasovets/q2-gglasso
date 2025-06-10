@@ -8,6 +8,6 @@
 
 """PCA visualization functionality for the q2-gglasso plugin."""
 
-from ._visualizer import pca
+from ._visualizer import pca  # noqa: F401
 
 __all__ = ["pca"]
