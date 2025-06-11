@@ -239,19 +239,17 @@ def get_range(lower_bound, upper_bound, n):
           If both lower_bound and upper_bound are None, the list contains a single element [None].
 
     Example:
-        get_range(0, 2, 5)
+        get_range(1e-3, 10, 5)
         [1e-3, 0.01, 0.1, 1.0, 10.0]
 
     """
     if (lower_bound is None) and (upper_bound is None):
-        range = [None]
-    else:
-        if lower_bound is None:
-            lower_bound = 1e-3
-        if upper_bound is None:
-            upper_bound = 1
-        range = np.logspace(np.log10(lower_bound), np.log10(upper_bound), n)
-    return range
+        return np.array([None])
+    if lower_bound is None:
+        lower_bound = 1e-3
+    if upper_bound is None:
+        upper_bound = 1
+    return np.logspace(np.log10(lower_bound), np.log10(upper_bound), n)
 
 
 def get_hyperparameters(
@@ -264,7 +262,8 @@ def get_hyperparameters(
     n_lambda1: int = 1,
     n_lambda2: int = 1,
     n_mu1: int = 1,
-):
+    latent: bool = False,
+    ):
     """Generate hyperparameters for a model based on specified ranges.
 
     Parameters
@@ -275,45 +274,53 @@ def get_hyperparameters(
        - lambda2_max (float): The maximum value for lambda2.
        - mu1_min (float): The minimum value for mu1.
        - mu1_max (float): The maximum value for mu1.
-       - n_lambda1 (int, optional): The number of values to generate for lambda1 (default is 1).
-       - n_lambda2 (int, optional): The number of values to generate for lambda2 (default is 1).
-       - n_mu1 (int, optional): The number of values to generate for mu1 (default is 1).
+       - n_lambda1 (int, optional): Number of values to generate for lambda1 (default: 1).
+       - n_lambda2 (int, optional): Number of values to generate for lambda2 (default: 1).
+       - n_mu1 (int, optional): Number of values to generate for mu1 (default: 1).
+       - latent (bool, optional): Whether mu1 is used (default: False).
 
     Returns
     -------
-       - dict: A dictionary containing model hyperparameters:
-         - 'model_selection' (bool): True if multiple values for any hyperparameter, False if all hyperparameters have a single value.
-         - 'lambda1' (float or array): The generated values for lambda1.
-         - 'lambda2' (float or array): The generated values for lambda2.
-         - 'mu1' (float or array): The generated values for mu1.
-
+       dict: A dictionary containing model hyperparameters:
+         - 'model_selection' (bool): True if multiple values for any hyperparameter,
+                                     False if all hyperparameters have a single value.
+         - 'lambda1' (float or np.ndarray): Values for lambda1.
+         - 'lambda2' (float or np.ndarray): Values for lambda2.
+         - 'mu1' (float or np.ndarray): Values for mu1.
     """
-    lambda1 = get_range(
-        lower_bound=lambda1_min, upper_bound=lambda1_max, n=n_lambda1
-    )
-    lambda2 = get_range(
-        lower_bound=lambda2_min, upper_bound=lambda2_max, n=n_lambda2
-    )
-    mu1 = get_range(lower_bound=mu1_min, upper_bound=mu1_max, n=n_mu1)
+    lambda1 = get_range(lambda1_min, lambda1_max, n_lambda1)
+    lambda2 = get_range(lambda2_min, lambda2_max, n_lambda2)
+    mu1 = get_range(mu1_min, mu1_max, n_mu1)
 
-    model_selection = True
-
-    if None in lambda1:
+    # Replace None with default logspace values
+    if lambda1.size == 1 and lambda1[0] is None:
         lambda1 = np.logspace(0, -4, 15)
         warnings.warn("Default values for lambda1 have been used.")
-    if None in lambda2:
+
+    if lambda2.size == 1 and lambda2[0] is None:
         lambda2 = np.logspace(-1, -4, 5)
         warnings.warn("Default values for lambda2 have been used.")
-    if None in mu1:
-        mu1 = np.logspace(2, -1, 10)
-        warnings.warn("Default values for mu1 have been used.")
 
-    if (len(lambda1) == 1) and len(lambda2) == 1 and (len(mu1) == 1):
-        lambda1 = np.array(lambda1).item()
-        lambda2 = np.array(lambda2).item()
-        mu1 = np.array(mu1).item()
-
-        model_selection = False
+    if latent:
+        if mu1.size == 1 and mu1[0] is None:
+            mu1 = np.logspace(2, -1, 10)
+            warnings.warn("Default values for mu1 have been used.")
+        # Scalar if all are singleton arrays
+        if lambda1.size == 1 and lambda2.size == 1 and mu1.size == 1:
+            lambda1 = lambda1.item()
+            lambda2 = lambda2.item()
+            mu1 = mu1.item()
+            model_selection = False
+        else:
+            model_selection = True
+    else:
+        # Scalar if both lambdas are singleton arrays
+        if lambda1.size == 1 and lambda2.size == 1:
+            lambda1 = lambda1.item()
+            lambda2 = lambda2.item()
+            model_selection = False
+        else:
+            model_selection = True
 
     h_params = {
         "model_selection": model_selection,
@@ -325,39 +332,52 @@ def get_hyperparameters(
     return h_params
 
 
-def get_lambda_mask(adapt_lambda1: list, covariance_matrix: pd.DataFrame):
-    """Generate a lambda mask based on adaptive lambda values.
+def get_lambda_mask(weights: list, covariance_matrix: pd.DataFrame) -> pd.DataFrame:
+    """
+    Generate a lambda1 mask DataFrame using weights matched against
+    row and column labels of a covariance matrix.
 
     Parameters
     ----------
-        - adapt_lambda1 (list): A list containing pairs of strings and corresponding lambda values to adapt.
-          The strings represent patterns to match in index and column labels of the covariance_matrix.
-          The lambda values are applied to the elements in the covariance_matrix that match the patterns.
-        - covariance_matrix (pd.DataFrame): The covariance matrix to which adaptive lambda values will be applied.
+    weights : list
+        A flat list of the form ['label1', weight1, 'label2', weight2, ...]
+    covariance_matrix : pd.DataFrame
+        The covariance matrix with labeled rows and columns.
 
     Returns
     -------
-        - np.ndarray: A masked version of the covariance matrix with adaptive lambda values.
-
+    pd.DataFrame
+        A DataFrame with the same shape as `covariance_matrix`, filled with 1.0
+        and modified where row/column labels match the suffixes in `weights`.
     """
-    mask = np.ones(covariance_matrix.shape)
-    adapt_dict = {
-        adapt_lambda1[i]: adapt_lambda1[i + 1]
-        for i in range(0, len(adapt_lambda1), 2)
+    if isinstance(weights, pd.DataFrame):
+        if weights.shape[1] != 2:
+            raise ValueError("weights DataFrame must have exactly 2 columns.")
+        weights = weights.values.flatten().tolist()
+
+    if not isinstance(weights, list):
+        raise TypeError("weights must be a list of [label1, weight1, ...].")
+
+    if len(weights) % 2 != 0:
+        raise ValueError("weights must contain an even number of elements.")
+
+    weights_dict = {
+        str(weights[i]): float(weights[i + 1])
+        for i in range(0, len(weights), 2)
     }
 
-    mask_df = pd.DataFrame(
-        mask, index=covariance_matrix.index, columns=covariance_matrix.columns
-    )
-    for key, item in adapt_dict.items():
-        x_ix = mask_df.index.str.endswith(key)
-        x_col = mask_df.columns[mask_df.columns.to_series().str.endswith(key)]
-        mask_df[x_ix] = float(item)
-        mask_df[x_col] = float(item)
-        print("ADAPTIVE lambda={0} has been used for:{1}".format(item, x_col))
-    lambda1_mask = mask_df.values
+    # Initialize the mask with default value 1.0
+    labels = list(weights_dict.keys())
+    mask_df = pd.DataFrame(1.0, index=labels, columns=labels)
 
-    return lambda1_mask
+    for key, value in weights_dict.items():
+        affected = mask_df.index[mask_df.index.astype(str).str.endswith(key)]
+        if len(affected) > 0:
+            mask_df.loc[affected, :] = value
+            mask_df.loc[:, affected] = value
+            print(f"✅ Applied lambda={value} to: {key}")
+
+    return mask_df.values
 
 
 def check_lambda_path(P, mgl_problem=False):

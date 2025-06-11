@@ -562,6 +562,7 @@ def solve_problem(
         mu1_min=mu1_min,
         mu1_max=mu1_max,
         n_mu1=n_mu1,
+        latent=latent
     )
 
     model_selection = h_params["model_selection"]
