@@ -1,4 +1,9 @@
 # q2-gglasso
+[![PyPI license](https://img.shields.io/pypi/l/gglasso.svg)](https://pypi.python.org/pypi/gglasso/)
+[![Python version](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue)](https://www.python.org/)
+[![Documentation Status](https://readthedocs.org/projects/gglasso/badge/?version=latest)](http://gglasso.readthedocs.io/?badge=latest)
+[![Tests](https://github.com/Vlasovets/q2-gglasso/actions/workflows/ci.yml/badge.svg?branch=dev&event=push)](https://github.com/Vlasovets/q2-gglasso/actions/workflows/ci.yml)
+
 *A [QIIME 2](https://qiime2.org) plugin for solving **General Graphical Lasso (GGLasso)** problems with microbiome data including:*
 
 - Single Graphical Lasso (SGL)
@@ -8,10 +13,6 @@
 - MGL with latent variables
 - GGL in the nonconforming case
 
-[![PyPI license](https://img.shields.io/pypi/l/gglasso.svg)](https://pypi.python.org/pypi/gglasso/)
-[![Python version](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue)](https://www.python.org/)
-[![Documentation Status](https://readthedocs.org/projects/gglasso/badge/?version=latest)](http://gglasso.readthedocs.io/?badge=latest)
-
 📚 [Documentation](https://gglasso.readthedocs.io/en/latest/) |
 📂 [Tutorial & Examples](https://github.com/Vlasovets/atacama-soil-microbiome-tutorial)
 
@@ -19,7 +20,7 @@
 
 ## Installation
 
-Instructions for installing `q2-gglasso` via Conda are coming soon.  
+Instructions for installing `q2-gglasso` via Conda are coming soon.
 In the meantime, please refer to the [official documentation](https://gglasso.readthedocs.io/en/latest/) for setup instructions and requirements.
 
 ---
@@ -43,7 +44,23 @@ This tutorial includes:
 
 If you use `q2-gglasso`, please cite:
 
-> Vlasovets, O. et al. *Computational methods for microbiome graphical modeling with applications to allergy and environmental exposure*. (Forthcoming)
+> Schaipp, F., Vlasovets, O., & Müller, C. L. (2021). **GGLasso – a Python package for General Graphical Lasso computation**. *Journal of Open Source Software, 6*(68), 3865. [https://doi.org/10.21105/joss.03865](https://doi.org/10.21105/joss.03865)
+
+### BibTeX
+
+```bibtex
+@article{Schaipp2021,
+  doi = {10.21105/joss.03865},
+  url = {https://doi.org/10.21105/joss.03865},
+  year = {2021},
+  publisher = {The Open Journal},
+  volume = {6},
+  number = {68},
+  pages = {3865},
+  author = {Fabian Schaipp and Oleg Vlasovets and Christian L. Müller},
+  title = {GGLasso - a Python package for General Graphical Lasso computation},
+  journal = {Journal of Open Source Software}
+}
 
 ---
 
