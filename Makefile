@@ -13,7 +13,7 @@ install:
 	pip install -e .
 
 test: all
-	python -m pytest
+	python -m pytest q2_gglasso/tests/
 
 clean:
 	rm -rf build/
