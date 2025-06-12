@@ -27,14 +27,9 @@ jobs:
       shell: bash -l {0}
       run: make install
 
-    - name: Install pytest plugins
-      shell: bash -l {0}
-      run: |
-        pip install pytest-rerunfailures pytest-timeout
-
     - name: Run tests
       shell: bash -l {0}
-      run: make test || pytest --reruns 5 --reruns-delay 1 --timeout=600 q2_gglasso/tests/
+      run: make test
 
   lint:
     runs-on: ubuntu-latest
