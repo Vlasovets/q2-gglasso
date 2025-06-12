@@ -34,7 +34,7 @@ jobs:
 
     - name: Run tests
       shell: bash -l {0}
-      run: make test || pytest --reruns 5 --reruns-delay 1 --timeout=600 tests/
+      run: make test || pytest --reruns 5 --reruns-delay 1 --timeout=600 q2_gglasso/tests/
 
   lint:
     runs-on: ubuntu-latest
