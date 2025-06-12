@@ -36,7 +36,7 @@ class TestUtil(unittest.TestCase):
     K = 3
     rtol = 1e-2
     atol = 1e-2
-    ebic_diff = 5
+    ebic_diff = 10
 
     Sigma, Theta = generate_precision_matrix(
         p=p, M=1, style="erdos", prob=0.1, seed=1234
@@ -69,12 +69,12 @@ class TestUtil(unittest.TestCase):
     check_G(G, p)
 
     # for single solution
-    lambda1_min = 0.01
+    lambda1_min = 0.001
     lambda1_max = 1
-    lambda2_min = 0.1
+    lambda2_min = 0.001
     lambda2_max = 1
-    n_lambda1 = 3
-    n_lambda2 = 2
+    n_lambda1 = 10
+    n_lambda2 = 10
     mu1_min = 0.1
     mu1_max = 3
     n_mu1 = 1
@@ -765,24 +765,24 @@ class TestUtil(unittest.TestCase):
             msg=f"eBIC values differ between solvers:\n{ebic_org}\nvs\n{ebic_q2}",
         )
 
-        # best_lambda_org = P_org.modelselect_stats["BEST"]["lambda1"]
-        # best_lambda_q2 = P_q2.modelselect_stats["BEST"]["lambda1"]
+        best_lambda_org = P_org.modelselect_stats["BEST"]["lambda1"]
+        best_lambda_q2 = P_q2.modelselect_stats["BEST"]["lambda1"]
 
-        # self.assertEqual(
-        #     best_lambda_org,
-        #     best_lambda_q2,
-        #     msg=f"Best lambda differs:\nOriginal: {best_lambda_org}\nQ2: {best_lambda_q2}",
-        # )
+        self.assertEqual(
+            best_lambda_org,
+            best_lambda_q2,
+            msg=f"Best lambda differs:\nOriginal: {best_lambda_org}\nQ2: {best_lambda_q2}",
+        )
 
-        # self.assertTrue(
-        #     np.allclose(
-        #         P_org.solution.precision_,
-        #         P_q2.solution.precision_,
-        #         rtol=rtol,
-        #         atol=atol,
-        #     ),
-        #     msg="Precision matrices are not sufficiently close between solvers.",
-        # )
+        self.assertTrue(
+            np.allclose(
+                P_org.solution.precision_,
+                P_q2.solution.precision_,
+                rtol=rtol,
+                atol=atol,
+            ),
+            msg="Precision matrices are not sufficiently close between solvers.",
+        )
 
     def test_modelselect_SGL_low(
         self,
@@ -829,35 +829,35 @@ class TestUtil(unittest.TestCase):
             msg=f"eBIC dictionaries differ:\nOriginal: {ebic_org}\nQ2: {ebic_q2}",
         )
 
-        # lambda_org = P_org.modelselect_stats["BEST"]["lambda1"]
-        # lambda_q2 = P_q2.modelselect_stats["BEST"]["lambda1"]
-        # self.assertEqual(
-        #     lambda_org,
-        #     lambda_q2,
-        #     msg=f"Best lambda mismatch:\nOriginal: {lambda_org}\nQ2: {lambda_q2}",
-        # )
+        lambda_org = P_org.modelselect_stats["BEST"]["lambda1"]
+        lambda_q2 = P_q2.modelselect_stats["BEST"]["lambda1"]
+        self.assertEqual(
+            lambda_org,
+            lambda_q2,
+            msg=f"Best lambda mismatch:\nOriginal: {lambda_org}\nQ2: {lambda_q2}",
+        )
 
-        # mu_org = P_org.modelselect_stats["BEST"]["mu1"]
-        # mu_q2 = P_q2.modelselect_stats["BEST"]["mu1"]
+        mu_org = P_org.modelselect_stats["BEST"]["mu1"]
+        mu_q2 = P_q2.modelselect_stats["BEST"]["mu1"]
 
-        # self.assertEqual(
-        #     mu_org,
-        #     mu_q2,
-        #     msg=f"Best mu mismatch:\nOriginal: {mu_org}\nQ2: {mu_q2}",
-        # )
+        self.assertEqual(
+            mu_org,
+            mu_q2,
+            msg=f"Best mu mismatch:\nOriginal: {mu_org}\nQ2: {mu_q2}",
+        )
 
-        # self.assertTrue(
-        #     np.allclose(
-        #         P_org.solution.precision_,
-        #         P_q2.solution.precision_,
-        #         rtol=rtol,
-        #         atol=atol,
-        #     ),
-        #     msg=(
-        #         f"Precision matrices are not numerically close.\n"
-        #         f"Max abs diff: {np.max(np.abs(P_org.solution.precision_ - P_q2.solution.precision_))}"
-        #     ),
-        # )
+        self.assertTrue(
+            np.allclose(
+                P_org.solution.precision_,
+                P_q2.solution.precision_,
+                rtol=rtol,
+                atol=atol,
+            ),
+            msg=(
+                f"Precision matrices are not numerically close.\n"
+                f"Max abs diff: {np.max(np.abs(P_org.solution.precision_ - P_q2.solution.precision_))}"
+            ),
+        )
 
     def test_modelselect_GGL(
         self,
@@ -903,36 +903,36 @@ class TestUtil(unittest.TestCase):
             msg=f"eBIC dictionaries differ:\nOriginal: {ebic_org}\nQ2: {ebic_q2}",
         )
 
-        # lambda1_org = P_org.modelselect_stats["BEST"]["lambda1"]
-        # lambda1_q2 = P_q2.modelselect_stats["BEST"]["lambda1"]
+        lambda1_org = P_org.modelselect_stats["BEST"]["lambda1"]
+        lambda1_q2 = P_q2.modelselect_stats["BEST"]["lambda1"]
 
-        # self.assertEqual(
-        #     lambda1_org,
-        #     lambda1_q2,
-        #     msg=f"Best lambda1 mismatch:\nOriginal: {lambda1_org}\nQ2: {lambda1_q2}",
-        # )
+        self.assertEqual(
+            lambda1_org,
+            lambda1_q2,
+            msg=f"Best lambda1 mismatch:\nOriginal: {lambda1_org}\nQ2: {lambda1_q2}",
+        )
 
-        # lambda2_org = P_org.modelselect_stats["BEST"]["lambda2"]
-        # lambda2_q2 = P_q2.modelselect_stats["BEST"]["lambda2"]
+        lambda2_org = P_org.modelselect_stats["BEST"]["lambda2"]
+        lambda2_q2 = P_q2.modelselect_stats["BEST"]["lambda2"]
 
-        # self.assertEqual(
-        #     lambda2_org,
-        #     lambda2_q2,
-        #     msg=f"Best lambda2 mismatch:\nOriginal: {lambda2_org}\nQ2: {lambda2_q2}",
-        # )
+        self.assertEqual(
+            lambda2_org,
+            lambda2_q2,
+            msg=f"Best lambda2 mismatch:\nOriginal: {lambda2_org}\nQ2: {lambda2_q2}",
+        )
 
-        # self.assertTrue(
-        #     np.allclose(
-        #         P_org.solution.precision_,
-        #         P_q2.solution.precision_,
-        #         rtol=rtol,
-        #         atol=atol,
-        #     ),
-        #     msg=(
-        #         f"Precision matrices are not numerically close.\n"
-        #         f"Max abs diff: {np.max(np.abs(P_org.solution.precision_ - P_q2.solution.precision_))}"
-        #     ),
-        # )
+        self.assertTrue(
+            np.allclose(
+                P_org.solution.precision_,
+                P_q2.solution.precision_,
+                rtol=rtol,
+                atol=atol,
+            ),
+            msg=(
+                f"Precision matrices are not numerically close.\n"
+                f"Max abs diff: {np.max(np.abs(P_org.solution.precision_ - P_q2.solution.precision_))}"
+            ),
+        )
 
     def test_modelselect_GGL_low(
         self,
@@ -986,34 +986,34 @@ class TestUtil(unittest.TestCase):
             msg=f"eBIC mismatch:\nOriginal: {ebic_org}\nQ2: {ebic_q2}",
         )
 
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda1"],
-        #     P_q2.modelselect_stats["BEST"]["lambda1"],
-        #     msg="Best lambda1 from original and QIIME2 solver differ",
-        # )
+        self.assertEqual(
+            P_org.modelselect_stats["BEST"]["lambda1"],
+            P_q2.modelselect_stats["BEST"]["lambda1"],
+            msg="Best lambda1 from original and QIIME2 solver differ",
+        )
 
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda2"],
-        #     P_q2.modelselect_stats["BEST"]["lambda2"],
-        #     msg="Best lambda2 from original and QIIME2 solver differ",
-        # )
+        self.assertEqual(
+            P_org.modelselect_stats["BEST"]["lambda2"],
+            P_q2.modelselect_stats["BEST"]["lambda2"],
+            msg="Best lambda2 from original and QIIME2 solver differ",
+        )
 
-        # mu_trace_org = np.array(P_org.reg_params["mu1"])
-        # mu_trace_q2 = np.array(P_q2.reg_params["mu1"])
-        # self.assertTrue(
-        #     np.allclose(mu_trace_org, mu_trace_q2, rtol=rtol, atol=atol),
-        #     msg=f"mu1 trace mismatch:\nOriginal: {mu_trace_org}\nQ2: {mu_trace_q2}",
-        # )
+        mu_trace_org = np.array(P_org.reg_params["mu1"])
+        mu_trace_q2 = np.array(P_q2.reg_params["mu1"])
+        self.assertTrue(
+            np.allclose(mu_trace_org, mu_trace_q2, rtol=rtol, atol=atol),
+            msg=f"mu1 trace mismatch:\nOriginal: {mu_trace_org}\nQ2: {mu_trace_q2}",
+        )
 
-        # self.assertTrue(
-        #     np.allclose(
-        #         P_org.solution.precision_,
-        #         P_q2.solution.precision_,
-        #         rtol=rtol,
-        #         atol=atol,
-        #     ),
-        #     msg="Precision matrices differ between original and QIIME2 solvers",
-        # )
+        self.assertTrue(
+            np.allclose(
+                P_org.solution.precision_,
+                P_q2.solution.precision_,
+                rtol=rtol,
+                atol=atol,
+            ),
+            msg="Precision matrices differ between original and QIIME2 solvers",
+        )
 
     def test_modelselect_FGL(
         self,
@@ -1060,27 +1060,27 @@ class TestUtil(unittest.TestCase):
             msg=f"eBIC mismatch:\nOriginal: {ebic_org}\nQ2: {ebic_q2}",
         )
 
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda1"],
-        #     P_q2.modelselect_stats["BEST"]["lambda1"],
-        #     msg="Best lambda1 from original and Q2 solver differ",
-        # )
+        self.assertEqual(
+            P_org.modelselect_stats["BEST"]["lambda1"],
+            P_q2.modelselect_stats["BEST"]["lambda1"],
+            msg="Best lambda1 from original and Q2 solver differ",
+        )
 
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda2"],
-        #     P_q2.modelselect_stats["BEST"]["lambda2"],
-        #     msg="Best lambda2 from original and Q2 solver differ",
-        # )
+        self.assertEqual(
+            P_org.modelselect_stats["BEST"]["lambda2"],
+            P_q2.modelselect_stats["BEST"]["lambda2"],
+            msg="Best lambda2 from original and Q2 solver differ",
+        )
 
-        # self.assertTrue(
-        #     np.allclose(
-        #         P_org.solution.precision_,
-        #         P_q2.solution.precision_,
-        #         rtol=rtol,
-        #         atol=atol,
-        #     ),
-        #     msg="Precision matrices differ between original and Q2 solvers",
-        # )
+        self.assertTrue(
+            np.allclose(
+                P_org.solution.precision_,
+                P_q2.solution.precision_,
+                rtol=rtol,
+                atol=atol,
+            ),
+            msg="Precision matrices differ between original and Q2 solvers",
+        )
 
     def test_modelselect_FGL_low(
         self,
@@ -1139,32 +1139,32 @@ class TestUtil(unittest.TestCase):
             msg=f"eBIC mismatch:\nOriginal: {ebic_org}\nQ2: {ebic_q2}",
         )
 
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda1"],
-        #     P_q2.modelselect_stats["BEST"]["lambda1"],
-        #     msg="Best lambda1 differs between GGLasso and q2-gglasso",
-        # )
+        self.assertEqual(
+            P_org.modelselect_stats["BEST"]["lambda1"],
+            P_q2.modelselect_stats["BEST"]["lambda1"],
+            msg="Best lambda1 differs between GGLasso and q2-gglasso",
+        )
 
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda2"],
-        #     P_q2.modelselect_stats["BEST"]["lambda2"],
-        #     msg="Best lambda2 differs between GGLasso and q2-gglasso",
-        # )
+        self.assertEqual(
+            P_org.modelselect_stats["BEST"]["lambda2"],
+            P_q2.modelselect_stats["BEST"]["lambda2"],
+            msg="Best lambda2 differs between GGLasso and q2-gglasso",
+        )
 
-        # self.assertTrue(
-        #     np.array_equal(P_org.reg_params["mu1"], P_q2.reg_params["mu1"]),
-        #     msg="mu1 trace differs between GGLasso and q2-gglasso",
-        # )
+        self.assertTrue(
+            np.array_equal(P_org.reg_params["mu1"], P_q2.reg_params["mu1"]),
+            msg="mu1 trace differs between GGLasso and q2-gglasso",
+        )
 
-        # self.assertTrue(
-        #     np.allclose(
-        #         P_org.solution.precision_,
-        #         P_q2.solution.precision_,
-        #         rtol=rtol,
-        #         atol=atol,
-        #     ),
-        #     msg="Precision matrices differ between GGLasso and q2-gglasso",
-        # )
+        self.assertTrue(
+            np.allclose(
+                P_org.solution.precision_,
+                P_q2.solution.precision_,
+                rtol=rtol,
+                atol=atol,
+            ),
+            msg="Precision matrices differ between GGLasso and q2-gglasso",
+        )
 
     def test_modelselect_non_conforming(
         self,
@@ -1217,27 +1217,27 @@ class TestUtil(unittest.TestCase):
             msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver",
         )
 
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda1"],
-        #     P_q2.modelselect_stats["BEST"]["lambda1"],
-        #     msg="Best chosen lambda1 differs between GGLasso and q2-gglasso",
-        # )
+        self.assertEqual(
+            P_org.modelselect_stats["BEST"]["lambda1"],
+            P_q2.modelselect_stats["BEST"]["lambda1"],
+            msg="Best chosen lambda1 differs between GGLasso and q2-gglasso",
+        )
 
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda2"],
-        #     P_q2.modelselect_stats["BEST"]["lambda2"],
-        #     msg="Best chosen lambda2 differs between GGLasso and q2-gglasso",
-        # )
+        self.assertEqual(
+            P_org.modelselect_stats["BEST"]["lambda2"],
+            P_q2.modelselect_stats["BEST"]["lambda2"],
+            msg="Best chosen lambda2 differs between GGLasso and q2-gglasso",
+        )
 
-        # self.assertTrue(
-        #     np.allclose(
-        #         P_org.solution.precision_,
-        #         P_q2.solution.precision_,
-        #         rtol=rtol,
-        #         atol=atol,
-        #     ),
-        #     msg="Precision matrices differ between GGLasso and q2-gglasso",
-        # )
+        self.assertTrue(
+            np.allclose(
+                P_org.solution.precision_,
+                P_q2.solution.precision_,
+                rtol=rtol,
+                atol=atol,
+            ),
+            msg="Precision matrices differ between GGLasso and q2-gglasso",
+        )
 
     def test_modelselect_non_conforming_low(
         self,
@@ -1297,32 +1297,32 @@ class TestUtil(unittest.TestCase):
             msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver",
         )
 
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda1"],
-        #     P_q2.modelselect_stats["BEST"]["lambda1"],
-        #     msg="Best chosen lambda1 from GGLasso and q2-gglasso are not the same",
-        # )
+        self.assertEqual(
+            P_org.modelselect_stats["BEST"]["lambda1"],
+            P_q2.modelselect_stats["BEST"]["lambda1"],
+            msg="Best chosen lambda1 from GGLasso and q2-gglasso are not the same",
+        )
 
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda2"],
-        #     P_q2.modelselect_stats["BEST"]["lambda2"],
-        #     msg="Best chosen lambda2 from GGLasso and q2-gglasso are not the same",
-        # )
+        self.assertEqual(
+            P_org.modelselect_stats["BEST"]["lambda2"],
+            P_q2.modelselect_stats["BEST"]["lambda2"],
+            msg="Best chosen lambda2 from GGLasso and q2-gglasso are not the same",
+        )
 
-        # self.assertTrue(
-        #     np.array_equal(P_org.reg_params["mu1"], P_q2.reg_params["mu1"]),
-        #     msg="mu1 trace from GGLasso and q2-gglasso are not identical",
-        # )
+        self.assertTrue(
+            np.array_equal(P_org.reg_params["mu1"], P_q2.reg_params["mu1"]),
+            msg="mu1 trace from GGLasso and q2-gglasso are not identical",
+        )
 
-        # self.assertTrue(
-        #     np.allclose(
-        #         P_org.solution.precision_,
-        #         P_q2.solution.precision_,
-        #         rtol=rtol,
-        #         atol=atol,
-        #     ),
-        #     msg="Solutions from GGLasso and q2-gglasso are not identical",
-        # )
+        self.assertTrue(
+            np.allclose(
+                P_org.solution.precision_,
+                P_q2.solution.precision_,
+                rtol=rtol,
+                atol=atol,
+            ),
+            msg="Solutions from GGLasso and q2-gglasso are not identical",
+        )
 
     def test_modelselect_SGL_mask(
         self,
@@ -1364,21 +1364,21 @@ class TestUtil(unittest.TestCase):
             msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver",
         )
 
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda1"],
-        #     P_q2.modelselect_stats["BEST"]["lambda1"],
-        #     msg="Best chosen lambda from GGLasso and q2-gglasso are not the same",
-        # )
+        self.assertEqual(
+            P_org.modelselect_stats["BEST"]["lambda1"],
+            P_q2.modelselect_stats["BEST"]["lambda1"],
+            msg="Best chosen lambda from GGLasso and q2-gglasso are not the same",
+        )
 
-        # self.assertTrue(
-        #     np.allclose(
-        #         P_org.solution.precision_,
-        #         P_q2.solution.precision_,
-        #         rtol=rtol,
-        #         atol=atol,
-        #     ),
-        #     msg="Solutions from GGLasso and q2-gglasso are not identical",
-        # )
+        self.assertTrue(
+            np.allclose(
+                P_org.solution.precision_,
+                P_q2.solution.precision_,
+                rtol=rtol,
+                atol=atol,
+            ),
+            msg="Solutions from GGLasso and q2-gglasso are not identical",
+        )
 
     def test_modelselect_SGL_mask_low(
         self,
@@ -1428,27 +1428,27 @@ class TestUtil(unittest.TestCase):
             msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver",
         )
 
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda1"],
-        #     P_q2.modelselect_stats["BEST"]["lambda1"],
-        #     msg="Best chosen lambda from GGLasso and q2-gglasso are not the same",
-        # )
+        self.assertEqual(
+            P_org.modelselect_stats["BEST"]["lambda1"],
+            P_q2.modelselect_stats["BEST"]["lambda1"],
+            msg="Best chosen lambda from GGLasso and q2-gglasso are not the same",
+        )
 
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["mu1"],
-        #     P_q2.modelselect_stats["BEST"]["mu1"],
-        #     msg="Best chosen mu from GGLasso and q2-gglasso are not the same",
-        # )
+        self.assertEqual(
+            P_org.modelselect_stats["BEST"]["mu1"],
+            P_q2.modelselect_stats["BEST"]["mu1"],
+            msg="Best chosen mu from GGLasso and q2-gglasso are not the same",
+        )
 
-        # self.assertTrue(
-        #     np.allclose(
-        #         P_org.solution.precision_,
-        #         P_q2.solution.precision_,
-        #         rtol=rtol,
-        #         atol=atol,
-        #     ),
-        #     msg="Solutions from GGLasso and q2-gglasso are not identical",
-        # )
+        self.assertTrue(
+            np.allclose(
+                P_org.solution.precision_,
+                P_q2.solution.precision_,
+                rtol=rtol,
+                atol=atol,
+            ),
+            msg="Solutions from GGLasso and q2-gglasso are not identical",
+        )
 
 
 if __name__ == "__main__":
