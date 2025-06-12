@@ -8,7 +8,7 @@ version = "0.0.0"  # versioneer will dynamically set this from git tags
 description = "QIIME 2 plugin for General Graphical Lasso problems"
 readme = "README.md"
 requires-python = ">=3.6"
-license = {text = "BSD-3-Clause"}
+license = {text = "MIT"}
 authors = [
     {name = "Oleg Vlasovets", email = "oleg.vlasovets@helmholtz-munich.de"},
     {name = "Christian L. Müller"},
@@ -16,8 +16,9 @@ authors = [
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
-    "License :: OSI Approved :: BSD License",
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -27,26 +28,20 @@ classifiers = [
 ]
 
 dependencies = [
-    "qiime2",
-    "q2-types",
+    "gglasso<=0.2.1",
     "numpy<=1.26",
     "numba>=0.56",
     "scikit-learn>=0.24.1",
     "scipy>=0.11.0",
-    "pandas",
-    "biom-format",
     "bokeh>=2.4.2",
     "jupyterlab>=3.0.0",
     "setuptools>=59.8.0",
     "zarr>=2.11.1",
-    "jinja2",
     "pytest>=7.0.1",
+    "jinja2",
+    "pandas",
+    "biom-format",
     "versioneer",
-    "calysto-bash",
-    "sphinx-exercise",
-    "jupyter-book",
-    "git+https://github.com/qiime2/sphinx-ext-qiime2",
-    "git+https://github.com/fabian-sp/GGLasso.git@master"
 ]
 
 [project.urls]

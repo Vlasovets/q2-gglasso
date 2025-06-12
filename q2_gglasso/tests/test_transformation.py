@@ -22,7 +22,7 @@ class TestUtil(unittest.TestCase):
     q2-gglasso plugin work correctly, particularly focusing on zero imputation.
     """
 
-    def test_zero_imputation(self, pseudo_count=1, equal=False):
+    def test_zero_imputation(self, equal=False):
         """Test the zero imputation function for compositional data.
 
         This test verifies that the zero_imputation function maintains
@@ -31,8 +31,6 @@ class TestUtil(unittest.TestCase):
 
         Parameters
         ----------
-        pseudo_count : int, default=1
-            The pseudo count to use for zero imputation.
         equal : bool, default=False
             A flag that gets set to True if the column sums before and
             after imputation are equal.
