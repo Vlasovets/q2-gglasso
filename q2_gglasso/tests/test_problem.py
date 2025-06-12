@@ -765,8 +765,8 @@ class TestUtil(unittest.TestCase):
             msg=f"eBIC values differ between solvers:\n{ebic_org}\nvs\n{ebic_q2}",
         )
 
-        best_lambda_org = P_org.modelselect_stats["BEST"]["lambda1"]
-        best_lambda_q2 = P_q2.modelselect_stats["BEST"]["lambda1"]
+        # best_lambda_org = P_org.modelselect_stats["BEST"]["lambda1"]
+        # best_lambda_q2 = P_q2.modelselect_stats["BEST"]["lambda1"]
 
         # self.assertEqual(
         #     best_lambda_org,
