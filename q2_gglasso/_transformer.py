@@ -3,7 +3,7 @@ import zarr
 import numpy as np
 
 from q2_gglasso.plugin_setup import plugin
-from biom import load_table, parse_table
+from biom import load_table
 import q2_gglasso as q2g
 
 
@@ -11,7 +11,7 @@ import q2_gglasso as q2g
 def _0(data: pd.DataFrame) -> q2g.GGLassoDataFormat:
     ff = q2g.GGLassoDataFormat()
     with ff.open() as fh:
-        data.to_csv(fh, sep='\t', index_label='feature1')
+        data.to_csv(fh, sep="\t", index_label="feature1")
     return ff
 
 
@@ -40,6 +40,7 @@ def _3(ff: q2g.ZarrProblemFormat) -> zarr.hierarchy.Group:
     root = zarr.open(store=store)
     return root
 
+
 @plugin.register_transformer
 def _4(obj: np.ndarray) -> q2g.TensorDataDirectoryFormat:
     ff = q2g.TensorDataDirectoryFormat()
@@ -50,11 +51,13 @@ def _4(obj: np.ndarray) -> q2g.TensorDataDirectoryFormat:
     store.close()
     return ff
 
+
 @plugin.register_transformer
 def _5(ff: q2g.TensorDataFormat) -> zarr.hierarchy.Group:
     store = zarr.ZipStore(str(ff), mode="r")
     root = zarr.open(store=store)
     return root
+
 
 # @plugin.register_transformer
 # def _2(ff: GGLassoDataFormat) -> pd.DataFrame:
@@ -69,4 +72,3 @@ def _5(ff: q2g.TensorDataFormat) -> zarr.hierarchy.Group:
 #     table = load_table(str(ff))
 #     df = table.to_dataframe()
 #     return df
-

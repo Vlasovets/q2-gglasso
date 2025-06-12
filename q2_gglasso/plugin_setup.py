@@ -1,30 +1,33 @@
-import sys
-from os.path import dirname
+"""Plugin setup module for QIIME 2 GGLasso.
+
+This module defines the QIIME 2 plugin interface for the q2-gglasso package,
+which provides implementations of Graphical Lasso algorithms for microbiome data analysis.
+It registers semantic types, formats, transformers, and methods for the plugin.
+"""
+
+# import sys
+# from os.path import dirname
 
 # make sure you are in the correct directory
 # q2_gglasso_dir = dirname(os.getcwd())
-q2_gglasso_dir = dirname('/opt/project/')
-sys.path.append(q2_gglasso_dir)
+# q2_gglasso_dir = dirname("/opt/project/")
+# sys.path.append(q2_gglasso_dir)
 
-print(sys.path)
+# print(sys.path)
 
 import importlib
 import q2_gglasso as q2g
-import qiime2
-import pandas as pd
 
 from q2_types.feature_table import FeatureTable, Composition, Frequency, Design
 from q2_types.feature_data import FeatureData, Taxonomy
-from qiime2.plugin import Plugin, Float, Str, Bool, List, Int, Metadata
+from qiime2.plugin import Plugin, Str, Bool, List, Int, Metadata
 
 plugin = Plugin(
     name="gglasso",
     version="0.0.0.dev0",
     website="https://github.com/Vlasovets/q2-gglasso",
     package="q2-gglasso",
-    short_description=(
-        "Package for solving General Graphical Lasso problems"
-    ),
+    short_description=("Package for solving General Graphical Lasso problems"),
     description=(
         "This package contains algorithms for solving General Graphical Lasso (GGLasso) problems"
         "including single, multiple, as well as latent Graphical Lasso problems."
@@ -32,9 +35,7 @@ plugin = Plugin(
 )
 
 plugin.register_semantic_types(
-    q2g.PairwiseFeatureData,
-    q2g.GGLassoProblem,
-    q2g.TensorData
+    q2g.PairwiseFeatureData, q2g.GGLassoProblem, q2g.TensorData
 )
 
 plugin.register_formats(
@@ -43,12 +44,12 @@ plugin.register_formats(
     q2g.ZarrProblemFormat,
     q2g.GGLassoProblemDirectoryFormat,
     q2g.TensorDataFormat,
-    q2g.TensorDataDirectoryFormat
-
+    q2g.TensorDataDirectoryFormat,
 )
 
 plugin.register_semantic_type_to_format(
-    q2g.PairwiseFeatureData, artifact_format=q2g.PairwiseFeatureDataDirectoryFormat,
+    q2g.PairwiseFeatureData,
+    artifact_format=q2g.PairwiseFeatureDataDirectoryFormat,
 )
 plugin.register_semantic_type_to_format(
     q2g.GGLassoProblem, artifact_format=q2g.GGLassoProblemDirectoryFormat
@@ -59,10 +60,17 @@ plugin.register_semantic_type_to_format(
 
 plugin.methods.register_function(
     function=q2g.transform_features,
-    inputs={"table": FeatureTable[Composition | Frequency | Design],
-            "taxonomy": FeatureData[Taxonomy],},
-    parameters={'sample_metadata': Metadata, "transformation": Str, "pseudo_count": Int, "scale_metadata": Bool,
-                "add_metadata": Bool},
+    inputs={
+        "table": FeatureTable[Composition | Frequency | Design],
+        "taxonomy": FeatureData[Taxonomy],
+    },
+    parameters={
+        "sample_metadata": Metadata,
+        "transformation": Str,
+        "pseudo_count": Int,
+        "scale_metadata": Bool,
+        "add_metadata": Bool,
+    },
     outputs=[("transformed_table", FeatureTable[Frequency])],
     input_descriptions={
         "table": (
@@ -71,24 +79,19 @@ plugin.methods.register_function(
         ),
     },
     parameter_descriptions={
-        'sample_metadata': (
-            "Metadata of the study."
-        ),
-        'add_metadata': (
-            "Merging metadata with the count table."
-        ),
-        'scale_metadata': (
-            "Scaling metadata."
-        ),
+        "sample_metadata": ("Metadata of the study."),
+        "add_metadata": ("Merging metadata with the count table."),
+        "scale_metadata": ("Scaling metadata."),
         "transformation": (
-            "String representing the name of the "
-            "transformation we will use "
+            "String representing the name of the " "transformation we will use "
         ),
         "pseudo_count": (
             "Add pseudo count, only necessary for clr-transformation."
         ),
     },
-    output_descriptions={"transformed_table": "Matrix representing the data of the problem"},
+    output_descriptions={
+        "transformed_table": "Matrix representing the data of the problem"
+    },
     name="transform-features",
     description=(
         "Perform transformation, "
@@ -104,18 +107,15 @@ plugin.methods.register_function(
     parameters={"check_groups": Bool},
     outputs=[("group_array", q2g.TensorData)],
     input_descriptions={
-        "tables": (
-            "Dataframes containing the transformed data "
-        ),
+        "tables": ("Dataframes containing the transformed data "),
     },
     parameter_descriptions={
-        "check_groups": (
-            "Check built groups of overlapping variables"
-        ),
+        "check_groups": ("Check built groups of overlapping variables"),
     },
-    output_descriptions={"group_array": " (2,L,K)-shape array which contains the indices of a precision matrix entry "
-                                        "for every group of overlapping features (L) and every instance (K)"
-                         },
+    output_descriptions={
+        "group_array": " (2,L,K)-shape array which contains the indices of a precision matrix entry "
+        "for every group of overlapping features (L) and every instance (K)"
+    },
     name="build-groups",
     description=(
         "G can be seen as a bookeeping array between instances having different number of features"
@@ -144,7 +144,9 @@ plugin.methods.register_function(
             "you get out the empirical covariance matrix with normalization N"
         ),
     },
-    output_descriptions={"covariance_matrix": "p x p matrix with covariance entries"},
+    output_descriptions={
+        "covariance_matrix": "p x p matrix with covariance entries"
+    },
     name="calculate_covariance",
     description=(
         "Perform empirical covariance estimation given the data p x N, "
@@ -162,14 +164,10 @@ plugin.methods.register_function(
     parameters=q2g.glasso_parameters,
     outputs=[("solution", q2g.GGLassoProblem)],
     input_descriptions={
-        "covariance_matrix": (
-            "p x p semi-positive definite covariance matrix."
-        )
+        "covariance_matrix": ("p x p semi-positive definite covariance matrix.")
     },
     parameter_descriptions={
-        "n_samples": (
-            "List of number of samples for each instance k=1,..,K."
-        ),
+        "n_samples": ("List of number of samples for each instance k=1,..,K."),
         "lambda1_min": (
             "List of regularization hyperparameters lambda1."
             "Note, sort lambda list in descending order."
@@ -210,7 +208,7 @@ plugin.methods.register_function(
             "Low-rank regularization parameter."
             "Only needs to be specified if latent=True."
         ),
-        "adapt_lambda1": (
+        "weights": (
             "Array (p,p), non-negative, symmetric."
             "The lambda1 parameter is multiplied element-wise with this array, thus lambda1 has to be provided."
         ),
@@ -219,19 +217,17 @@ plugin.methods.register_function(
             "'FGL' = Fused Graphical Lasso, 'GGL' = Group Graphical Lasso."
             "The default is 'GGL'."
         ),
-        "non_conforming": (
-            "Non-conforming MGL problems."
-        ),
-        "group_array": (
-            "Bookeeping array"
-        ),
+        "non_conforming": ("Non-conforming MGL problems."),
+        "group_array": ("Bookeeping array"),
         "gamma": (
             "Gamma value for eBIC (between 0 and 1)"
             "The larger the value, the more eBIC tends to pick sparse solutions."
         ),
     },
-    output_descriptions={"solution": "dictionary containing the solution and "
-                                     "hyper-/parameters of GGLasso problem"},
+    output_descriptions={
+        "solution": "dictionary containing the solution and "
+        "hyper-/parameters of GGLasso problem"
+    },
     name="solve_problem",
     description=(
         "Method for doing model selection for K single Graphical Lasso problems."
@@ -245,8 +241,8 @@ plugin.visualizers.register_function(
         "table": FeatureTable[Frequency],
         "solution": q2g.GGLassoProblem,
     },
-    name='Principal component analysis (PCA)',
-    description='Generate a scatter plot for PCA',
+    name="Principal component analysis (PCA)",
+    description="Generate a scatter plot for PCA",
     input_descriptions={
         "table": (
             "Matrix representing the microbiome data:"
@@ -256,11 +252,15 @@ plugin.visualizers.register_function(
             "Solution artifact of Graphical Lasso problem with latent variables."
         ),
     },
-    parameters={'sample_metadata': Metadata, "n_components": Int, "color_by": Str},
+    parameters={
+        "sample_metadata": Metadata,
+        "n_components": Int,
+        "color_by": Str,
+    },
     parameter_descriptions={
-        'sample_metadata': "Metadata of the study.",
-        'n_components': "Number of PCs to be printed",
-        'color_by': "Color components by selected covariate from metadata"
+        "sample_metadata": "Metadata of the study.",
+        "n_components": "Number of PCs to be printed",
+        "color_by": "Color components by selected covariate from metadata",
     },
 )
 
@@ -269,20 +269,18 @@ plugin.visualizers.register_function(
     inputs={
         "solution": q2g.GGLassoProblem,
     },
-    name='Summary table',
-    description='Summary table with sparsity level, lambda, mu path and rank of the solution',
+    name="Summary table",
+    description="Summary table with sparsity level, lambda, mu path and rank of the solution",
     input_descriptions={
-        "solution": (
-            "p x p semi-positive definite covariance matrix."
-        ),
+        "solution": ("p x p semi-positive definite covariance matrix."),
     },
     parameters={"width": Int, "height": Int, "label_size": Str, "n_cov": Int},
     parameter_descriptions={
-        'width': "The width you would like your plots to be, by default 1500.",
-        'height': 'The height you would like your plots to be, by default 1500',
-        'label_size': 'The font size of labels ticks in, by default "5pt".',
-        'n_cov': 'Number of covariates, by default None.',
+        "width": "The width you would like your plots to be, by default 1500.",
+        "height": "The height you would like your plots to be, by default 1500",
+        "label_size": 'The font size of labels ticks in, by default "5pt".',
+        "n_cov": "Number of covariates, by default None.",
     },
 )
 
-importlib.import_module('q2_gglasso._transformer')
+importlib.import_module("q2_gglasso._transformer")

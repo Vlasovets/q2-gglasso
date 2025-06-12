@@ -1,19 +1,9 @@
 from qiime2.plugin import (
-    SemanticType,
-    Plugin,
     Int,
     Float,
-    Range,
-    Metadata,
     Str,
     Bool,
-    Choices,
-    MetadataColumn,
-    Categorical,
     List,
-    Citations,
-    TypeMatch,
-    Numeric,
 )
 
 glasso_parameters = {
@@ -27,10 +17,10 @@ glasso_parameters = {
     "n_lambda1": Int,
     "n_lambda2": Int,
     "n_mu1": Int,
-    "adapt_lambda1": List[Str],
+    "weights": List[Str],
     "latent": Bool,
     "non_conforming": Bool,
     "group_array": List[Int],
     "reg": Str,
-    "gamma": Float
+    "gamma": Float,
 }

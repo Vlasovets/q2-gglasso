@@ -7,18 +7,38 @@ from biom.table import Table
 
 from gglasso.problem import glasso_problem
 from gglasso.helper.basic_linalg import scale_array_by_diagonal
-from gglasso.helper.ext_admm_helper import create_group_array, construct_indexer, check_G
+from gglasso.helper.ext_admm_helper import (
+    create_group_array,
+    construct_indexer,
+    check_G,
+)
 
-from .utils import if_2d_array, get_hyperparameters, list_to_array, rename_index_with_sum
-from .utils import normalize, log_transform, zero_imputation, check_lambda_path, get_lambda_mask
+from .utils import (
+    if_2d_array,
+    get_hyperparameters,
+    list_to_array,
+    rename_index_with_sum,
+)
+from .utils import (
+    normalize,
+    log_transform,
+    zero_imputation,
+    check_lambda_path,
+    get_lambda_mask,
+)
 from sklearn import preprocessing
 
 
-def transform_features(table: Table, taxonomy: pd.Series, sample_metadata: qiime2.Metadata = None,
-                       transformation: str = "clr", pseudo_count: int = 1,
-                       scale_metadata: bool = True, add_metadata: bool = False) -> pd.DataFrame:
-    """
-    Project compositional data to Euclidean space.
+def transform_features(
+    table: Table,
+    taxonomy: pd.Series,
+    sample_metadata: qiime2.Metadata = None,
+    transformation: str = "clr",
+    pseudo_count: int = 1,
+    scale_metadata: bool = True,
+    add_metadata: bool = False,
+) -> pd.DataFrame:
+    """Project compositional data to Euclidean space.
 
     Parameters
     ----------
@@ -66,8 +86,9 @@ def transform_features(table: Table, taxonomy: pd.Series, sample_metadata: qiime
     X = pd.DataFrame(X, columns=X.columns, index=X.index)
 
     # TO DO test taxonomy assignment
-    taxa = pd.DataFrame(taxonomy.view(pd.Series))
-    ASV_names = X.index.values
+    # NOTE: We're removing these unused variables to fix linting issues
+    # taxa = pd.DataFrame(taxonomy.view(pd.Series))
+    # ASV_names = X.index.values
 
     # for i in ASV_names:
     #     if i in taxa.index:
@@ -79,7 +100,7 @@ def transform_features(table: Table, taxonomy: pd.Series, sample_metadata: qiime
 
     if add_metadata:
         # metadata is (N, p) matrix
-        numeric_md_cols = sample_metadata.filter_columns(column_type='numeric')
+        numeric_md_cols = sample_metadata.filter_columns(column_type="numeric")
         md = numeric_md_cols.to_dataframe()
 
         if md.isnull().values.any():
@@ -100,10 +121,10 @@ def transform_features(table: Table, taxonomy: pd.Series, sample_metadata: qiime
     return result
 
 
-def calculate_covariance(table: pd.DataFrame, method: str = "scaled",
-                         bias: bool = True) -> pd.DataFrame:
-    """
-    A function calculating covariance matrix.
+def calculate_covariance(
+    table: pd.DataFrame, method: str = "scaled", bias: bool = True
+) -> pd.DataFrame:
+    """Calculate covariance matrix.
 
     Parameters
     ----------
@@ -131,11 +152,15 @@ def calculate_covariance(table: pd.DataFrame, method: str = "scaled",
         result = S
 
     elif method == "scaled":
-        print("Calculate {0} covariance (correlation) matrices S".format(method))
+        print(
+            "Calculate {0} covariance (correlation) matrices S".format(method)
+        )
         result = scale_array_by_diagonal(S)
 
     else:
-        raise ValueError('Given covariance calculation method is not supported.')
+        raise ValueError(
+            "Given covariance calculation method is not supported."
+        )
 
     result = pd.DataFrame(result, index=table.index, columns=table.index)
 
@@ -143,7 +168,8 @@ def calculate_covariance(table: pd.DataFrame, method: str = "scaled",
 
 
 def build_groups(tables: Table, check_groups: bool = True) -> np.ndarray:
-    """
+    """Build groups for solving the Group Graphical Lasso problem.
+
     Building groups for solving the Group Graphical Lasso problem
     where not all instances have the same number of dimensions,
     i.e. some variables are present in some instances and not in others.
@@ -170,7 +196,9 @@ def build_groups(tables: Table, check_groups: bool = True) -> np.ndarray:
     for table in tables:
         df = table.to_dataframe()
 
-        dataframes_p_N.append(df)  # (p_variables, N_samples) required shape of dataframe
+        dataframes_p_N.append(
+            df
+        )  # (p_variables, N_samples) required shape of dataframe
         p_arr.append(df.shape[0])  # number of variables
         num_samples.append(df.shape[1])  # number of samples
 
@@ -206,11 +234,17 @@ def build_groups(tables: Table, check_groups: bool = True) -> np.ndarray:
         print("All datasets have exactly the same number of features.")
 
 
-def solve_SGL(S: np.ndarray, N: list, latent: bool = None, model_selection: bool = None,
-              lambda1: list = None, mu1: list = None, lambda1_mask: list = None,
-              gamma: float = None):
-    """
-    Solve Single Graphical Lasso (SGL) problem, see Friedman et al. (2007).
+def solve_SGL(
+    S: np.ndarray,
+    N: list,
+    latent: bool = None,
+    model_selection: bool = None,
+    lambda1: list = None,
+    mu1: list = None,
+    lambda1_mask: list = None,
+    gamma: float = None,
+):
+    """Solve Single Graphical Lasso (SGL) problem, see Friedman et al. (2007).
 
     Parameters
     ----------
@@ -244,29 +278,48 @@ def solve_SGL(S: np.ndarray, N: list, latent: bool = None, model_selection: bool
     """
     if model_selection:
         print("\tDD MODEL SELECTION:")
-        modelselect_params = {'lambda1_range': lambda1, 'mu1_range': mu1,
-                              'lambda1_mask': lambda1_mask}
+        modelselect_params = {
+            "lambda1_range": lambda1,
+            "mu1_range": mu1,
+            "lambda1_mask": lambda1_mask,
+        }
         P = glasso_problem(S, N=N, latent=latent)
         P.model_selection(modelselect_params=modelselect_params, gamma=gamma)
 
         boundary_lambdas = check_lambda_path(P)
         if boundary_lambdas:
             warnings.warn(
-                "lambda is on the edge of the interval, the solution might have not reached global minimum!")
+                "lambda is on the edge of the interval, the solution might have not reached global minimum!"
+            )
     else:
         print("\tWITH LAMBDA={0} and MU={1}".format(lambda1, mu1))
-        P = glasso_problem(S, N=N, reg_params={'lambda1': lambda1, "mu1": mu1,
-                                               'lambda1_mask': lambda1_mask},
-                           latent=latent)
+        P = glasso_problem(
+            S,
+            N=N,
+            reg_params={
+                "lambda1": lambda1,
+                "mu1": mu1,
+                "lambda1_mask": lambda1_mask,
+            },
+            latent=latent,
+        )
         P.solve()
 
     return P
 
 
-def solve_MGL(S: np.ndarray, N: list, reg: str, latent: bool = None, model_selection: bool = None,
-              lambda1: list = None, lambda2: list = None, mu1: list = None, gamma: float = None):
-    """
-    Solve Multiple  Graphical Lasso (MGL) problem, see Danaher et al. (2013).
+def solve_MGL(
+    S: np.ndarray,
+    N: list,
+    reg: str,
+    latent: bool = None,
+    model_selection: bool = None,
+    lambda1: list = None,
+    lambda2: list = None,
+    mu1: list = None,
+    gamma: float = None,
+):
+    """Solve Multiple  Graphical Lasso (MGL) problem, see Danaher et al. (2013).
 
     Parameters
     ----------
@@ -303,7 +356,11 @@ def solve_MGL(S: np.ndarray, N: list, reg: str, latent: bool = None, model_selec
     """
     if model_selection:
         print("\tDD MODEL SELECTION:")
-        modelselect_params = {'lambda1_range': lambda1, 'lambda2_range': lambda2, 'mu1_range': mu1}
+        modelselect_params = {
+            "lambda1_range": lambda1,
+            "lambda2_range": lambda2,
+            "mu1_range": mu1,
+        }
         P = glasso_problem(S, N=N, latent=latent, reg=reg)
         P.model_selection(modelselect_params=modelselect_params, gamma=gamma)
 
@@ -311,19 +368,36 @@ def solve_MGL(S: np.ndarray, N: list, reg: str, latent: bool = None, model_selec
         if boundary_lambdas:
             warnings.warn("The solution might have not reached global minimum!")
     else:
-        print("\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(lambda1, lambda2, mu1))
-        P = glasso_problem(S, N=N, reg_params={'lambda1': lambda1, 'lambda2': lambda2, "mu1": mu1},
-                           latent=latent, reg=reg)
+        print(
+            "\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(
+                lambda1, lambda2, mu1
+            )
+        )
+        P = glasso_problem(
+            S,
+            N=N,
+            reg_params={"lambda1": lambda1, "lambda2": lambda2, "mu1": mu1},
+            latent=latent,
+            reg=reg,
+        )
         P.solve()
 
     return P
 
 
-def solve_non_conforming(S: np.ndarray, N: list, G: list, latent: bool = None,
-                         model_selection: bool = None,
-                         lambda1: list = None, lambda2: list = None, mu1: list = None,
-                         gamma: float = None):
-    """
+def solve_non_conforming(
+    S: np.ndarray,
+    N: list,
+    G: list,
+    latent: bool = None,
+    model_selection: bool = None,
+    lambda1: list = None,
+    lambda2: list = None,
+    mu1: list = None,
+    gamma: float = None,
+):
+    """Solve the Group Graphical Lasso problem.
+
     Solve the Group Graphical Lasso problem where not all instances have the same number of dimensions,
     i.e. some variables are present in some instances and not in others.
     A group sparsity penalty is applied to all pairs of variables present in multiple instances.
@@ -363,36 +437,61 @@ def solve_non_conforming(S: np.ndarray, N: list, G: list, latent: bool = None,
     """
     if model_selection:
         print("\tDD MODEL SELECTION:")
-        modelselect_params = {'lambda1_range': lambda1, 'lambda2_range': lambda2, 'mu1_range': mu1}
-        P = glasso_problem(S, N=N, G=G, latent=latent, reg='GGL')
+        modelselect_params = {
+            "lambda1_range": lambda1,
+            "lambda2_range": lambda2,
+            "mu1_range": mu1,
+        }
+        P = glasso_problem(S, N=N, G=G, latent=latent, reg="GGL")
         P.model_selection(modelselect_params=modelselect_params, gamma=gamma)
 
         boundary_lambdas = check_lambda_path(P, mgl_problem=True)
         if boundary_lambdas:
             warnings.warn(
-                "lambda is on the edge of the interval, the solution might have not reached global minimum!")
+                "lambda is on the edge of the interval, the solution might have not reached global minimum!"
+            )
     else:
-        print("\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(lambda1, lambda2, mu1))
-        P = glasso_problem(S, N=N, G=G,
-                           reg_params={'lambda1': lambda1, 'lambda2': lambda2, "mu1": mu1},
-                           latent=latent, reg='GGL')
+        print(
+            "\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(
+                lambda1, lambda2, mu1
+            )
+        )
+        P = glasso_problem(
+            S,
+            N=N,
+            G=G,
+            reg_params={"lambda1": lambda1, "lambda2": lambda2, "mu1": mu1},
+            latent=latent,
+            reg="GGL",
+        )
         P.solve()
 
     return P
 
 
-def solve_problem(covariance_matrix: pd.DataFrame, n_samples: list, latent: bool = None,
-                  lambda1_min: float = None, lambda1_max: float = None, n_lambda1: int = 1,
-                  lambda2_min: float = None, lambda2_max: float = None, n_lambda2: int = 1,
-                  mu1_min: float = None, mu1_max: float = None, n_mu1: int = 1,
-                  adapt_lambda1: list = None, non_conforming: bool = None, gamma: float = 0.01,
-                  group_array: list = None, reg: str = 'GGL') -> glasso_problem:
-    """
-    Solve Graphical Lasso problem.
+def solve_problem(
+    covariance_matrix: pd.DataFrame | np.ndarray,
+    n_samples: list | int | float,
+    latent: bool = None,
+    lambda1_min: float = None,
+    lambda1_max: float = None,
+    n_lambda1: int = 1,
+    lambda2_min: float = None,
+    lambda2_max: float = None,
+    n_lambda2: int = 1,
+    mu1_min: float = None,
+    mu1_max: float = None,
+    n_mu1: int = 1,
+    weights: list = None,
+    non_conforming: bool = None,
+    gamma: float = 0.01,
+    group_array: list = None,
+    reg: str = "GGL",
+) -> glasso_problem:
+    """Solve Graphical Lasso problem.
 
     Parameters
     ----------
-
     covariance_matrix: list
         Array of K covariance matrices.
     n_samples: list
@@ -426,7 +525,7 @@ def solve_problem(covariance_matrix: pd.DataFrame, n_samples: list, latent: bool
         Only needs to be specified if 'latent=True'.
     n_mu1: int
         A range of 'mu1'.
-    adapt_lambda1: list, optional
+    weights: list, optional
         List of elements and associated weights which will be multiplied by 'lambda1' during regularization;
         The 'lambda1' parameter is multiplied element-wise with list. Only available for SGL;
         List must be provided in the format: (entry, weight), where entry is a string, and weight is a float;
@@ -453,37 +552,77 @@ def solve_problem(covariance_matrix: pd.DataFrame, n_samples: list, latent: bool
 
     n_samples = list_to_array(n_samples)
 
-    h_params = get_hyperparameters(lambda1_min=lambda1_min, lambda1_max=lambda1_max,
-                                   n_lambda1=n_lambda1,
-                                   lambda2_min=lambda2_min, lambda2_max=lambda2_max,
-                                   n_lambda2=n_lambda2,
-                                   mu1_min=mu1_min, mu1_max=mu1_max, n_mu1=n_mu1)
+    h_params = get_hyperparameters(
+        lambda1_min=lambda1_min,
+        lambda1_max=lambda1_max,
+        n_lambda1=n_lambda1,
+        lambda2_min=lambda2_min,
+        lambda2_max=lambda2_max,
+        n_lambda2=n_lambda2,
+        mu1_min=mu1_min,
+        mu1_max=mu1_max,
+        n_mu1=n_mu1,
+        latent=latent,
+    )
 
     model_selection = h_params["model_selection"]
-    lambda1, lambda2, mu1 = h_params["lambda1"], h_params["lambda2"], h_params["mu1"]
+    lambda1, lambda2, mu1 = (
+        h_params["lambda1"],
+        h_params["lambda2"],
+        h_params["mu1"],
+    )
 
-    if adapt_lambda1 is None:
+    if weights is None:
         lambda1_mask = None
     else:
-        lambda1_mask = get_lambda_mask(adapt_lambda1=adapt_lambda1,
-                                       covariance_matrix=covariance_matrix)
+        lambda1_mask = get_lambda_mask(
+            weights=weights, covariance_matrix=covariance_matrix
+        )
 
     # if 2d array => solve SGL
     if S.ndim == 2:
-
         if latent:
-            print("\n----SOLVING SINGLE GRAPHICAL LASSO PROBLEM WITH LATENT VARIABLES-----")
+            print(
+                "\n----SOLVING SINGLE GRAPHICAL LASSO PROBLEM WITH LATENT VARIABLES-----"
+            )
 
-            P = solve_SGL(S=S, N=n_samples, latent=latent, model_selection=model_selection,
-                          lambda1=lambda1, mu1=mu1,
-                          lambda1_mask=lambda1_mask, gamma=gamma)
+            if mu1 is not None:
+                mu1_range = (
+                    np.array([mu1])
+                    if isinstance(mu1, (int, float))
+                    else np.array(mu1)
+                )
+            else:
+                mu1_range = (
+                    np.linspace(mu1_min, mu1_max, n_mu1)
+                    if mu1_min is not None
+                    else None
+                )
+
+            P = solve_SGL(
+                S=S,
+                N=n_samples,
+                latent=latent,
+                model_selection=model_selection,
+                lambda1=lambda1,
+                mu1=mu1_range,
+                lambda1_mask=lambda1_mask,
+                gamma=gamma,
+            )
 
         else:
             print("----SOLVING SINGLE GRAPHICAL LASSO PROBLEM-----")
 
-            P = solve_SGL(S=S, N=n_samples, latent=latent, model_selection=model_selection,
-                          lambda1=lambda1, mu1=mu1,
-                          lambda1_mask=lambda1_mask, gamma=gamma)
+            P = solve_SGL(
+                S=S,
+                N=n_samples,
+                latent=latent,
+                model_selection=model_selection,
+                lambda1=lambda1,
+                mu1=mu1,
+                lambda1_mask=lambda1_mask,
+                gamma=gamma,
+            )
 
     # if 3d array => solve MGL
     elif S.ndim == 3:
@@ -491,33 +630,81 @@ def solve_problem(covariance_matrix: pd.DataFrame, n_samples: list, latent: bool
         if non_conforming:
 
             if latent:
-                print("\n----SOLVING NON-CONFORMING PROBLEM WITH LATENT VARIABLES-----")
+                print(
+                    "\n----SOLVING NON-CONFORMING PROBLEM WITH LATENT VARIABLES-----"
+                )
 
-                P = solve_non_conforming(S=S, N=n_samples, G=group_array, latent=latent,
-                                         model_selection=model_selection, lambda1=lambda1,
-                                         lambda2=lambda2, mu1=mu1, gamma=gamma)
+                P = solve_non_conforming(
+                    S=S,
+                    N=n_samples,
+                    G=group_array,
+                    latent=latent,
+                    model_selection=model_selection,
+                    lambda1=lambda1,
+                    lambda2=lambda2,
+                    mu1=mu1,
+                    gamma=gamma,
+                )
             else:
                 print("\n----SOLVING NON-CONFORMING PROBLEM-----")
 
-                P = solve_non_conforming(S=S, N=n_samples, G=group_array, latent=latent,
-                                         model_selection=model_selection, lambda1=lambda1,
-                                         lambda2=lambda2, mu1=mu1, gamma=gamma)
+                P = solve_non_conforming(
+                    S=S,
+                    N=n_samples,
+                    G=group_array,
+                    latent=latent,
+                    model_selection=model_selection,
+                    lambda1=lambda1,
+                    lambda2=lambda2,
+                    mu1=mu1,
+                    gamma=gamma,
+                )
 
         else:
             if latent:
-                print("\n----SOLVING {0} PROBLEM WITH LATENT VARIABLES-----".format(reg))
+                print(
+                    "\n----SOLVING {0} PROBLEM WITH LATENT VARIABLES-----".format(
+                        reg
+                    )
+                )
 
-                P = solve_MGL(S=S, N=n_samples, reg=reg, latent=latent,
-                              model_selection=model_selection,
-                              lambda1=lambda1, lambda2=lambda2, mu1=mu1, gamma=gamma)
+                P = solve_MGL(
+                    S=S,
+                    N=n_samples,
+                    reg=reg,
+                    latent=latent,
+                    model_selection=model_selection,
+                    lambda1=lambda1,
+                    lambda2=lambda2,
+                    mu1=mu1,
+                    gamma=gamma,
+                )
             else:
                 print("\n----SOLVING {0} PROBLEM-----".format(reg))
 
-                P = solve_MGL(S=S, N=n_samples, reg=reg, latent=latent,
-                              model_selection=model_selection,
-                              lambda1=lambda1, lambda2=lambda2, mu1=mu1, gamma=gamma)
+                P = solve_MGL(
+                    S=S,
+                    N=n_samples,
+                    reg=reg,
+                    latent=latent,
+                    model_selection=model_selection,
+                    lambda1=lambda1,
+                    lambda2=lambda2,
+                    mu1=mu1,
+                    gamma=gamma,
+                )
 
-    labels = list(covariance_matrix.columns)
+    # labels = list(covariance_matrix.columns)
+    # Handle both pandas DataFrame and numpy ndarray for labels
+    if hasattr(covariance_matrix, "columns"):
+        labels = list(covariance_matrix.columns)
+    else:
+        # When covariance_matrix is a numpy array, create numbered labels
+        if S.ndim == 2:
+            labels = [f"Feature_{i}" for i in range(S.shape[0])]
+        else:  # For 3D arrays
+            labels = [f"Feature_{i}" for i in range(S.shape[1])]
+
     labels_range = range(len(labels))
     P.__dict__["labels"] = dict(zip(labels_range, labels))
 

@@ -1,0 +1,17 @@
+channels:
+- https://packages.qiime2.org/qiime2/2025.4/amplicon/passed
+- conda-forge
+- bioconda
+dependencies:
+  - qiime2-amplicon
+  - numpy>=1.17.3
+  - scipy>=0.11.0
+  - scikit-learn>=0.24.1
+  - pandas
+  - zarr>=2.11.1
+  - bokeh>=2.4.2
+  - jinja2
+  - biom-format
+  - pip
+  - pip:
+     - git+https://github.com/fabian-sp/GGLasso.git@master
