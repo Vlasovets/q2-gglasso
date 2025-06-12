@@ -26,7 +26,7 @@ class TestHeatmap(unittest.TestCase):
 
     def test_heatmap_generation(self):
         """Test that heatmaps are correctly generated with proper clustering."""
-        sol = zarr.load(store="data/atacama-solution-adapt/problem.zip")
+        sol = zarr.load(store="data/test_solution.zip")
         S = pd.DataFrame(sol["covariance"])
 
         labels_dict, _ = _get_labels(solution=sol, clustered=False)
