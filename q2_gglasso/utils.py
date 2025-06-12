@@ -263,7 +263,7 @@ def get_hyperparameters(
     n_lambda2: int = 1,
     n_mu1: int = 1,
     latent: bool = False,
-    ):
+):
     """Generate hyperparameters for a model based on specified ranges.
 
     Parameters
@@ -331,7 +331,9 @@ def get_hyperparameters(
     return h_params
 
 
-def get_lambda_mask(weights: list, covariance_matrix: pd.DataFrame) -> pd.DataFrame:
+def get_lambda_mask(
+    weights: list, covariance_matrix: pd.DataFrame
+) -> pd.DataFrame:
     """
     Generate a lambda1 mask DataFrame using weights matched against
     row and column labels of a covariance matrix.

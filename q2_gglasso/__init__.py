@@ -2,9 +2,9 @@
 
 from q2_gglasso._func import (
     transform_features,  # noqa: F401
-    build_groups,        # noqa: F401
+    build_groups,  # noqa: F401
     calculate_covariance,  # noqa: F401
-    solve_problem,       # noqa: F401
+    solve_problem,  # noqa: F401
 )
 
 from q2_gglasso._dict import glasso_parameters  # noqa: F401
