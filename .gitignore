@@ -36,4 +36,5 @@ example/
 q2_gglasso/test.py
 .vscode/
 problem.zip
+q2_gglasso/tests/test_problem.py
 # ------------------------------------------------------------------------------
