@@ -47,7 +47,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -q https://github.com/qiime2/q2lint/archive/master.zip
         pip install -q flake8
-
     - name: run flake8
       run: flake8
 
