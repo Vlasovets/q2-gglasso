@@ -314,7 +314,6 @@ def get_hyperparameters(
         else:
             model_selection = True
     else:
-        # Scalar if both lambdas are singleton arrays
         if lambda1.size == 1 and lambda2.size == 1:
             lambda1 = lambda1.item()
             lambda2 = lambda2.item()

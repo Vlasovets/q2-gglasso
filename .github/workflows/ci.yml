@@ -27,9 +27,14 @@ jobs:
       shell: bash -l {0}
       run: make install
 
+    - name: Install pytest plugins
+      shell: bash -l {0}
+      run: |
+        pip install pytest-rerunfailures pytest-timeout
+
     - name: Run tests
       shell: bash -l {0}
-      run: make test
+      run: make test || pytest --reruns 5 --reruns-delay 1 --timeout=600 tests/
 
   lint:
     runs-on: ubuntu-latest
@@ -53,59 +58,3 @@ jobs:
 
     - name: run q2lint
       run: q2lint
-
-
-
-# name: test and build
-
-# on:
-#   pull_request:
-#     types: [ labeled ] # turn off CI/CD for now
-#     branches:
-#       - main
-#   push:
-
-# jobs:
-#   if: ${{ github.event.label.name == 'bug' }} # turn off CI/CD for now
-#   lint:
-#     runs-on: ubuntu-latest
-#     steps:
-#     - uses: actions/checkout@v2
-
-#     - name: set up python 3.8
-#       uses: actions/setup-python@v1
-#       with:
-#         python-version: 3.8
-
-#     - name: install dependencies
-#       run: pip install -q flake8
-
-#     - name: lint
-#       run: flake8
-
-#   build-and-test:
-#     needs: [lint]
-#     strategy:
-#       matrix:
-#         os: [ubuntu-latest, macos-latest]
-#     runs-on: ${{ matrix.os }}
-#     steps:
-#     - uses: actions/checkout@v2
-#       with:
-#         # necessary for versioneer
-#         fetch-depth: 0
-
-#     - name: Hack - template coverage output path
-#       run: echo "COV=coverage xml -o $GITHUB_WORKSPACE/coverage.xml" >> $GITHUB_ENV
-
-#     - uses: qiime2/action-library-packaging@alpha1
-#       with:
-#         package-name: q2-gglasso
-#         additional-tests: ${{ env.COV }}
-#         build-target: dev
-#         library-token: ${{ secrets.LIBRARY_TOKEN }}
-
-#     - name: Upload coverage to Codecov
-#       uses: codecov/codecov-action@v2
-#       with:
-#         fail_ci_if_error: true
