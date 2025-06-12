@@ -46,24 +46,6 @@ If you use `q2-gglasso`, please cite:
 
 > Schaipp, F., Vlasovets, O., & Müller, C. L. (2021). **GGLasso – a Python package for General Graphical Lasso computation**. *Journal of Open Source Software, 6*(68), 3865. [https://doi.org/10.21105/joss.03865](https://doi.org/10.21105/joss.03865)
 
-### BibTeX
-
-```bibtex
-@article{Schaipp2021,
-  doi = {10.21105/joss.03865},
-  url = {https://doi.org/10.21105/joss.03865},
-  year = {2021},
-  publisher = {The Open Journal},
-  volume = {6},
-  number = {68},
-  pages = {3865},
-  author = {Fabian Schaipp and Oleg Vlasovets and Christian L. Müller},
-  title = {GGLasso - a Python package for General Graphical Lasso computation},
-  journal = {Journal of Open Source Software}
-}
-
----
-
 ## Related Projects
 
 - [`gglasso`](https://github.com/Vlasovets/gglasso): Python solvers for graphical lasso problems
