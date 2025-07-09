@@ -34,5 +34,4 @@ data/
 example/
 q2_gglasso/test.py
 .vscode/
-q2_gglasso/tests/test_problem.py
 # ------------------------------------------------------------------------------
