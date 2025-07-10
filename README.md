@@ -20,8 +20,24 @@
 
 ## Installation
 
-Instructions for installing `q2-gglasso` via Conda are coming soon.
-In the meantime, please refer to the [official documentation](https://gglasso.readthedocs.io/en/latest/) for setup instructions and requirements.
+First, make sure you have GGLasso is installed:
+
+```
+conda install -q gglasso
+```
+
+OR
+
+```
+pip install gglasso
+```
+
+Next to install the plugin:
+
+```
+pip install git+https://github.com/bio-datascience/q2-gglasso.git
+qiime dev refresh-cache
+```
 
 ---
 

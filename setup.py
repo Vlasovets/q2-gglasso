@@ -16,7 +16,7 @@ DESCRIPTION = "QIIME 2 plugin for Single and Multiple Graphical Lasso modeling."
 URL = "https://github.com/Vlasovets/q2-gglasso"
 EMAIL = "otorrent@mail.ru"
 AUTHOR = "Oleg Vlasovets"
-REQUIRES_PYTHON = ">=3.7.0"
+REQUIRES_PYTHON = ">=3.6.0"
 
 here = os.path.abspath(os.path.dirname(__file__))
 

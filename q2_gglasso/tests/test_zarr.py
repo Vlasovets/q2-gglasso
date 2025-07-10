@@ -51,14 +51,14 @@ class TestUtil(unittest.TestCase):
         solution = P.__dict__["solution"]
 
         # write GGLasso solution to zarr forma
-        zipfile = str("problem.zip")
+        zipfile = str("data/problem.zip")
         store = zarr.ZipStore(zipfile, mode="w")
         root = zarr.open(store=store)
         q2g.to_zarr(P.__dict__, "problem", root)
         store.close()
 
         # read GGLasso solution from zarr forma
-        store_new = zarr.ZipStore(str("problem.zip"), mode="r")
+        store_new = zarr.ZipStore(str("data/problem.zip"), mode="r")
         root_new = zarr.open(store=store_new)
 
         # check if these solutions are equal

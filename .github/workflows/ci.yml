@@ -1,10 +1,8 @@
 name: Test and lint
 
 on:
-  pull_request:
-    branches: ["master", "dev"]
   push:
-    branches: ["master", "dev"]
+    branches: ["dev"]
 
 jobs:
   build-and-test-qiime2-2025-4:

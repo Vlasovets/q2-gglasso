@@ -26,7 +26,6 @@ dist/
 *.qza
 *.qzv
 *.biom
-*.toml
 
 # ------------------------------------------------------------------------------
 # Project-specific Data and Scripts (excluded from versioning)
@@ -35,6 +34,4 @@ data/
 example/
 q2_gglasso/test.py
 .vscode/
-problem.zip
-q2_gglasso/tests/test_problem.py
 # ------------------------------------------------------------------------------
