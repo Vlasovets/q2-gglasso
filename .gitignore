@@ -12,6 +12,9 @@ __pycache__/
 *.pyo
 *.pyd
 *.egg-info/
+.mypy_cache
+.ruff_cache
+.pytest_cache
 build/
 dist/
 
@@ -33,5 +36,6 @@ dist/
 data/
 example/
 q2_gglasso/test.py
+.dockerignore
 .vscode/
 # ------------------------------------------------------------------------------
