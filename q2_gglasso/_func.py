@@ -85,17 +85,6 @@ def transform_features(
 
     X = pd.DataFrame(X, columns=X.columns, index=X.index)
 
-    # TO DO test taxonomy assignment
-    # NOTE: We're removing these unused variables to fix linting issues
-    # taxa = pd.DataFrame(taxonomy.view(pd.Series))
-    # ASV_names = X.index.values
-
-    # for i in ASV_names:
-    #     if i in taxa.index:
-    #         name = taxa.loc[i, "Taxon"]
-    #         if name not in X.index:  # avoid duplicated names
-    #             X = X.rename(index={i: name})
-
     X = X.T  # N,p
 
     if add_metadata:
@@ -470,7 +459,7 @@ def solve_non_conforming(
 
 
 def solve_problem(
-    covariance_matrix: pd.DataFrame | np.ndarray,
+    covariance_matrix: pd.DataFrame,
     n_samples: list | int | float,
     latent: bool = None,
     lambda1_min: float = None,

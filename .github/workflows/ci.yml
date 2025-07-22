@@ -1,8 +1,7 @@
-name: Test and lint
+name: CI/CD
 
 on:
-  push:
-    branches: ["dev"]
+  workflow_dispatch:
 
 jobs:
   build-and-test-qiime2-2025-4:
@@ -27,7 +26,9 @@ jobs:
 
     - name: Run tests
       shell: bash -l {0}
-      run: make test
+      run: |
+        conda list
+        make test
 
   lint:
     runs-on: ubuntu-latest

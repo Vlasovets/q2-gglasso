@@ -38,4 +38,9 @@ example/
 q2_gglasso/test.py
 .dockerignore
 .vscode/
+
+# But keep these two files for the example
+!data/atacama-counts.qza
+!data/classification.qza
+!data/selected-atacama-sample-metadata.tsv
 # ------------------------------------------------------------------------------

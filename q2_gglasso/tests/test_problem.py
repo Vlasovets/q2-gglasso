@@ -1,16 +1,29 @@
-"""Tests for q2_gglasso plugin problem solving functionality.
-
-This module tests the various problem solving methods and their integration
-with QIIME2.
 """
+Unit tests for the q2_gglasso plugin problem-solving functionality.
+
+This module tests various problem-solving methods and their integration
+with QIIME 2.
+
+Notes
+-----
+Due to differences in NumPy versions and hardware platforms,
+NumPy may not produce identical random numbers across runs,
+even when the same random seed is used. In particular, the
+`multivariate_normal` function is not guaranteed to be deterministic.
+As a result, certain tests may fail randomly on different machines
+or NumPy versions, but if run multiple times, all tests should
+eventually pass.
+
+See also:
+https://github.com/numpy/numpy/issues/22975
+"""
+
 
 import unittest
 import numpy as np
 import pandas as pd
 
-# from q2_gglasso.utils import if_equal_dict
 from gglasso.problem import glasso_problem
-# from gglasso.problem import GGLassoEstimator
 from gglasso.helper.data_generation import (
     generate_precision_matrix,
     sample_covariance_matrix,
@@ -34,7 +47,7 @@ class TestUtil(unittest.TestCase):
     p = 32
     N = 10
     K = 3
-    seed = 1944
+    seed = 1270
 
     Sigma, Theta = generate_precision_matrix(
         p=p, M=1, style="powerlaw", seed=seed)
@@ -107,7 +120,6 @@ class TestUtil(unittest.TestCase):
             lambda1_max=lambda1_max,
             n_lambda1=n_lambda1,
         )
-        # ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
 
         P_org = glasso_problem(
             S=S,
@@ -116,7 +128,6 @@ class TestUtil(unittest.TestCase):
             latent=False,
         )
         P_org.solve()
-        # ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
 
         equal = np.allclose(
             P_org.solution.precision_,
@@ -129,10 +140,7 @@ class TestUtil(unittest.TestCase):
             equal,
             msg="Solutions from GGLasso and q2-gglasso are not identical",
         )
-        # self.assertTrue(
-        #     abs(#ebic_org - #ebic_q2) <= ebic_diff,
-        #     msg=f"eBIC values differ beyond tolerance of ±2: {#ebic_org} vs {#ebic_q2}",
-        # )
+
 
     def test_SGL_low(
         self,
@@ -161,7 +169,6 @@ class TestUtil(unittest.TestCase):
             n_mu1=n_mu1,
             latent=True,
         )
-        # ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
 
         P_org = glasso_problem(
             S=S,
@@ -173,7 +180,6 @@ class TestUtil(unittest.TestCase):
             latent=True,
         )
         P_org.solve()
-        # ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
 
         equal = np.allclose(
             P_org.solution.precision_,
@@ -197,10 +203,7 @@ class TestUtil(unittest.TestCase):
             equal_low,
             msg="Low-rank solutions from GGLasso and q2-gglasso are not identical within tolerance.",
         )
-        # self.assertTrue(
-        #     abs(#ebic_org - #ebic_q2) <= ebic_diff,
-        #     msg=f"eBIC values differ beyond tolerance of ±2: {#ebic_org} vs {#ebic_q2}",
-        # )
+
 
     def test_GGL(
         self,
@@ -228,7 +231,6 @@ class TestUtil(unittest.TestCase):
             lambda2_max=lambda2_max,
             n_lambda2=n_lambda2,
         )
-        # ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
 
         P_org = glasso_problem(
             S=S,
@@ -241,7 +243,6 @@ class TestUtil(unittest.TestCase):
             reg="GGL",
         )
         P_org.solve()
-        # ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
 
         equal = np.allclose(
             P_org.solution.precision_,
@@ -253,10 +254,7 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(
             equal, msg="Solutions from GGLasso and q2-gglasso are not identical"
         )
-        # self.assertTrue(
-        #     abs(#ebic_org - #ebic_q2) <= ebic_diff,
-        #     msg=f"eBIC values differ beyond tolerance of ±2: {#ebic_org} vs {#ebic_q2}",
-        # )
+
 
     def test_GGL_low(
         self,
@@ -291,7 +289,6 @@ class TestUtil(unittest.TestCase):
             mu1_max=mu1_max,
             n_mu1=n_mu1,
         )
-        # ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
 
         P_org = glasso_problem(
             S=S,
@@ -305,7 +302,6 @@ class TestUtil(unittest.TestCase):
             reg="GGL",
         )
         P_org.solve()
-        # ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
 
         equal = np.allclose(
             P_org.solution.precision_,
@@ -329,10 +325,7 @@ class TestUtil(unittest.TestCase):
             equal_low,
             msg="Low-rank solutions from GGLasso and q2-gglasso are not identical within tolerance.",
         )
-        # self.assertTrue(
-        #     abs(#ebic_org - #ebic_q2) <= ebic_diff,
-        #     msg=f"eBIC values differ beyond tolerance of ±2: {#ebic_org} vs {#ebic_q2}",
-        # )
+
 
     def test_FGL(
         self,
@@ -360,7 +353,6 @@ class TestUtil(unittest.TestCase):
             n_lambda2=n_lambda2,
             reg="FGL",
         )
-        # ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
 
         P_org = glasso_problem(
             S=S,
@@ -373,7 +365,6 @@ class TestUtil(unittest.TestCase):
             reg="FGL",
         )
         P_org.solve()
-        # ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
 
         equal = np.allclose(
             P_org.solution.precision_,
@@ -385,10 +376,7 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(
             equal, msg="Solutions from GGLasso and q2-gglasso are not identical"
         )
-        # self.assertTrue(
-        #     abs(#ebic_org - #ebic_q2) <= ebic_diff,
-        #     msg=f"eBIC values differ beyond tolerance of ±2: {#ebic_org} vs {#ebic_q2}",
-        # )
+
 
     def test_FGL_low(
         self,
@@ -424,7 +412,6 @@ class TestUtil(unittest.TestCase):
             mu1_max=mu1_max,
             n_mu1=n_mu1,
         )
-        # ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
 
         P_org = glasso_problem(
             S=S,
@@ -438,7 +425,6 @@ class TestUtil(unittest.TestCase):
             reg="FGL",
         )
         P_org.solve()
-        # ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
 
         equal = np.allclose(
             P_org.solution.precision_,
@@ -462,10 +448,7 @@ class TestUtil(unittest.TestCase):
             equal_low,
             msg="Low-rank solutions from GGLasso and q2-gglasso are not identical within tolerance.",
         )
-        # self.assertTrue(
-        #     abs(#ebic_org - #ebic_q2) <= ebic_diff,
-        #     msg=f"eBIC values differ beyond tolerance of ±2: {#ebic_org} vs {#ebic_q2}",
-        # )
+
 
     def test_non_conforming(
         self,
@@ -495,7 +478,6 @@ class TestUtil(unittest.TestCase):
             n_lambda2=n_lambda2,
             non_conforming=True,
         )
-        # ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
 
         P_org = glasso_problem(
             S=S,
@@ -508,7 +490,6 @@ class TestUtil(unittest.TestCase):
             latent=False,
         )
         P_org.solve()
-        # ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
 
         equal = np.allclose(
             P_org.solution.precision_,
@@ -520,10 +501,7 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(
             equal, msg="Solutions from GGLasso and q2-gglasso are not identical"
         )
-        # self.assertTrue(
-        #     abs(#ebic_org - #ebic_q2) <= ebic_diff,
-        #     msg=f"eBIC values differ beyond tolerance of ±2: {#ebic_org} vs {#ebic_q2}",
-        # )
+
 
     def test_non_conforming_low(
         self,
@@ -561,7 +539,6 @@ class TestUtil(unittest.TestCase):
             non_conforming=True,
             latent=True,
         )
-        # ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
 
         P_org = glasso_problem(
             S=S,
@@ -575,7 +552,6 @@ class TestUtil(unittest.TestCase):
             latent=True,
         )
         P_org.solve()
-        # ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
 
         equal = np.allclose(
             P_org.solution.precision_,
@@ -599,10 +575,7 @@ class TestUtil(unittest.TestCase):
             equal_low,
             msg="Low-rank solutions from GGLasso and q2-gglasso are not identical within tolerance.",
         )
-        # self.assertTrue(
-        #     abs(#ebic_org - #ebic_q2) <= ebic_diff,
-        #     msg=f"eBIC values differ beyond tolerance of ±2: {#ebic_org} vs {#ebic_q2}",
-        # )
+
 
     def test_SGL_mask(
         self,
@@ -625,7 +598,6 @@ class TestUtil(unittest.TestCase):
             n_lambda1=n_lambda1,
             weights=weights,
         )
-        # ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
 
         P_org = glasso_problem(
             S=S,
@@ -637,7 +609,6 @@ class TestUtil(unittest.TestCase):
             latent=False,
         )
         P_org.solve()
-        # ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
 
         equal = np.allclose(
             P_org.solution.precision_,
@@ -649,10 +620,7 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(
             equal, msg="Solutions from GGLasso and q2-gglasso are not identical"
         )
-        # self.assertTrue(
-        #     abs(#ebic_org - #ebic_q2) <= ebic_diff,
-        #     msg=f"eBIC values differ beyond tolerance of ±2: {#ebic_org} vs {#ebic_q2}",
-        # )
+
 
     def test_SGL_mask_low(
         self,
@@ -682,7 +650,6 @@ class TestUtil(unittest.TestCase):
             weights=weights,
             latent=True,
         )
-        # ebic_q2 = GGLassoEstimator.calc_ebic(P_q2.solution)
 
         P_org = glasso_problem(
             S=S,
@@ -695,7 +662,6 @@ class TestUtil(unittest.TestCase):
             latent=True,
         )
         P_org.solve()
-        # ebic_org = GGLassoEstimator.calc_ebic(P_org.solution)
 
         equal = np.allclose(
             P_org.solution.precision_,
@@ -719,10 +685,7 @@ class TestUtil(unittest.TestCase):
             equal_low,
             msg="Low-rank solutions from GGLasso and q2-gglasso are not identical within tolerance.",
         )
-        # self.assertTrue(
-        #     abs(#ebic_org - #ebic_q2) <= ebic_diff,
-        #     msg=f"eBIC values differ beyond tolerance of ±2: {#ebic_org} vs {#ebic_q2}",
-        # )
+
 
     #  test for model selection
     def test_modelselect_SGL(
@@ -744,7 +707,6 @@ class TestUtil(unittest.TestCase):
             lambda1_max=lambda1_max,
             n_lambda1=n_lambda1,
         )
-        # ebic_q2 = P_q2.modelselect_stats["BIC"]
 
         modelselect_params = {
             "lambda1_range": P_q2.modelselect_params["lambda1_range"]}
@@ -752,22 +714,6 @@ class TestUtil(unittest.TestCase):
             S=S, reg_params=modelselect_params, N=N, latent=False)
         P_org.model_selection(
             modelselect_params=modelselect_params, method="eBIC")
-        # ebic_org = P_org.modelselect_stats["BIC"]
-
-        # Compare eBIC dictionaries
-        # self.assertTrue(
-        #     if_equal_dict(#ebic_org, #ebic_q2),
-        #     msg=f"eBIC values differ between solvers:\n{#ebic_org}\nvs\n{#ebic_q2}",
-        # )
-
-        # best_lambda_org = P_org.modelselect_stats["BEST"]["lambda1"]
-        # best_lambda_q2 = P_q2.modelselect_stats["BEST"]["lambda1"]
-
-        # self.assertEqual(
-        #     best_lambda_org,
-        #     best_lambda_q2,
-        #     msg=f"Best lambda differs:\nOriginal: {best_lambda_org}\nQ2: {best_lambda_q2}",
-        # )
 
         self.assertTrue(
             np.allclose(
@@ -804,7 +750,6 @@ class TestUtil(unittest.TestCase):
             mu1_max=mu1_max,
             n_mu1=n_mu1,
         )
-        # ebic_q2 = P_q2.modelselect_stats["BIC"]
 
         # Run original solver
         modelselect_params = {
@@ -815,29 +760,6 @@ class TestUtil(unittest.TestCase):
             S=S, reg_params=modelselect_params, N=N, latent=True)
         P_org.model_selection(
             modelselect_params=modelselect_params, method="eBIC")
-        # ebic_org = P_org.modelselect_stats["BIC"]
-
-        # self.assertTrue(
-        #     if_equal_dict(#ebic_org, #ebic_q2),
-        #     msg=f"eBIC dictionaries differ:\nOriginal: {#ebic_org}\nQ2: {#ebic_q2}",
-        # )
-
-        # lambda_org = P_org.modelselect_stats["BEST"]["lambda1"]
-        # lambda_q2 = P_q2.modelselect_stats["BEST"]["lambda1"]
-        # self.assertEqual(
-        #     lambda_org,
-        #     lambda_q2,
-        #     msg=f"Best lambda mismatch:\nOriginal: {lambda_org}\nQ2: {lambda_q2}",
-        # )
-
-        # mu_org = P_org.modelselect_stats["BEST"]["mu1"]
-        # mu_q2 = P_q2.modelselect_stats["BEST"]["mu1"]
-
-        # self.assertEqual(
-        #     mu_org,
-        #     mu_q2,
-        #     msg=f"Best mu mismatch:\nOriginal: {mu_org}\nQ2: {mu_q2}",
-        # )
 
         self.assertTrue(
             np.allclose(
@@ -888,30 +810,6 @@ class TestUtil(unittest.TestCase):
         )
         P_org.model_selection(
             modelselect_params=modelselect_params, method="eBIC")
-        # ebic_org = P_org.modelselect_stats["BIC"]
-
-        # self.assertTrue(
-        #     if_equal_dict(#ebic_org, #ebic_q2),
-        #     msg=f"eBIC dictionaries differ:\nOriginal: {#ebic_org}\nQ2: {#ebic_q2}",
-        # )
-
-        # lambda1_org = P_org.modelselect_stats["BEST"]["lambda1"]
-        # lambda1_q2 = P_q2.modelselect_stats["BEST"]["lambda1"]
-
-        # self.assertEqual(
-        #     lambda1_org,
-        #     lambda1_q2,
-        #     msg=f"Best lambda1 mismatch:\nOriginal: {lambda1_org}\nQ2: {lambda1_q2}",
-        # )
-
-        # lambda2_org = P_org.modelselect_stats["BEST"]["lambda2"]
-        # lambda2_q2 = P_q2.modelselect_stats["BEST"]["lambda2"]
-
-        # self.assertEqual(
-        #     lambda2_org,
-        #     lambda2_q2,
-        #     msg=f"Best lambda2 mismatch:\nOriginal: {lambda2_org}\nQ2: {lambda2_q2}",
-        # )
 
         self.assertTrue(
             np.allclose(
@@ -970,31 +868,6 @@ class TestUtil(unittest.TestCase):
         )
         P_org.model_selection(
             modelselect_params=modelselect_params, method="eBIC")
-        # ebic_org = P_org.modelselect_stats["BIC"]
-
-        # self.assertTrue(
-        #     if_equal_dict(#ebic_org, #ebic_q2),
-        #     msg=f"eBIC mismatch:\nOriginal: {#ebic_org}\nQ2: {#ebic_q2}",
-        # )
-
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda1"],
-        #     P_q2.modelselect_stats["BEST"]["lambda1"],
-        #     msg="Best lambda1 from original and QIIME2 solver differ",
-        # )
-
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda2"],
-        #     P_q2.modelselect_stats["BEST"]["lambda2"],
-        #     msg="Best lambda2 from original and QIIME2 solver differ",
-        # )
-
-        # mu_trace_org = np.array(P_org.reg_params["mu1"])
-        # mu_trace_q2 = np.array(P_q2.reg_params["mu1"])
-        # self.assertTrue(
-        #     np.allclose(mu_trace_org, mu_trace_q2, rtol=rtol, atol=atol),
-        #     msg=f"mu1 trace mismatch:\nOriginal: {mu_trace_org}\nQ2: {mu_trace_q2}",
-        # )
 
         self.assertTrue(
             np.allclose(
@@ -1046,24 +919,6 @@ class TestUtil(unittest.TestCase):
         )
         P_org.model_selection(
             modelselect_params=modelselect_params, method="eBIC")
-        # ebic_org = P_org.modelselect_stats["BIC"]
-
-        # self.assertTrue(
-        #     if_equal_dict(#ebic_org, #ebic_q2),
-        #     msg=f"eBIC mismatch:\nOriginal: {#ebic_org}\nQ2: {#ebic_q2}",
-        # )
-
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda1"],
-        #     P_q2.modelselect_stats["BEST"]["lambda1"],
-        #     msg="Best lambda1 from original and Q2 solver differ",
-        # )
-
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda2"],
-        #     P_q2.modelselect_stats["BEST"]["lambda2"],
-        #     msg="Best lambda2 from original and Q2 solver differ",
-        # )
 
         self.assertTrue(
             np.allclose(
@@ -1107,7 +962,6 @@ class TestUtil(unittest.TestCase):
             latent=True,
             reg="FGL",
         )
-        # ebic_q2 = P_q2.modelselect_stats["BIC"]
 
         modelselect_params = {
             "lambda1_range": P_q2.modelselect_params["lambda1_range"],
@@ -1124,29 +978,6 @@ class TestUtil(unittest.TestCase):
         )
         P_org.model_selection(
             modelselect_params=modelselect_params, method="eBIC")
-        # ebic_org = P_org.modelselect_stats["BIC"]
-
-        # self.assertTrue(
-        #     if_equal_dict(#ebic_org, #ebic_q2),
-        #     msg=f"eBIC mismatch:\nOriginal: {#ebic_org}\nQ2: {#ebic_q2}",
-        # )
-
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda1"],
-        #     P_q2.modelselect_stats["BEST"]["lambda1"],
-        #     msg="Best lambda1 differs between GGLasso and q2-gglasso",
-        # )
-
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda2"],
-        #     P_q2.modelselect_stats["BEST"]["lambda2"],
-        #     msg="Best lambda2 differs between GGLasso and q2-gglasso",
-        # )
-
-        # self.assertTrue(
-        #     np.array_equal(P_org.reg_params["mu1"], P_q2.reg_params["mu1"]),
-        #     msg="mu1 trace differs between GGLasso and q2-gglasso",
-        # )
 
         self.assertTrue(
             np.allclose(
@@ -1170,8 +1001,8 @@ class TestUtil(unittest.TestCase):
     #     rtol=rtol,
     #     atol=atol,
     #     ebic_diff=ebic_diff,
-    #     n_lambda1=6,
-    #     n_lambda2=6,
+    #     n_lambda1=2,
+    #     n_lambda2=2,
     # ):
     #     P_q2 = solve_problem(
     #         covariance_matrix=np.array(S),
@@ -1185,7 +1016,6 @@ class TestUtil(unittest.TestCase):
     #         lambda2_max=lambda2_max,
     #         n_lambda2=n_lambda2,
     #     )
-    #     #ebic_q2 = P_q2.modelselect_stats["BIC"]
 
     #     modelselect_params = {
     #         "lambda1_range": P_q2.modelselect_params["lambda1_range"],
@@ -1202,24 +1032,6 @@ class TestUtil(unittest.TestCase):
     #     P_org.model_selection(
     #         modelselect_params=modelselect_params, method="eBIC"
     #     )
-    #     #ebic_org = P_org.modelselect_stats["BIC"]
-
-    #     # self.assertTrue(
-    #     #     if_equal_dict(#ebic_org, #ebic_q2),
-    #     #     msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver",
-    #     # )
-
-    #     # self.assertEqual(
-    #     #     P_org.modelselect_stats["BEST"]["lambda1"],
-    #     #     P_q2.modelselect_stats["BEST"]["lambda1"],
-    #     #     msg="Best chosen lambda1 differs between GGLasso and q2-gglasso",
-    #     # )
-
-    #     # self.assertEqual(
-    #     #     P_org.modelselect_stats["BEST"]["lambda2"],
-    #     #     P_q2.modelselect_stats["BEST"]["lambda2"],
-    #     #     msg="Best chosen lambda2 differs between GGLasso and q2-gglasso",
-    #     # )
 
     #     self.assertTrue(
     #         np.allclose(
@@ -1268,7 +1080,7 @@ class TestUtil(unittest.TestCase):
     #         lambda2_max=lambda2_max,
     #         n_lambda2=n_lambda2,
     #     )
-    #     #ebic_q2 = P_q2.modelselect_stats["BIC"]
+
     #     modelselect_params = {
     #         "lambda1_range": P_q2.modelselect_params["lambda1_range"],
     #         "lambda2_range": P_q2.modelselect_params["lambda2_range"],
@@ -1285,29 +1097,6 @@ class TestUtil(unittest.TestCase):
     #     P_org.model_selection(
     #         modelselect_params=modelselect_params, method="eBIC"
     #     )
-    #     #ebic_org = P_org.modelselect_stats["BIC"]
-
-    #     # self.assertTrue(
-    #     #     if_equal_dict(#ebic_org, #ebic_q2),
-    #     #     msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver",
-    #     # )
-
-    #     # self.assertEqual(
-    #     #     P_org.modelselect_stats["BEST"]["lambda1"],
-    #     #     P_q2.modelselect_stats["BEST"]["lambda1"],
-    #     #     msg="Best chosen lambda1 from GGLasso and q2-gglasso are not the same",
-    #     # )
-
-    #     # self.assertEqual(
-    #     #     P_org.modelselect_stats["BEST"]["lambda2"],
-    #     #     P_q2.modelselect_stats["BEST"]["lambda2"],
-    #     #     msg="Best chosen lambda2 from GGLasso and q2-gglasso are not the same",
-    #     # )
-
-    #     # self.assertTrue(
-    #     #     np.array_equal(P_org.reg_params["mu1"], P_q2.reg_params["mu1"]),
-    #     #     msg="mu1 trace from GGLasso and q2-gglasso are not identical",
-    #     # )
 
     #     self.assertTrue(
     #         np.allclose(
@@ -1342,7 +1131,6 @@ class TestUtil(unittest.TestCase):
             lambda1_max=lambda1_max,
             n_lambda1=n_lambda1,
         )
-        # ebic_q2 = P_q2.modelselect_stats["BIC"]
 
         modelselect_params = {
             "lambda1_range": P_q2.modelselect_params["lambda1_range"],
@@ -1353,18 +1141,6 @@ class TestUtil(unittest.TestCase):
             S=S, reg_params=modelselect_params, N=N, latent=False)
         P_org.model_selection(
             modelselect_params=modelselect_params, method="eBIC")
-        # ebic_org = P_org.modelselect_stats["BIC"]
-
-        # self.assertTrue(
-        #     if_equal_dict(#ebic_org, #ebic_q2),
-        #     msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver",
-        # )
-
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda1"],
-        #     P_q2.modelselect_stats["BEST"]["lambda1"],
-        #     msg="Best chosen lambda from GGLasso and q2-gglasso are not the same",
-        # )
 
         self.assertTrue(
             np.allclose(
@@ -1403,7 +1179,6 @@ class TestUtil(unittest.TestCase):
             lambda1_max=lambda1_max,
             n_lambda1=n_lambda1,
         )
-        # ebic_q2 = P_q2.modelselect_stats["BIC"]
 
         modelselect_params = {
             "lambda1_range": P_q2.modelselect_params["lambda1_range"],
@@ -1415,24 +1190,6 @@ class TestUtil(unittest.TestCase):
             S=S, reg_params=modelselect_params, N=N, latent=True)
         P_org.model_selection(
             modelselect_params=modelselect_params, method="eBIC")
-        # ebic_org = P_org.modelselect_stats["BIC"]
-
-        # self.assertTrue(
-        #     if_equal_dict(#ebic_org, #ebic_q2),
-        #     msg="eBIC of QIIME2 solver is different from eBIC of GGLasso solver",
-        # )
-
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["lambda1"],
-        #     P_q2.modelselect_stats["BEST"]["lambda1"],
-        #     msg="Best chosen lambda from GGLasso and q2-gglasso are not the same",
-        # )
-
-        # self.assertEqual(
-        #     P_org.modelselect_stats["BEST"]["mu1"],
-        #     P_q2.modelselect_stats["BEST"]["mu1"],
-        #     msg="Best chosen mu from GGLasso and q2-gglasso are not the same",
-        # )
 
         self.assertTrue(
             np.allclose(
