@@ -48,7 +48,7 @@ jobs:
         pip install -q https://github.com/qiime2/q2lint/archive/master.zip
         pip install -q ruff
     - name: run ruff
-      run: ruff .
+      run: ruff check .
 
     - name: run q2lint
       run: q2lint
