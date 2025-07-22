@@ -332,54 +332,33 @@ def get_hyperparameters(
     return h_params
 
 
-def get_lambda_mask(
-    weights: list, covariance_matrix: pd.DataFrame
-) -> pd.DataFrame:
+def get_lambda_mask(weights: list, covariance_matrix: pd.DataFrame):
     """
-    Generate a lambda1 mask DataFrame using weights matched against
-    row and column labels of a covariance matrix.
+        Generate a lambda mask based on adaptive lambda values.
 
-    Parameters
-    ----------
-    weights : list
-        A flat list of the form ['label1', weight1, 'label2', weight2, ...]
-    covariance_matrix : pd.DataFrame
-        The covariance matrix with labeled rows and columns.
+        Parameters:
+        - weights (list): A list containing pairs of strings and corresponding lambda values to weights.
+          The strings represent patterns to match in index and column labels of the covariance_matrix.
+          The lambda values are applied to the elements in the covariance_matrix that match the patterns.
+        - covariance_matrix (pd.DataFrame): The covariance matrix to which adaptive lambda values will be applied.
 
-    Returns
-    -------
-    pd.DataFrame
-        A DataFrame with the same shape as `covariance_matrix`, filled with 1.0
-        and modified where row/column labels match the suffixes in `weights`.
+        Returns:
+        - np.ndarray: A masked version of the covariance matrix with adaptive lambda values.
     """
-    if isinstance(weights, pd.DataFrame):
-        if weights.shape[1] != 2:
-            raise ValueError("weights DataFrame must have exactly 2 columns.")
-        weights = weights.values.flatten().tolist()
 
-    if not isinstance(weights, list):
-        raise TypeError("weights must be a list of [label1, weight1, ...].")
+    mask = np.ones(covariance_matrix.shape)
+    weights_dict = {weights[i]: weights[i + 1] for i in range(0, len(weights), 2)}
 
-    if len(weights) % 2 != 0:
-        raise ValueError("weights must contain an even number of elements.")
+    mask_df = pd.DataFrame(mask, index=covariance_matrix.index, columns=covariance_matrix.columns)
+    for key, item in weights_dict.items():
+        x_ix = mask_df.index.str.endswith(key)
+        x_col = mask_df.columns[mask_df.columns.to_series().str.endswith(key)]
+        mask_df[x_ix] = float(item)
+        mask_df[x_col] = float(item)
+        print("ADAPTIVE lambda={0} has been used for:{1}".format(item, x_col))
+    lambda1_mask = mask_df.values
 
-    weights_dict = {
-        str(weights[i]): float(weights[i + 1])
-        for i in range(0, len(weights), 2)
-    }
-
-    # Initialize the mask with default value 1.0
-    labels = list(weights_dict.keys())
-    mask_df = pd.DataFrame(1.0, index=labels, columns=labels)
-
-    for key, value in weights_dict.items():
-        affected = mask_df.index[mask_df.index.astype(str).str.endswith(key)]
-        if len(affected) > 0:
-            mask_df.loc[affected, :] = value
-            mask_df.loc[:, affected] = value
-            print(f"✅ Applied lambda={value} to: {key}")
-
-    return mask_df.values
+    return lambda1_mask
 
 
 def check_lambda_path(P, mgl_problem=False):
