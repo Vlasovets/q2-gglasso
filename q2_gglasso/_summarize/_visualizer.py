@@ -200,12 +200,15 @@ def _make_heatmap(
     p.add_layout(color_bar, "right")
     p.toolbar.autohide = True
 
-    shifted_labels_dict = {k + 0.5: v for k, v in labels_dict.items()}
-    shifted_labels_dict_reversed = {k + 0.5: v for k, v in labels_dict_reversed.items()}
+    # Shift labels by 0.5 and ensure values are strings
+    shifted_labels_dict = {float(k) + 0.5: str(v) for k, v in labels_dict.items()}
+    shifted_labels_dict_reversed = {float(k) + 0.5: str(v) for k, v in labels_dict_reversed.items()}
 
-    p.xaxis.ticker = [x + 0.5 for x in list(range(0, nlabels))]
-    p.yaxis.ticker = [x + 0.5 for x in list(range(0, nlabels))]
+    # Set the tick positions (also shifted by 0.5)
+    p.xaxis.ticker = [float(x) + 0.5 for x in range(nlabels)]
+    p.yaxis.ticker = [float(x) + 0.5 for x in range(nlabels)]
 
+    # Apply the label overrides with proper type
     p.xaxis.major_label_overrides = shifted_labels_dict
     p.yaxis.major_label_overrides = shifted_labels_dict_reversed
 
