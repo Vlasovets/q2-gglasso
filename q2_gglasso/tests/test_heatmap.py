@@ -45,11 +45,16 @@ class TestHeatmap(unittest.TestCase):
             ]
         )
 
-        labels_dict_ordered = {i: labels_dict[key] for i, key in enumerate(clust_order)}
-        labels_covs = {k + len(clust_order): v for k, v in enumerate(cov_part.columns)}
+        labels_dict_ordered = {
+            i: labels_dict[key] for i, key in enumerate(clust_order)
+        }
+        labels_covs = {
+            k + len(clust_order): v for k, v in enumerate(cov_part.columns)
+        }
         labels_dict_ordered.update(labels_covs)
         labels_dict_reversed = {
-            len(labels_dict_ordered) - 1 - k: v for k, v in labels_dict_ordered.items()
+            len(labels_dict_ordered) - 1 - k: v
+            for k, v in labels_dict_ordered.items()
         }
 
         labels = list(re_asv_part.columns) + list(cov_part.columns)
