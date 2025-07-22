@@ -215,21 +215,14 @@ def _make_heatmap(
     p.add_layout(color_bar, "right")
     p.toolbar.autohide = True
 
-    # Fix for Bokeh 3.7+ compatibility
-    # Use integer tickers instead of floats
-    p.xaxis.ticker = list(range(nlabels))
-    p.yaxis.ticker = list(range(nlabels))
+    shifted_labels_dict = {k + 0.5: v for k, v in labels_dict.items()}
+    shifted_labels_dict_reversed = {k + 0.5: v for k, v in labels_dict_reversed.items()}
 
-    # Convert all dictionary keys to strings to work with Bokeh 3.7+
-    # This is required as Bokeh 3.7+ needs string keys for major_label_overrides
-    # Also ensure all values are strings as well for full compatibility
-    str_labels_dict = {str(k): str(v) for k, v in labels_dict.items()}
-    str_labels_dict_reversed = {
-        str(k): str(v) for k, v in labels_dict_reversed.items()
-    }
+    p.xaxis.ticker = [x + 0.5 for x in list(range(0, nlabels))]
+    p.yaxis.ticker = [x + 0.5 for x in list(range(0, nlabels))]
 
-    p.xaxis.major_label_overrides = str_labels_dict
-    p.yaxis.major_label_overrides = str_labels_dict_reversed
+    p.xaxis.major_label_overrides = shifted_labels_dict
+    p.yaxis.major_label_overrides = shifted_labels_dict_reversed
 
     hover = p.select(dict(type=HoverTool))
     hover.tooltips = [
