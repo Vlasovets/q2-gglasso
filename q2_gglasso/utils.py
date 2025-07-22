@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 import warnings
+import numcodecs
 
 
 def flatten_array(x):
@@ -583,17 +584,6 @@ def single_hyperparameters(model_selection, lambda1, lambda2=None, mu1=None):
 
 
 def to_zarr(obj, name, root, first=True):
-    """Convert a GGLasso object to a zarr file with a tree structure.
-
-    Parameters
-    ----------
-    - obj: The GGLasso object or dictionary to be converted.
-    - name (str): The name to use for the current level in the zarr hierarchy.
-    - root (zarr.Group): The root group to create the zarr hierarchy.
-    - first (bool, optional): Indicates whether it is the first level (default is True).
-
-    """
-    # name 'S' is dedicated for some internal usage in zarr notation and cannot be accessed as a key while reading
     if name == "S":
         name = "covariance"
 
@@ -610,7 +600,11 @@ def to_zarr(obj, name, root, first=True):
         root.create_dataset(name, data=obj, shape=len(obj))
 
     elif isinstance(obj, (np.ndarray, pd.DataFrame)):
-        root.create_dataset(name, data=obj, shape=obj.shape)
+        arr = obj.values if isinstance(obj, pd.DataFrame) else obj
+        if arr.dtype == object:
+            root.create_dataset(name, data=arr, shape=arr.shape, object_codec=numcodecs.VLenUTF8())
+        else:
+            root.create_dataset(name, data=arr, shape=arr.shape)
 
     elif isinstance(obj, (str, bool, float, int)):
         to_zarr(np.array(obj), name, root, first=False)
