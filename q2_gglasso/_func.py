@@ -141,15 +141,11 @@ def calculate_covariance(
         result = S
 
     elif method == "scaled":
-        print(
-            "Calculate {0} covariance (correlation) matrices S".format(method)
-        )
+        print("Calculate {0} covariance (correlation) matrices S".format(method))
         result = scale_array_by_diagonal(S)
 
     else:
-        raise ValueError(
-            "Given covariance calculation method is not supported."
-        )
+        raise ValueError("Given covariance calculation method is not supported.")
 
     result = pd.DataFrame(result, index=table.index, columns=table.index)
 
@@ -358,9 +354,7 @@ def solve_MGL(
             warnings.warn("The solution might have not reached global minimum!")
     else:
         print(
-            "\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(
-                lambda1, lambda2, mu1
-            )
+            "\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(lambda1, lambda2, mu1)
         )
         P = glasso_problem(
             S,
@@ -441,9 +435,7 @@ def solve_non_conforming(
             )
     else:
         print(
-            "\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(
-                lambda1, lambda2, mu1
-            )
+            "\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(lambda1, lambda2, mu1)
         )
         P = glasso_problem(
             S,
@@ -577,9 +569,7 @@ def solve_problem(
 
             if mu1 is not None:
                 mu1_range = (
-                    np.array([mu1])
-                    if isinstance(mu1, (int, float))
-                    else np.array(mu1)
+                    np.array([mu1]) if isinstance(mu1, (int, float)) else np.array(mu1)
                 )
             else:
                 mu1_range = (
@@ -619,9 +609,7 @@ def solve_problem(
         if non_conforming:
 
             if latent:
-                print(
-                    "\n----SOLVING NON-CONFORMING PROBLEM WITH LATENT VARIABLES-----"
-                )
+                print("\n----SOLVING NON-CONFORMING PROBLEM WITH LATENT VARIABLES-----")
 
                 P = solve_non_conforming(
                     S=S,
@@ -652,9 +640,7 @@ def solve_problem(
         else:
             if latent:
                 print(
-                    "\n----SOLVING {0} PROBLEM WITH LATENT VARIABLES-----".format(
-                        reg
-                    )
+                    "\n----SOLVING {0} PROBLEM WITH LATENT VARIABLES-----".format(reg)
                 )
 
                 P = solve_MGL(

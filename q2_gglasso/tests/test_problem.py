@@ -18,7 +18,6 @@ See also:
 https://github.com/numpy/numpy/issues/22975
 """
 
-
 import unittest
 import numpy as np
 import pandas as pd
@@ -49,8 +48,7 @@ class TestUtil(unittest.TestCase):
     K = 3
     seed = 1270
 
-    Sigma, Theta = generate_precision_matrix(
-        p=p, M=1, style="powerlaw", seed=seed)
+    Sigma, Theta = generate_precision_matrix(p=p, M=1, style="powerlaw", seed=seed)
     S, sample = sample_covariance_matrix(Sigma, N)
 
     S_SGL = S.copy()
@@ -60,8 +58,7 @@ class TestUtil(unittest.TestCase):
     M = 8
     B = int(p / 8)
 
-    Sigma, Theta = generate_precision_matrix(
-        p=p, M=M, style="powerlaw", seed=seed)
+    Sigma, Theta = generate_precision_matrix(p=p, M=M, style="powerlaw", seed=seed)
     all_obs = dict()
     S_non_conforming = list()
     for k in np.arange(K):
@@ -141,7 +138,6 @@ class TestUtil(unittest.TestCase):
             msg="Solutions from GGLasso and q2-gglasso are not identical",
         )
 
-
     def test_SGL_low(
         self,
         S=S_SGL,
@@ -204,7 +200,6 @@ class TestUtil(unittest.TestCase):
             msg="Low-rank solutions from GGLasso and q2-gglasso are not identical within tolerance.",
         )
 
-
     def test_GGL(
         self,
         S=S_MGL,
@@ -254,7 +249,6 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(
             equal, msg="Solutions from GGLasso and q2-gglasso are not identical"
         )
-
 
     def test_GGL_low(
         self,
@@ -326,7 +320,6 @@ class TestUtil(unittest.TestCase):
             msg="Low-rank solutions from GGLasso and q2-gglasso are not identical within tolerance.",
         )
 
-
     def test_FGL(
         self,
         S=S_MGL,
@@ -376,7 +369,6 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(
             equal, msg="Solutions from GGLasso and q2-gglasso are not identical"
         )
-
 
     def test_FGL_low(
         self,
@@ -449,7 +441,6 @@ class TestUtil(unittest.TestCase):
             msg="Low-rank solutions from GGLasso and q2-gglasso are not identical within tolerance.",
         )
 
-
     def test_non_conforming(
         self,
         S=np.array(S_non_conforming),
@@ -501,7 +492,6 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(
             equal, msg="Solutions from GGLasso and q2-gglasso are not identical"
         )
-
 
     def test_non_conforming_low(
         self,
@@ -576,7 +566,6 @@ class TestUtil(unittest.TestCase):
             msg="Low-rank solutions from GGLasso and q2-gglasso are not identical within tolerance.",
         )
 
-
     def test_SGL_mask(
         self,
         S=S_SGL,
@@ -620,7 +609,6 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(
             equal, msg="Solutions from GGLasso and q2-gglasso are not identical"
         )
-
 
     def test_SGL_mask_low(
         self,
@@ -686,7 +674,6 @@ class TestUtil(unittest.TestCase):
             msg="Low-rank solutions from GGLasso and q2-gglasso are not identical within tolerance.",
         )
 
-
     #  test for model selection
     def test_modelselect_SGL(
         self,
@@ -708,12 +695,9 @@ class TestUtil(unittest.TestCase):
             n_lambda1=n_lambda1,
         )
 
-        modelselect_params = {
-            "lambda1_range": P_q2.modelselect_params["lambda1_range"]}
-        P_org = glasso_problem(
-            S=S, reg_params=modelselect_params, N=N, latent=False)
-        P_org.model_selection(
-            modelselect_params=modelselect_params, method="eBIC")
+        modelselect_params = {"lambda1_range": P_q2.modelselect_params["lambda1_range"]}
+        P_org = glasso_problem(S=S, reg_params=modelselect_params, N=N, latent=False)
+        P_org.model_selection(modelselect_params=modelselect_params, method="eBIC")
 
         self.assertTrue(
             np.allclose(
@@ -756,10 +740,8 @@ class TestUtil(unittest.TestCase):
             "lambda1_range": P_q2.modelselect_params["lambda1_range"],
             "mu1_range": P_q2.modelselect_params["mu1_range"],
         }
-        P_org = glasso_problem(
-            S=S, reg_params=modelselect_params, N=N, latent=True)
-        P_org.model_selection(
-            modelselect_params=modelselect_params, method="eBIC")
+        P_org = glasso_problem(S=S, reg_params=modelselect_params, N=N, latent=True)
+        P_org.model_selection(modelselect_params=modelselect_params, method="eBIC")
 
         self.assertTrue(
             np.allclose(
@@ -808,8 +790,7 @@ class TestUtil(unittest.TestCase):
         P_org = glasso_problem(
             S=S, reg_params=modelselect_params, N=N, latent=False, reg="GGL"
         )
-        P_org.model_selection(
-            modelselect_params=modelselect_params, method="eBIC")
+        P_org.model_selection(modelselect_params=modelselect_params, method="eBIC")
 
         self.assertTrue(
             np.allclose(
@@ -866,8 +847,7 @@ class TestUtil(unittest.TestCase):
         P_org = glasso_problem(
             S=S, reg_params=modelselect_params, N=N, latent=True, reg="GGL"
         )
-        P_org.model_selection(
-            modelselect_params=modelselect_params, method="eBIC")
+        P_org.model_selection(modelselect_params=modelselect_params, method="eBIC")
 
         self.assertTrue(
             np.allclose(
@@ -917,8 +897,7 @@ class TestUtil(unittest.TestCase):
         P_org = glasso_problem(
             S=S, reg_params=modelselect_params, N=N, latent=False, reg="FGL"
         )
-        P_org.model_selection(
-            modelselect_params=modelselect_params, method="eBIC")
+        P_org.model_selection(modelselect_params=modelselect_params, method="eBIC")
 
         self.assertTrue(
             np.allclose(
@@ -976,8 +955,7 @@ class TestUtil(unittest.TestCase):
             latent=True,
             reg="FGL",
         )
-        P_org.model_selection(
-            modelselect_params=modelselect_params, method="eBIC")
+        P_org.model_selection(modelselect_params=modelselect_params, method="eBIC")
 
         self.assertTrue(
             np.allclose(
@@ -1137,10 +1115,8 @@ class TestUtil(unittest.TestCase):
             "lambda1_mask": P_q2.modelselect_params["lambda1_mask"],
         }
 
-        P_org = glasso_problem(
-            S=S, reg_params=modelselect_params, N=N, latent=False)
-        P_org.model_selection(
-            modelselect_params=modelselect_params, method="eBIC")
+        P_org = glasso_problem(S=S, reg_params=modelselect_params, N=N, latent=False)
+        P_org.model_selection(modelselect_params=modelselect_params, method="eBIC")
 
         self.assertTrue(
             np.allclose(
@@ -1186,10 +1162,8 @@ class TestUtil(unittest.TestCase):
             "lambda1_mask": P_q2.modelselect_params["lambda1_mask"],
         }
 
-        P_org = glasso_problem(
-            S=S, reg_params=modelselect_params, N=N, latent=True)
-        P_org.model_selection(
-            modelselect_params=modelselect_params, method="eBIC")
+        P_org = glasso_problem(S=S, reg_params=modelselect_params, N=N, latent=True)
+        P_org.model_selection(modelselect_params=modelselect_params, method="eBIC")
 
         self.assertTrue(
             np.allclose(

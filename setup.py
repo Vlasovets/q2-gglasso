@@ -31,9 +31,7 @@ setup(
     license="BSD-3-Clause",
     description=DESCRIPTION,
     python_requires=REQUIRES_PYTHON,
-    entry_points={
-        "qiime2.plugins": ["q2-gglasso=q2_gglasso.plugin_setup:plugin"]
-    },
+    entry_points={"qiime2.plugins": ["q2-gglasso=q2_gglasso.plugin_setup:plugin"]},
     package_data={
         "q2_gglasso": [
             "citations.bib",

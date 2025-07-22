@@ -85,9 +85,7 @@ plugin.methods.register_function(
         "transformation": (
             "String representing the name of the " "transformation we will use "
         ),
-        "pseudo_count": (
-            "Add pseudo count, only necessary for clr-transformation."
-        ),
+        "pseudo_count": ("Add pseudo count, only necessary for clr-transformation."),
     },
     output_descriptions={
         "transformed_table": "Matrix representing the data of the problem"
@@ -144,9 +142,7 @@ plugin.methods.register_function(
             "you get out the empirical covariance matrix with normalization N"
         ),
     },
-    output_descriptions={
-        "covariance_matrix": "p x p matrix with covariance entries"
-    },
+    output_descriptions={"covariance_matrix": "p x p matrix with covariance entries"},
     name="calculate_covariance",
     description=(
         "Perform empirical covariance estimation given the data p x N, "

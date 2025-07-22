@@ -334,22 +334,24 @@ def get_hyperparameters(
 
 def get_lambda_mask(weights: list, covariance_matrix: pd.DataFrame):
     """
-        Generate a lambda mask based on adaptive lambda values.
+    Generate a lambda mask based on adaptive lambda values.
 
-        Parameters:
-        - weights (list): A list containing pairs of strings and corresponding lambda values to weights.
-          The strings represent patterns to match in index and column labels of the covariance_matrix.
-          The lambda values are applied to the elements in the covariance_matrix that match the patterns.
-        - covariance_matrix (pd.DataFrame): The covariance matrix to which adaptive lambda values will be applied.
+    Parameters:
+    - weights (list): A list containing pairs of strings and corresponding lambda values to weights.
+      The strings represent patterns to match in index and column labels of the covariance_matrix.
+      The lambda values are applied to the elements in the covariance_matrix that match the patterns.
+    - covariance_matrix (pd.DataFrame): The covariance matrix to which adaptive lambda values will be applied.
 
-        Returns:
-        - np.ndarray: A masked version of the covariance matrix with adaptive lambda values.
+    Returns:
+    - np.ndarray: A masked version of the covariance matrix with adaptive lambda values.
     """
 
     mask = np.ones(covariance_matrix.shape)
     weights_dict = {weights[i]: weights[i + 1] for i in range(0, len(weights), 2)}
 
-    mask_df = pd.DataFrame(mask, index=covariance_matrix.index, columns=covariance_matrix.columns)
+    mask_df = pd.DataFrame(
+        mask, index=covariance_matrix.index, columns=covariance_matrix.columns
+    )
     for key, item in weights_dict.items():
         x_ix = mask_df.index.str.endswith(key)
         x_col = mask_df.columns[mask_df.columns.to_series().str.endswith(key)]
@@ -386,15 +388,11 @@ def check_lambda_path(P, mgl_problem=False):
 
     if lambda1_opt == lambda1_min:
         boundary_lambdas = True
-        warnings.warn(
-            "lambda is on the edge of the interval, try SMALLER lambda1"
-        )
+        warnings.warn("lambda is on the edge of the interval, try SMALLER lambda1")
 
     elif lambda1_opt == lambda1_max:
         boundary_lambdas = True
-        warnings.warn(
-            "lambda is on the edge of the interval, try BIGGER lambda1"
-        )
+        warnings.warn("lambda is on the edge of the interval, try BIGGER lambda1")
 
     if mgl_problem:
         lambda2_opt = P.modelselect_stats["BEST"]["lambda2"]
@@ -403,15 +401,11 @@ def check_lambda_path(P, mgl_problem=False):
 
         if lambda2_opt == lambda2_min:
             boundary_lambdas = True
-            warnings.warn(
-                "lambda is on the edge of the interval, try SMALLER lambda2"
-            )
+            warnings.warn("lambda is on the edge of the interval, try SMALLER lambda2")
 
         elif lambda2_opt == lambda2_max:
             boundary_lambdas = True
-            warnings.warn(
-                "lambda is on the edge of the interval, try BIGGER lambda2"
-            )
+            warnings.warn("lambda is on the edge of the interval, try BIGGER lambda2")
 
     return boundary_lambdas
 
@@ -581,7 +575,9 @@ def to_zarr(obj, name, root, first=True):
     elif isinstance(obj, (np.ndarray, pd.DataFrame)):
         arr = obj.values if isinstance(obj, pd.DataFrame) else obj
         if arr.dtype == object:
-            root.create_dataset(name, data=arr, shape=arr.shape, object_codec=numcodecs.VLenUTF8())
+            root.create_dataset(
+                name, data=arr, shape=arr.shape, object_codec=numcodecs.VLenUTF8()
+            )
         else:
             root.create_dataset(name, data=arr, shape=arr.shape)
 
