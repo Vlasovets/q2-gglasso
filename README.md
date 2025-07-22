@@ -66,7 +66,6 @@ If you use `q2-gglasso`, please cite:
 ## Related Projects
 
 - [`gglasso`](https://github.com/Vlasovets/gglasso): Python solvers for graphical lasso problems
-- [`q2-gglasso`](https://github.com/Vlasovets/q2-gglasso): QIIME 2 plugin (this repository)
 - [`atacama-soil-microbiome-tutorial`](https://github.com/Vlasovets/atacama-soil-microbiome-tutorial): Full tutorial and example analyses
 
 ---

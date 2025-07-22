@@ -1,7 +1,8 @@
 name: CI/CD
 
 on:
-  workflow_dispatch:
+  push:
+    branches: ["dev"]
 
 jobs:
   build-and-test-qiime2-2025-4:
