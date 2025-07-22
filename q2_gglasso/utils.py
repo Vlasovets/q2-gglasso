@@ -327,49 +327,71 @@ def get_hyperparameters(
     return h_params
 
 
-def get_lambda_mask(weights: list, covariance_matrix: pd.DataFrame):
+def get_lambda_mask(weights, covariance_matrix):
     """Generate a lambda mask based on adaptive lambda values.
 
-    Parameters:
-    - weights (list): A list containing pairs of strings and corresponding lambda values to weights.
-      The strings represent patterns to match in index and column labels of the covariance_matrix.
-      The lambda values are applied to the elements in the covariance_matrix that match the patterns.
-    - covariance_matrix (pd.DataFrame): The covariance matrix to which adaptive lambda values will be applied.
+    Parameters
+    ----------
+    weights : list | pd.DataFrame | np.ndarray
+        Pairs of [label, weight] as list, DataFrame (n, 2), or ndarray (n, 2).
+    covariance_matrix : pd.DataFrame | np.ndarray
+        Covariance matrix (2D DataFrame or ndarray) to apply the adaptive lambda mask.
 
-    Returns:
-    - np.ndarray: A masked version of the covariance matrix with adaptive lambda values.
+    Returns
+    -------
+    np.ndarray
+        Lambda mask as numpy array with adaptive lambda values.
     """
 
+    # Normalize weights input to list
     if isinstance(weights, pd.DataFrame):
         if weights.shape[1] != 2:
             raise ValueError("weights DataFrame must have exactly 2 columns.")
         weights = weights.values.flatten().tolist()
-
-    if not isinstance(weights, list):
-        raise TypeError("weights must be a list of [label1, weight1, ...].")
+    elif isinstance(weights, np.ndarray):
+        if weights.ndim != 2 or weights.shape[1] != 2:
+            raise ValueError("weights ndarray must have shape (n, 2).")
+        weights = weights.flatten().tolist()
+    elif not isinstance(weights, list):
+        raise TypeError("weights must be a list, DataFrame, or ndarray.")
 
     if len(weights) % 2 != 0:
         raise ValueError("weights must contain an even number of elements.")
 
-    weights_dict = {
-        str(weights[i]): float(weights[i + 1])
-        for i in range(0, len(weights), 2)
-    }
+    weights_dict = {str(weights[i]): float(weights[i + 1]) for i in range(0, len(weights), 2)}
 
-    # Initialize the mask with default value 1.0
-    mask = np.ones(covariance_matrix.shape)
-    labels = list(weights_dict.keys())
+    # Get matrix shape and labels
+    if isinstance(covariance_matrix, pd.DataFrame):
+        p = covariance_matrix.shape[0]
+        labels = list(covariance_matrix.index)
+    elif isinstance(covariance_matrix, np.ndarray):
+        if covariance_matrix.ndim == 2:
+            p = covariance_matrix.shape[0]
+        elif covariance_matrix.ndim == 3 and covariance_matrix.shape[0] == 1:
+            p = covariance_matrix.shape[1]
+        else:
+            raise ValueError("covariance_matrix must be a 2D or 3D array with shape (1,p,p).")
+        labels = [str(i) for i in range(p)]  # fallback numeric labels
+    else:
+        raise TypeError("covariance_matrix must be a DataFrame or ndarray.")
+
+    # Initialize mask
+    mask = np.ones((p, p))
     mask_df = pd.DataFrame(mask, index=labels, columns=labels)
 
-    for key, item in weights_dict.items():
-        x_ix = mask_df.index.str.endswith(key)
-        x_col = mask_df.columns[mask_df.columns.to_series().str.endswith(key)]
-        mask_df[x_ix] = float(item)
-        mask_df[x_col] = float(item)
-        print("ADAPTIVE lambda={0} has been used for:{1}".format(item, x_col))
-    lambda1_mask = mask_df.values
+    # Apply adaptive weights
+    for key, value in weights_dict.items():
+        matched_rows = mask_df.index.str.endswith(key)
+        matched_cols = mask_df.columns.str.endswith(key)
 
-    return lambda1_mask
+        if not matched_rows.any() and not matched_cols.any():
+            print(f"Warning: No match found for '{key}' in covariance matrix labels.")
+
+        mask_df.loc[matched_rows, :] = value
+        mask_df.loc[:, matched_cols] = value
+        print(f"ADAPTIVE lambda={value} has been used for: {key}")
+
+    return mask_df.values
 
 
 def check_lambda_path(P, mgl_problem=False):
