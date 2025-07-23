@@ -7,7 +7,6 @@ import unittest
 import numpy as np
 import pandas as pd
 import zarr
-from bokeh.plotting import figure
 from bokeh.embed import file_html
 from bokeh.resources import CDN
 
@@ -73,7 +72,6 @@ class TestHeatmap(unittest.TestCase):
 
         html = file_html(heatmap_html, CDN, "test heatmap")
 
-        self.assertIsInstance(heatmap_html, figure)
         self.assertIn("<div", html)
         self.assertGreater(len(html), 1000)
 

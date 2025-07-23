@@ -49,12 +49,8 @@ class TestUtil(unittest.TestCase):
         sample_ids2 = ["S%d" % i for i in range(3)]
         observ_ids2 = ["OTU%d" % i for i in range(6)]
 
-        table_1 = Table(
-            data1, observ_ids1, sample_ids1, table_id="Example Table1"
-        )
-        table_2 = Table(
-            data2, observ_ids2, sample_ids2, table_id="Example Table2"
-        )
+        table_1 = Table(data1, observ_ids1, sample_ids1, table_id="Example Table1")
+        table_2 = Table(data2, observ_ids2, sample_ids2, table_id="Example Table2")
 
         # table_1 = load_table('data/atacama-table_mclr/feature-table.biom')
         # table_2 = load_table('data/atacama-supertable_clr/feature-table.biom')

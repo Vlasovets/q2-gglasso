@@ -29,9 +29,7 @@ class TestUtil(unittest.TestCase):
         tol_low = 10e-14
 
         for method in ["scaled", "unscaled"]:
-            S = calculate_covariance(
-                table, method=method
-            )  # covariance matrix S
+            S = calculate_covariance(table, method=method)  # covariance matrix S
 
             identity_matrix = np.eye(
                 S.shape[0]

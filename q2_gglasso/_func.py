@@ -85,17 +85,6 @@ def transform_features(
 
     X = pd.DataFrame(X, columns=X.columns, index=X.index)
 
-    # TO DO test taxonomy assignment
-    # NOTE: We're removing these unused variables to fix linting issues
-    # taxa = pd.DataFrame(taxonomy.view(pd.Series))
-    # ASV_names = X.index.values
-
-    # for i in ASV_names:
-    #     if i in taxa.index:
-    #         name = taxa.loc[i, "Taxon"]
-    #         if name not in X.index:  # avoid duplicated names
-    #             X = X.rename(index={i: name})
-
     X = X.T  # N,p
 
     if add_metadata:
@@ -152,15 +141,11 @@ def calculate_covariance(
         result = S
 
     elif method == "scaled":
-        print(
-            "Calculate {0} covariance (correlation) matrices S".format(method)
-        )
+        print("Calculate {0} covariance (correlation) matrices S".format(method))
         result = scale_array_by_diagonal(S)
 
     else:
-        raise ValueError(
-            "Given covariance calculation method is not supported."
-        )
+        raise ValueError("Given covariance calculation method is not supported.")
 
     result = pd.DataFrame(result, index=table.index, columns=table.index)
 
@@ -369,9 +354,7 @@ def solve_MGL(
             warnings.warn("The solution might have not reached global minimum!")
     else:
         print(
-            "\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(
-                lambda1, lambda2, mu1
-            )
+            "\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(lambda1, lambda2, mu1)
         )
         P = glasso_problem(
             S,
@@ -452,9 +435,7 @@ def solve_non_conforming(
             )
     else:
         print(
-            "\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(
-                lambda1, lambda2, mu1
-            )
+            "\tWITH LAMBDA1={0}, LAMBDA2={1} and MU={2}".format(lambda1, lambda2, mu1)
         )
         P = glasso_problem(
             S,
@@ -470,7 +451,7 @@ def solve_non_conforming(
 
 
 def solve_problem(
-    covariance_matrix: pd.DataFrame | np.ndarray,
+    covariance_matrix: pd.DataFrame,
     n_samples: list | int | float,
     latent: bool = None,
     lambda1_min: float = None,
@@ -588,9 +569,7 @@ def solve_problem(
 
             if mu1 is not None:
                 mu1_range = (
-                    np.array([mu1])
-                    if isinstance(mu1, (int, float))
-                    else np.array(mu1)
+                    np.array([mu1]) if isinstance(mu1, (int, float)) else np.array(mu1)
                 )
             else:
                 mu1_range = (
@@ -630,9 +609,7 @@ def solve_problem(
         if non_conforming:
 
             if latent:
-                print(
-                    "\n----SOLVING NON-CONFORMING PROBLEM WITH LATENT VARIABLES-----"
-                )
+                print("\n----SOLVING NON-CONFORMING PROBLEM WITH LATENT VARIABLES-----")
 
                 P = solve_non_conforming(
                     S=S,
@@ -663,9 +640,7 @@ def solve_problem(
         else:
             if latent:
                 print(
-                    "\n----SOLVING {0} PROBLEM WITH LATENT VARIABLES-----".format(
-                        reg
-                    )
+                    "\n----SOLVING {0} PROBLEM WITH LATENT VARIABLES-----".format(reg)
                 )
 
                 P = solve_MGL(

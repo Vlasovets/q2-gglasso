@@ -12,6 +12,9 @@ __pycache__/
 *.pyo
 *.pyd
 *.egg-info/
+.mypy_cache
+.ruff_cache
+.pytest_cache
 build/
 dist/
 
@@ -33,5 +36,12 @@ dist/
 data/
 example/
 q2_gglasso/test.py
+.dockerignore
 .vscode/
+
+# But keep these two files for the example
+!data/atacama-counts.qza
+!data/classification.qza
+!data/selected-atacama-sample-metadata.tsv
+!data/atacama-selected-covariates.tsv
 # ------------------------------------------------------------------------------

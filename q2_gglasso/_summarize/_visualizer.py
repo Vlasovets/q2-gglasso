@@ -20,19 +20,11 @@ from bokeh.layouts import row, column
 
 
 def _get_bounds(nlabels: int):
-    bottom = list(
-        chain.from_iterable([[ii] * nlabels for ii in range(nlabels)])
-    )
-    top = list(
-        chain.from_iterable([[ii + 1] * nlabels for ii in range(nlabels)])
-    )
-    left = list(
-        chain.from_iterable([list(range(nlabels)) for ii in range(nlabels)])
-    )
+    bottom = list(chain.from_iterable([[ii] * nlabels for ii in range(nlabels)]))
+    top = list(chain.from_iterable([[ii + 1] * nlabels for ii in range(nlabels)]))
+    left = list(chain.from_iterable([list(range(nlabels)) for ii in range(nlabels)]))
     right = list(
-        chain.from_iterable(
-            [list(range(1, nlabels + 1)) for ii in range(nlabels)]
-        )
+        chain.from_iterable([list(range(1, nlabels + 1)) for ii in range(nlabels)])
     )
 
     return bottom, top, left, right
@@ -45,8 +37,7 @@ def _get_colors(df: pd.DataFrame()):
     # Create a list of hex color codes from the colormap
     colors = [cmap(i)[:3] for i in range(256)]
     colors = [
-        "#" + "".join([format(int(c * 255), "02x") for c in color])
-        for color in colors
+        "#" + "".join([format(int(c * 255), "02x") for c in color]) for color in colors
     ]
     colors = colors[::-1]  # red - positive, blue - negative
 
@@ -70,17 +61,13 @@ def _get_labels(
     p = np.array(solution["p"]).item()
     for i in range(0, p):
         labels_dict[i] = np.array(solution["labels/{0}".format(i)]).item()
-        labels_dict_reversed[p - 1] = np.array(
-            solution["labels/{0}".format(i)]
-        ).item()
+        labels_dict_reversed[p - 1] = np.array(solution["labels/{0}".format(i)]).item()
         p -= 1
 
     return labels_dict, labels_dict_reversed
 
 
-def _get_order(
-    data: pd.DataFrame, method: str = "average", metric: str = "euclidean"
-):
+def _get_order(data: pd.DataFrame, method: str = "average", metric: str = "euclidean"):
     """Perform hierarchical clustering on the input DataFrame and return the cluster order.
 
     Args:
@@ -99,9 +86,7 @@ def _get_order(
     return clust_order
 
 
-def hierarchical_clustering(
-    data: pd.DataFrame, clust_order: list, n_cov: int = None
-):
+def hierarchical_clustering(data: pd.DataFrame, clust_order: list, n_cov: int = None):
     """Perform hierarchical clustering on a given dataset.
 
     Parameters
@@ -215,21 +200,17 @@ def _make_heatmap(
     p.add_layout(color_bar, "right")
     p.toolbar.autohide = True
 
-    # Fix for Bokeh 3.7+ compatibility
-    # Use integer tickers instead of floats
-    p.xaxis.ticker = list(range(nlabels))
-    p.yaxis.ticker = list(range(nlabels))
+    # Shift labels by 0.5 and ensure values are strings
+    shifted_labels_dict = {float(k) + 0.5: str(v) for k, v in labels_dict.items()}
+    shifted_labels_dict_reversed = {float(k) + 0.5: str(v) for k, v in labels_dict_reversed.items()}
 
-    # Convert all dictionary keys to strings to work with Bokeh 3.7+
-    # This is required as Bokeh 3.7+ needs string keys for major_label_overrides
-    # Also ensure all values are strings as well for full compatibility
-    str_labels_dict = {str(k): str(v) for k, v in labels_dict.items()}
-    str_labels_dict_reversed = {
-        str(k): str(v) for k, v in labels_dict_reversed.items()
-    }
+    # Set the tick positions (also shifted by 0.5)
+    p.xaxis.ticker = [float(x) + 0.5 for x in range(nlabels)]
+    p.yaxis.ticker = [float(x) + 0.5 for x in range(nlabels)]
 
-    p.xaxis.major_label_overrides = str_labels_dict
-    p.yaxis.major_label_overrides = str_labels_dict_reversed
+    # Apply the label overrides with proper type
+    p.xaxis.major_label_overrides = shifted_labels_dict
+    p.yaxis.major_label_overrides = shifted_labels_dict_reversed
 
     hover = p.select(dict(type=HoverTool))
     hover.tooltips = [
@@ -259,9 +240,7 @@ def _make_stats(solution: zarr.hierarchy.Group, labels_dict: dict = None):
     columns_stats = [
         TableColumn(field=col_ix, title=col_ix) for col_ix in df_stats.columns
     ]
-    model_selection_stats = DataTable(
-        columns=columns_stats, source=source_stats
-    )
+    model_selection_stats = DataTable(columns=columns_stats, source=source_stats)
 
     precision = pd.DataFrame(solution["solution/precision_"])
     pep_stat = pep_metric(matrix=precision)
@@ -286,9 +265,7 @@ def _make_stats(solution: zarr.hierarchy.Group, labels_dict: dict = None):
     df = df[df["taxa_x"] != df["taxa_y"]]  # remove diagonal elements
     df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
     source_taxa = ColumnDataSource(df)
-    columns_taxa = [
-        TableColumn(field=col_ix, title=col_ix) for col_ix in df.columns
-    ]
+    columns_taxa = [TableColumn(field=col_ix, title=col_ix) for col_ix in df.columns]
     taxa = DataTable(columns=columns_taxa, source=source_taxa)
 
     stats_column = column([model_selection_stats, best_stats])
@@ -297,9 +274,7 @@ def _make_stats(solution: zarr.hierarchy.Group, labels_dict: dict = None):
     return l1
 
 
-def _clust_data(
-    data, n_cov=None, method: str = "average", metric: str = "euclidean"
-):
+def _clust_data(data, n_cov=None, method: str = "average", metric: str = "euclidean"):
     if n_cov is None:
         clust_order = _get_order(data, method=method, metric=metric)
     else:
@@ -327,9 +302,7 @@ def perform_clusterings(data, clust_order, n_cov=None):
         The clustered data.
 
     """
-    clustered_data = hierarchical_clustering(
-        data, clust_order=clust_order, n_cov=n_cov
-    )
+    clustered_data = hierarchical_clustering(data, clust_order=clust_order, n_cov=n_cov)
 
     result = reset_columns_and_index(clustered_data)
 
@@ -361,9 +334,7 @@ def update_labels_dict(labels_dict, clust_order, n_cov=None):
         }
     else:
         labels_asvs = {i: labels_dict[key] for i, key in enumerate(clust_order)}
-        labels_covs = {
-            k: v for k, v in labels_dict.items() if k >= len(clust_order)
-        }
+        labels_covs = {k: v for k, v in labels_dict.items() if k >= len(clust_order)}
         labels_dict = {**labels_asvs, **labels_covs}
         labels_dict_reversed = {
             len(labels_dict) - 1 - k: v for k, v in labels_dict.items()
@@ -381,9 +352,7 @@ def _solution_plot(
     n_cov: int = None,
 ):
     tabs = []
-    labels_dict, labels_dict_reversed = _get_labels(
-        solution=solution, clustered=False
-    )
+    labels_dict, labels_dict_reversed = _get_labels(solution=solution, clustered=False)
 
     # rotate diagonal
     sample_covariance = pd.DataFrame(solution["covariance"])
@@ -413,18 +382,14 @@ def _solution_plot(
             precision = reset_columns_and_index(Theta)
 
             # new labels order according to the clustering
-            labels_dict = {
-                i: labels_dict[key] for i, key in enumerate(clust_order)
-            }
+            labels_dict = {i: labels_dict[key] for i, key in enumerate(clust_order)}
             labels_dict_reversed = {
                 len(labels_dict) - 1 - k: v for k, v in labels_dict.items()
             }
 
         else:
             asv_part = sample_covariance.iloc[:-n_cov, :-n_cov]
-            clust_order = _get_order(
-                asv_part, method="average", metric="euclidean"
-            )
+            clust_order = _get_order(asv_part, method="average", metric="euclidean")
 
             S = hierarchical_clustering(
                 sample_covariance, clust_order=clust_order, n_cov=n_cov
@@ -436,9 +401,7 @@ def _solution_plot(
             sample_covariance = reset_columns_and_index(S)
             precision = reset_columns_and_index(Theta)
 
-            labels_asvs = {
-                i: labels_dict[key] for i, key in enumerate(clust_order)
-            }
+            labels_asvs = {i: labels_dict[key] for i, key in enumerate(clust_order)}
             labels_covs = {
                 k: v for k, v in labels_dict.items() if k >= len(clust_order)
             }
@@ -550,9 +513,7 @@ def summarize(
         n_cov=n_cov,
     )
 
-    output_from_parsed_template = template.render(
-        plot_script=script, plot_div=div
-    )
+    output_from_parsed_template = template.render(plot_script=script, plot_div=div)
 
     with open(os.path.join(output_dir, "index.html"), "w") as fh:
         fh.write(output_from_parsed_template)

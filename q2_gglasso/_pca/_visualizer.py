@@ -54,8 +54,7 @@ def project_covariates(
     var_exp = [(value / eigv_sum) for value in sorted(eigv, reverse=True)]
 
     pc_columns = list(
-        "PC{0} ({1}%)".format(i + 1, str(100 * var_exp[i])[:4])
-        for i in range(0, r)
+        "PC{0} ({1}%)".format(i + 1, str(100 * var_exp[i])[:4]) for i in range(0, r)
     )
     df_proj = pd.DataFrame(proj, columns=pc_columns, index=counts.index)
     df = df_proj.join(metadata)
@@ -97,12 +96,8 @@ def project_covariates(
     options.remove("x")
     options.remove("y")
 
-    select1 = Select(
-        title="X-Axis:", value=varName1, width=100, options=options
-    )
-    select2 = Select(
-        title="Y-Axis:", value=varName2, width=100, options=options
-    )
+    select1 = Select(title="X-Axis:", value=varName1, width=100, options=options)
+    select2 = Select(title="Y-Axis:", value=varName2, width=100, options=options)
 
     changeVariables = CustomJS(
         args=dict(
@@ -215,9 +210,7 @@ def make_plots(
     t = np.arange(n_components)
     comb = list(itertools.combinations(t, 2))
 
-    bokeh_tools = [
-        "save, zoom_in, zoom_out, wheel_zoom, box_zoom, reset, hover"
-    ]
+    bokeh_tools = ["save, zoom_in, zoom_out, wheel_zoom, box_zoom, reset, hover"]
 
     grid = np.empty([n_components, n_components], dtype=object)
     eigv_sum = np.sum(eigv)
@@ -245,12 +238,8 @@ def make_plots(
             fill_color={"field": "col", "transform": exp_cmap},
         )
 
-        p.xaxis.axis_label = "PC{0} ({1}%)".format(
-            i + 1, str(100 * var_exp[i])[:4]
-        )
-        p.yaxis.axis_label = "PC{0} ({1}%)".format(
-            j + 1, str(100 * var_exp[j])[:4]
-        )
+        p.xaxis.axis_label = "PC{0} ({1}%)".format(i + 1, str(100 * var_exp[i])[:4])
+        p.yaxis.axis_label = "PC{0} ({1}%)".format(j + 1, str(100 * var_exp[j])[:4])
 
         grid[i][j] = p
 
@@ -355,9 +344,7 @@ def pca(
         The sample metadata, by default None.
 
     """
-    J_ENV = jinja2.Environment(
-        loader=jinja2.PackageLoader("q2_gglasso._pca", "assets")
-    )
+    J_ENV = jinja2.Environment(loader=jinja2.PackageLoader("q2_gglasso._pca", "assets"))
     template = J_ENV.get_template("index.html")
     df = table.to_dataframe()
     L = solution["solution/lowrank_"]
@@ -388,9 +375,7 @@ def pca(
     p = Tabs(tabs=tabs)
 
     script, div = components(p, INLINE)
-    output_from_parsed_template = template.render(
-        plot_script=script, plot_div=div
-    )
+    output_from_parsed_template = template.render(plot_script=script, plot_div=div)
 
     with open(os.path.join(output_dir, "index.html"), "w") as fh:
         fh.write(output_from_parsed_template)

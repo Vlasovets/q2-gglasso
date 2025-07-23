@@ -2,7 +2,8 @@
 [![PyPI license](https://img.shields.io/pypi/l/gglasso.svg)](https://pypi.python.org/pypi/gglasso/)
 [![Python version](https://img.shields.io/badge/python-%3E3.6-blue)](https://www.python.org/)
 [![Documentation Status](https://readthedocs.org/projects/gglasso/badge/?version=latest)](http://gglasso.readthedocs.io/?badge=latest)
-[![Tests](https://github.com/Vlasovets/q2-gglasso/actions/workflows/ci.yml/badge.svg?branch=dev&event=push)](https://github.com/Vlasovets/q2-gglasso/actions/workflows/ci.yml)
+[![CI](https://github.com/Vlasovets/q2-gglasso/actions/workflows/ci.yml/badge.svg?branch=dev&event=push)](https://github.com/Vlasovets/q2-gglasso/actions/workflows/ci.yml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 *A [QIIME 2](https://qiime2.org) plugin for solving **General Graphical Lasso (GGLasso)** problems with microbiome data including:*
 
@@ -65,7 +66,6 @@ If you use `q2-gglasso`, please cite:
 ## Related Projects
 
 - [`gglasso`](https://github.com/Vlasovets/gglasso): Python solvers for graphical lasso problems
-- [`q2-gglasso`](https://github.com/Vlasovets/q2-gglasso): QIIME 2 plugin (this repository)
 - [`atacama-soil-microbiome-tutorial`](https://github.com/Vlasovets/atacama-soil-microbiome-tutorial): Full tutorial and example analyses
 
 ---
