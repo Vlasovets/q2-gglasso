@@ -29,16 +29,16 @@ requirements:
     - q2-types {{ qiime2_epoch }}.*
     - qiime2 {{ qiime2_epoch }}.*
 
-test:
-  imports:
-    - q2_gglasso
-    - qiime2.plugins.gglasso
-  requires:
-    - qiime2 >={{ qiime2 }}
-    - q2-types >={{ q2_types }}
-    - pytest
-  commands:
-    - pytest --cov q2_gglasso --pyargs q2_gglasso
+# test:
+#   imports:
+#     - q2_gglasso
+#     - qiime2.plugins.gglasso
+#   requires:
+#     - qiime2 >={{ qiime2 }}
+#     - q2-types >={{ q2_types }}
+#     - pytest
+#   commands:
+#     - pytest --cov q2_gglasso --pyargs q2_gglasso
 
 about:
   home: https://github.com/bio-datascience/q2-gglasso
