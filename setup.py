@@ -13,8 +13,8 @@ import versioneer
 # Package meta-data.
 NAME = "q2-gglasso"
 DESCRIPTION = "QIIME 2 plugin for Single and Multiple Graphical Lasso modeling."
-URL = "https://github.com/Vlasovets/q2-gglasso"
-EMAIL = "otorrent@mail.ru"
+URL = "https://github.com/bio-datascience/q2-gglasso.git"
+EMAIL = "oleg.vlasovets@helmholtz-munich.de"
 AUTHOR = "Oleg Vlasovets"
 REQUIRES_PYTHON = ">=3.6.0"
 

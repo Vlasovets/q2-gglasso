@@ -43,6 +43,5 @@ q2_gglasso/test.py
 !data/atacama-counts.qza
 !data/classification.qza
 !data/selected-atacama-sample-metadata.tsv
-!data/atacama-selected-covariates.tsv
 !data/test_solution.zip
 # ------------------------------------------------------------------------------
