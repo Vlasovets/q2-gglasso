@@ -18,7 +18,7 @@ jobs:
       uses: conda-incubator/setup-miniconda@v3
       with:
         activate-environment: q2-gglasso-2025.4
-        environment-file: environment-files/q2-gglasso-2025.4.yml
+        environment-file: environment-files/q2-gglasso-qiime2-amplicon-2025.4.yml
         auto-activate-base: false
 
     - name: Install plugin
