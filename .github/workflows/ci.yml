@@ -2,7 +2,7 @@ name: CI/CD
 
 on:
   push:
-    branches: ["dev"]
+    branches: ["dev", "main"]
 
 jobs:
   build-and-test-qiime2-2025-4:
