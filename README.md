@@ -2,7 +2,7 @@
 [![BSD License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Python version](https://img.shields.io/badge/python-%3E3.6-blue)](https://www.python.org/)
 [![Documentation Status](https://readthedocs.org/projects/gglasso/badge/?version=latest)](http://gglasso.readthedocs.io/?badge=latest)
-[![CI](https://github.com/Vlasovets/q2-gglasso/actions/workflows/ci.yml/badge.svg?branch=dev&event=push)](https://github.com/Vlasovets/q2-gglasso/actions/workflows/ci.yml)
+[![CI](https://github.com/Vlasovets/q2-gglasso/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/Vlasovets/q2-gglasso/actions/workflows/ci.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 *A [QIIME 2](https://qiime2.org) plugin for solving **General Graphical Lasso (GGLasso)** problems with microbiome data including:*
