@@ -42,8 +42,12 @@ class TestGetHyperparameters(unittest.TestCase):
         self.assertTrue(h["model_selection"])
 
     def test_single_value_path_is_scalar_no_model_selection(self):
+        # A genuine single fit needs every grid to be a singleton: a one-element
+        # explicit lambda1 path AND a pinned lambda2 (otherwise lambda2 falls
+        # back to its default multi-value grid and model selection kicks in).
         h = get_hyperparameters(
-            lambda1_min=None, lambda1_max=None, lambda2_min=None, lambda2_max=None,
+            lambda1_min=None, lambda1_max=None,
+            lambda2_min=0.1, lambda2_max=0.1,
             mu1_min=None, mu1_max=None,
             lambda1_path=[0.8],
         )
