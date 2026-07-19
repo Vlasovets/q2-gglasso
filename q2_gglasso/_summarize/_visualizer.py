@@ -223,42 +223,46 @@ def _make_heatmap(
 
 
 def _make_stats(solution: zarr.hierarchy.Group, labels_dict: dict = None):
-    sparsity = flatten_array(solution["modelselect_stats/SP"])
-    lambda_path = flatten_array(solution["modelselect_stats/LAMBDA"])
-    mu_path = flatten_array(solution["modelselect_stats/MU"])
-    ranks = flatten_array(solution["modelselect_stats/RANK"])
-
-    stats = {
-        "sparsity": sparsity,
-        "lambda": lambda_path,
-        "mu": mu_path,
-        "rank": ranks,
-    }
-    df_stats = pd.DataFrame.from_dict(stats, orient="columns")
-    source_stats = ColumnDataSource(df_stats)
-
-    columns_stats = [
-        TableColumn(field=col_ix, title=col_ix) for col_ix in df_stats.columns
-    ]
-    model_selection_stats = DataTable(columns=columns_stats, source=source_stats)
+    # Model-selection statistics only exist when a regularization path was
+    # searched (P.model_selection()). A single fit (P.solve(), i.e.
+    # n_lambda1 == n_mu1 == 1) writes no "modelselect_stats" group, so guard
+    # every access to it and fall back to a single-model summary.
+    has_modelselect = "modelselect_stats" in solution
 
     precision = pd.DataFrame(solution["solution/precision_"])
     pep_stat = pep_metric(matrix=precision)
-    best_lambda1 = flatten_array(solution["modelselect_stats/BEST/lambda1"])
-    best_mu = flatten_array(solution["modelselect_stats/BEST/mu1"])
 
-    best_stats_dict = {
-        "best lambda": best_lambda1,
-        "best mu": best_mu,
-        "positive edges percentage": pep_stat,
-    }
-    df_best = pd.DataFrame.from_dict(best_stats_dict, orient="columns")
+    panels = []
+
+    if has_modelselect:
+        stats = {
+            "sparsity": flatten_array(solution["modelselect_stats/SP"]),
+            "lambda": flatten_array(solution["modelselect_stats/LAMBDA"]),
+            "mu": flatten_array(solution["modelselect_stats/MU"]),
+            "rank": flatten_array(solution["modelselect_stats/RANK"]),
+        }
+        df_stats = pd.DataFrame.from_dict(stats, orient="columns")
+        source_stats = ColumnDataSource(df_stats)
+        columns_stats = [
+            TableColumn(field=col_ix, title=col_ix) for col_ix in df_stats.columns
+        ]
+        panels.append(DataTable(columns=columns_stats, source=source_stats))
+
+        best_stats_dict = {
+            "best lambda": flatten_array(solution["modelselect_stats/BEST/lambda1"]),
+            "best mu": flatten_array(solution["modelselect_stats/BEST/mu1"]),
+            "positive edges percentage": pep_stat,
+        }
+        df_best = pd.DataFrame.from_dict(best_stats_dict, orient="columns")
+    else:
+        # Single fit: no path/BEST statistics; report the edge summary only.
+        df_best = pd.DataFrame({"positive edges percentage": [pep_stat]})
+
     source_best = ColumnDataSource(df_best)
-
     columns_best = [
         TableColumn(field=col_ix, title=col_ix) for col_ix in df_best.columns
     ]
-    best_stats = DataTable(columns=columns_best, source=source_best)
+    panels.append(DataTable(columns=columns_best, source=source_best))
 
     df = pd.DataFrame(precision.stack(), columns=["covariance"]).reset_index()
     df.columns = ["taxa_y", "taxa_x", "covariance"]
@@ -268,7 +272,7 @@ def _make_stats(solution: zarr.hierarchy.Group, labels_dict: dict = None):
     columns_taxa = [TableColumn(field=col_ix, title=col_ix) for col_ix in df.columns]
     taxa = DataTable(columns=columns_taxa, source=source_taxa)
 
-    stats_column = column([model_selection_stats, best_stats])
+    stats_column = column(panels)
     l1 = row([stats_column, taxa], sizing_mode="fixed")
 
     return l1

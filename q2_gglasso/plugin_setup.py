@@ -70,6 +70,7 @@ plugin.methods.register_function(
         "pseudo_count": Int,
         "scale_metadata": Bool,
         "add_metadata": Bool,
+        "keep_original_id": Bool,
     },
     outputs=[("transformed_table", FeatureTable[Frequency])],
     input_descriptions={
@@ -86,6 +87,11 @@ plugin.methods.register_function(
             "String representing the name of the " "transformation we will use "
         ),
         "pseudo_count": ("Add pseudo count, only necessary for clr-transformation."),
+        "keep_original_id": (
+            "Keep the original feature identifiers as the index (default). "
+            "If False, features are relabelled to sequential ASV-{rank} labels "
+            "ordered by total abundance."
+        ),
     },
     output_descriptions={
         "transformed_table": "Matrix representing the data of the problem"
@@ -203,6 +209,27 @@ plugin.methods.register_function(
         "n_mu1": (
             "Low-rank regularization parameter."
             "Only needs to be specified if latent=True."
+        ),
+        "lambda1_path": (
+            "Explicit, user-defined lambda1 path (a list of values). "
+            "When provided, it overrides lambda1_min/lambda1_max/n_lambda1 and "
+            "path_scale, and the given values are used verbatim."
+        ),
+        "mu1_path": (
+            "Explicit, user-defined mu1 path (a list of values). "
+            "When provided, it overrides mu1_min/mu1_max/n_mu1 and path_scale. "
+            "Only used if latent=True."
+        ),
+        "path_scale": (
+            "Spacing used when building the regularization grid from "
+            "min/max/count: 'log' (default) for log-spaced values or 'linear' "
+            "for evenly-spaced values. Ignored when an explicit path is given."
+        ),
+        "rank": (
+            "Explicit target rank for the low-rank component (SLR, latent=True). "
+            "Requires a GGLasso build that exposes explicit rank selection; if "
+            "unsupported, an informative error is raised. Otherwise size the "
+            "low-rank block via the mu1 penalty."
         ),
         "weights": (
             "Array (p,p), non-negative, symmetric."

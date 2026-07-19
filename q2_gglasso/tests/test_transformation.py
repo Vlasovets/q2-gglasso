@@ -68,5 +68,32 @@ class TestUtil(unittest.TestCase):
         self.assertTrue(equal, msg="Subcomposition coherence not fulfilled.")
 
 
+class TestRenameIndex(unittest.TestCase):
+    """Verify feature ordering / labelling in rename_index_with_sum."""
+
+    def _frame(self):
+        import pandas as pd
+
+        # total abundance per feature: hashA=15, hashB=1, hashC=6
+        # -> ascending order is hashB, hashC, hashA (differs from input order)
+        return pd.DataFrame(
+            {"s1": [7, 1, 3], "s2": [8, 0, 3]},
+            index=["hashA", "hashB", "hashC"],
+        )
+
+    def test_keeps_original_ids_by_default(self):
+        from q2_gglasso.utils import rename_index_with_sum
+
+        out = rename_index_with_sum(self._frame())
+        # original identifiers preserved, ordered by ascending total abundance
+        self.assertEqual(list(out.index), ["hashB", "hashC", "hashA"])
+
+    def test_legacy_asv_labels_when_disabled(self):
+        from q2_gglasso.utils import rename_index_with_sum
+
+        out = rename_index_with_sum(self._frame(), keep_original_id=False)
+        self.assertEqual(list(out.index), ["ASV-1", "ASV-2", "ASV-3"])
+
+
 if __name__ == "__main__":
     unittest.main()

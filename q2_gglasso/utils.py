@@ -220,19 +220,20 @@ def get_seq_depth(counts):
     return depth_scaled
 
 
-def get_range(lower_bound, upper_bound, n):
-    """Generate a logarithmic range of values between lower_bound and
-    upper_bound.
+def get_range(lower_bound, upper_bound, n, scale: str = "log"):
+    """Generate a range of values between lower_bound and upper_bound.
 
     Parameters
     ----------
         - lower_bound (float or None): The lower bound of the range. If None, a default value of 1e-3 is used.
         - upper_bound (float or None): The upper bound of the range. If None, a default value of 1 is used.
-        - n (int): The number of values to generate in the logarithmic range.
+        - n (int): The number of values to generate in the range.
+        - scale (str): "log" (default) for a log-spaced grid, or "linear" for an
+          evenly-spaced grid.
 
     Returns
     -------
-        - list: A list of n logarithmically spaced values between lower_bound and upper_bound.
+        - list: A list of n values (log- or linearly spaced) between lower_bound and upper_bound.
           If both lower_bound and upper_bound are None, the list contains a single element [None].
 
     Example:
@@ -245,7 +246,11 @@ def get_range(lower_bound, upper_bound, n):
         lower_bound = 1e-3
     if upper_bound is None:
         upper_bound = 1
-    return np.logspace(np.log10(lower_bound), np.log10(upper_bound), n)
+    if scale == "linear":
+        return np.linspace(lower_bound, upper_bound, n)
+    elif scale == "log":
+        return np.logspace(np.log10(lower_bound), np.log10(upper_bound), n)
+    raise ValueError("Unknown scale %r, use 'log' or 'linear'." % scale)
 
 
 def get_hyperparameters(
@@ -259,6 +264,9 @@ def get_hyperparameters(
     n_lambda2: int = 1,
     n_mu1: int = 1,
     latent: bool = False,
+    lambda1_path: list = None,
+    mu1_path: list = None,
+    path_scale: str = "log",
 ):
     """Generate hyperparameters for a model based on specified ranges.
 
@@ -284,9 +292,19 @@ def get_hyperparameters(
          - 'lambda2' (float or np.ndarray): Values for lambda2.
          - 'mu1' (float or np.ndarray): Values for mu1.
     """
-    lambda1 = get_range(lambda1_min, lambda1_max, n_lambda1)
-    lambda2 = get_range(lambda2_min, lambda2_max, n_lambda2)
-    mu1 = get_range(mu1_min, mu1_max, n_mu1)
+    # An explicit user-defined path (lambda1_path / mu1_path) overrides the
+    # min/max/count grid; otherwise build a log- or linearly-spaced grid.
+    if lambda1_path is not None and len(lambda1_path) > 0:
+        lambda1 = np.asarray(lambda1_path, dtype=float)
+    else:
+        lambda1 = get_range(lambda1_min, lambda1_max, n_lambda1, scale=path_scale)
+
+    lambda2 = get_range(lambda2_min, lambda2_max, n_lambda2, scale=path_scale)
+
+    if mu1_path is not None and len(mu1_path) > 0:
+        mu1 = np.asarray(mu1_path, dtype=float)
+    else:
+        mu1 = get_range(mu1_min, mu1_max, n_mu1, scale=path_scale)
 
     # Replace None with default logspace values
     if lambda1.size == 1 and lambda1[0] is None:
@@ -501,31 +519,37 @@ def zero_imputation(df: pd.DataFrame, pseudo_count: int = 1):
     return X
 
 
-def rename_index_with_sum(df: pd.DataFrame):
-    """Rename the index of a DataFrame based on the relative abundance. New
-    index values are generated with the format "ASV" followed by the top
-    abundance among all the features.
+def rename_index_with_sum(df: pd.DataFrame, keep_original_id: bool = True):
+    """Order features by total abundance.
+
+    Rows are sorted by their total (ascending) abundance. By default the
+    original feature identifiers are preserved as the index (recommended, per
+    C. Müller's review: keep the original ASV identifier rather than replacing
+    it). Set ``keep_original_id=False`` for the legacy behaviour that replaces
+    the index with sequential ``ASV-{rank}`` labels.
 
     Parameters
     ----------
-    - df: pandas DataFrame. The DataFrame to be modified.
+    df : pandas.DataFrame
+        The feature-by-sample DataFrame to reorder.
+    keep_original_id : bool, optional
+        If True (default) keep the original feature IDs as the index; if False
+        relabel the index to ``ASV-{rank}`` by abundance.
 
     Returns
     -------
-    - df: pandas DataFrame. The modified DataFrame with the renamed index.
+    df : pandas.DataFrame
+        Rows ordered by ascending total abundance.
     """
-    # Calculate the sum of each row and rename the index
+    # Order rows by ascending total abundance while keeping the original IDs.
     row_sum = df.sum(axis=1)
-    df.rename(index=row_sum, inplace=True)
+    order = row_sum.sort_values(kind="stable").index
+    df = df.loc[order]
 
-    # Sort the index
-    df.sort_index(inplace=True)
-
-    # Reset the index
-    df.reset_index(drop=True, inplace=True)
-
-    # Rename the index using the new index values
-    df.rename(index=lambda x: f"ASV-{x + 1}", inplace=True)
+    if not keep_original_id:
+        # Legacy behaviour: replace the index with abundance-rank ASV labels.
+        df = df.copy()
+        df.index = [f"ASV-{i + 1}" for i in range(len(df))]
 
     return df
 

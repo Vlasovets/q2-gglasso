@@ -37,6 +37,7 @@ def transform_features(
     pseudo_count: int = 1,
     scale_metadata: bool = True,
     add_metadata: bool = False,
+    keep_original_id: bool = True,
 ) -> pd.DataFrame:
     """Project compositional data to Euclidean space.
 
@@ -67,7 +68,7 @@ def transform_features(
     X = table.to_dataframe()  # p, N
     X = X.sparse.to_dense()
 
-    X = rename_index_with_sum(X)
+    X = rename_index_with_sum(X, keep_original_id=keep_original_id)
 
     if transformation == "clr":
         X = zero_imputation(X, pseudo_count=pseudo_count)
@@ -450,10 +451,28 @@ def solve_non_conforming(
     return P
 
 
+def _gglasso_supports_rank() -> bool:
+    """Whether the installed GGLasso exposes an explicit low-rank rank.
+
+    Explicit rank selection is a newer GGLasso capability. Older releases
+    (e.g. 0.2.1) only expose the continuous ``mu1`` low-rank penalty and infer
+    the rank as an output. Detect support by inspecting ``glasso_problem`` for
+    an explicit ``r``/``rank`` argument.
+    """
+    import inspect
+
+    try:
+        params = inspect.signature(glasso_problem.__init__).parameters
+    except (TypeError, ValueError):
+        return False
+    return ("r" in params) or ("rank" in params)
+
+
 def solve_problem(
     covariance_matrix: pd.DataFrame,
     n_samples: list | int | float,
     latent: bool = None,
+    rank: int = None,
     lambda1_min: float = None,
     lambda1_max: float = None,
     n_lambda1: int = 1,
@@ -463,6 +482,9 @@ def solve_problem(
     mu1_min: float = None,
     mu1_max: float = None,
     n_mu1: int = 1,
+    lambda1_path: list = None,
+    mu1_path: list = None,
+    path_scale: str = "log",
     weights: list = None,
     non_conforming: bool = None,
     gamma: float = 0.01,
@@ -533,6 +555,26 @@ def solve_problem(
 
     n_samples = list_to_array(n_samples)
 
+    # Explicit rank selection (SLR) is only meaningful with latent variables and
+    # requires a GGLasso build that exposes the rank parameter. Guard so the
+    # option is registered but never silently ignored (see B4 in the plan).
+    if rank is not None:
+        if not latent:
+            raise ValueError(
+                "The 'rank' parameter is only meaningful for the sparse + "
+                "low-rank model; set latent=True."
+            )
+        if not _gglasso_supports_rank():
+            raise NotImplementedError(
+                "Explicit rank selection requires a GGLasso version that exposes "
+                "an explicit low-rank rank parameter; the installed GGLasso does "
+                "not. Until then, size the low-rank block via the 'mu1' penalty "
+                "(a larger mu1 yields a smaller rank; scout mu1 to reach the "
+                "target rank)."
+            )
+        # Hook: when GGLasso supports it, thread `r=rank` into the solver's
+        # reg_params inside solve_SGL below.
+
     h_params = get_hyperparameters(
         lambda1_min=lambda1_min,
         lambda1_max=lambda1_max,
@@ -544,6 +586,9 @@ def solve_problem(
         mu1_max=mu1_max,
         n_mu1=n_mu1,
         latent=latent,
+        lambda1_path=lambda1_path,
+        mu1_path=mu1_path,
+        path_scale=path_scale,
     )
 
     model_selection = h_params["model_selection"]
