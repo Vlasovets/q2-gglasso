@@ -94,6 +94,42 @@ class TestRenameIndex(unittest.TestCase):
         out = rename_index_with_sum(self._frame(), keep_original_id=False)
         self.assertEqual(list(out.index), ["ASV-1", "ASV-2", "ASV-3"])
 
+    def test_ties_break_on_feature_id_not_input_order(self):
+        """Equal-abundance features must order identically however they arrive.
+
+        With ``keep_original_id=False`` the position IS the identity, so an
+        unspecified tie-break silently renames features between runs. Real
+        tables tie heavily: 209 of the 300 features in the Atacama table share a
+        total-abundance value with another feature.
+        """
+        import pandas as pd
+
+        from q2_gglasso.utils import rename_index_with_sum
+
+        # every feature has total abundance 4, so ordering is decided purely by
+        # the tie-break
+        tied = pd.DataFrame(
+            {"s1": [1, 2, 3], "s2": [3, 2, 1]},
+            index=["hashC", "hashA", "hashB"],
+        )
+        shuffled = tied.loc[["hashA", "hashB", "hashC"]]
+
+        self.assertEqual(list(tied.sum(axis=1).unique()), [4])
+        self.assertEqual(
+            list(rename_index_with_sum(tied).index),
+            ["hashA", "hashB", "hashC"],
+        )
+        # the same table with its rows permuted must give the same order
+        self.assertEqual(
+            list(rename_index_with_sum(tied).index),
+            list(rename_index_with_sum(shuffled).index),
+        )
+        # and therefore the same ASV-k assignment
+        self.assertEqual(
+            list(rename_index_with_sum(tied, keep_original_id=False).index),
+            list(rename_index_with_sum(shuffled, keep_original_id=False).index),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

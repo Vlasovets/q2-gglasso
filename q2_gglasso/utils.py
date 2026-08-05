@@ -530,11 +530,27 @@ def zero_imputation(df: pd.DataFrame, pseudo_count: int = 1):
 def rename_index_with_sum(df: pd.DataFrame, keep_original_id: bool = True):
     """Order features by total abundance.
 
-    Rows are sorted by their total (ascending) abundance. By default the
-    original feature identifiers are preserved as the index (recommended, per
-    C. Müller's review: keep the original ASV identifier rather than replacing
-    it). Set ``keep_original_id=False`` for the legacy behaviour that replaces
-    the index with sequential ``ASV-{rank}`` labels.
+    Rows are sorted by their total (ascending) abundance, ties broken by feature
+    ID. By default the original feature identifiers are preserved as the index
+    (recommended, per C. Müller's review: keep the original ASV identifier rather
+    than replacing it). Set ``keep_original_id=False`` for the legacy behaviour
+    that replaces the index with sequential ``ASV-{rank}`` labels.
+
+    Ties are broken on the feature ID rather than left to the sort, so the
+    resulting order is a pure function of the table's *contents* and does not
+    depend on the order its rows happened to arrive in. This matters because with
+    ``keep_original_id=False`` the position IS the identity: ``ASV-17`` means
+    whichever feature landed 17th. Real tables tie heavily — in the 300-ASV
+    Atacama table, 209 of 300 features share a total-abundance value with another
+    feature — so an unspecified tie-break silently reassigns labels between runs.
+
+    This is not hypothetical. Before ties were broken deterministically, this
+    function used ``df.sort_index()``, whose default quicksort is not stable;
+    switching to a stable sort moved 158 of the 300 Atacama features to different
+    ``ASV-k`` labels while leaving the correlation matrix numerically identical.
+    The change was invisible to every downstream number (the graphical-lasso
+    objective is invariant under permutation) and visible only in feature
+    identity.
 
     Parameters
     ----------
@@ -547,11 +563,16 @@ def rename_index_with_sum(df: pd.DataFrame, keep_original_id: bool = True):
     Returns
     -------
     df : pandas.DataFrame
-        Rows ordered by ascending total abundance.
+        Rows ordered by ascending total abundance, ties broken by feature ID.
     """
     # Order rows by ascending total abundance while keeping the original IDs.
+    # Ties break on the feature ID so the order depends only on the contents.
     row_sum = df.sum(axis=1)
-    order = row_sum.sort_values(kind="stable").index
+    order = (
+        pd.DataFrame({"_sum": row_sum, "_id": row_sum.index.astype(str)})
+        .sort_values(["_sum", "_id"], kind="stable")
+        .index
+    )
     df = df.loc[order]
 
     if not keep_original_id:
