@@ -106,8 +106,20 @@ def transform_features(
     else:
         result = X
 
-    result = result.T  # p, N
-
+    # Return samples x features, which is what QIIME 2's DataFrame ->
+    # FeatureTable transformer expects.
+    #
+    # This used to end with `result = result.T  # p, N`, restoring the (p, N)
+    # convention the rest of the plugin reasons in. But the transformer stores a
+    # DataFrame's INDEX as samples, so that transposed frame was written to disk
+    # with feature IDs recorded as sample IDs -- a FeatureTable that lies about
+    # its own axes. `calculate_covariance` compensated (np.cov defaults to
+    # rows-as-variables), so the gglasso pipeline worked and nothing surfaced,
+    # but the artifact was unusable by anything else: `qiime classo regress`
+    # aligns on the sample index, matched zero, and died inside c-lasso with
+    #     IndexError: index 0 is out of bounds for axis 0 with size 0
+    # Verified with an unambiguously-labelled round-trip; see
+    # q2-hdstats-recompute/reports/ORIENTATION_FINDING.md.
     return result
 
 
@@ -135,7 +147,16 @@ def calculate_covariance(
         A squared positive semi-definite matrix required for solving Graphical Lasso problem.
 
     """
-    S = np.cov(table.values, bias=bias)
+    # `rowvar=False`: the input is a FeatureTable viewed as a DataFrame, i.e.
+    # samples x features, so the VARIABLES are the columns.
+    #
+    # This used to be `np.cov(table.values, bias=bias)` -- rowvar defaults to
+    # True, i.e. rows-as-variables -- and it worked only because the clr table it
+    # was fed had its axes swapped by transform_features (which transposed back
+    # to (p, N) before returning, and QIIME 2 stores a DataFrame's index as
+    # samples). Two bugs cancelling. transform_features is fixed, so this must be
+    # too; changing either one alone silently produces an N x N matrix.
+    S = np.cov(table.values, rowvar=False, bias=bias)
 
     if method == "unscaled":
         print("Calculate {0} covariance matrices S".format(method))
@@ -148,7 +169,9 @@ def calculate_covariance(
     else:
         raise ValueError("Given covariance calculation method is not supported.")
 
-    result = pd.DataFrame(result, index=table.index, columns=table.index)
+    # Features label both axes, and features are the COLUMNS of a samples x
+    # features table.
+    result = pd.DataFrame(result, index=table.columns, columns=table.columns)
 
     return result.round(10)
 
