@@ -202,22 +202,26 @@ def get_seq_depth(counts):
 
     Parameters
     ----------
-    - counts (numpy.ndarray or pandas.DataFrame): A 2D array or DataFrame where rows represent features and columns represent samples.
+    - counts (pandas.DataFrame): rows are SAMPLES, columns are FEATURES.
+      Note this is the transpose of the (p, N) convention used elsewhere in the
+      plugin; the pca visualizer transposes before calling.
 
     Returns
     -------
-    - numpy.ndarray: Scaled sequencing depth values.
-
-    The sequencing depth is calculated by summing counts across features or samples based on the larger dimension.
-    The depth values are then scaled to the range [0, 1].
+    - pandas.Series: per-sample sequencing depth scaled to [0, 1], indexed by
+      sample ID.
     """
-    p, n = counts.shape
-    if p >= n:
-        depth = counts.sum(axis=0)
-    else:
-        depth = counts.sum(axis=1)
-    depth_scaled = (depth - depth.min()) / (depth.max() - depth.min())
-    return depth_scaled
+    # Sum over features, explicitly. This used to guess the orientation with
+    # `if p >= n: sum(axis=0) else: sum(axis=1)`, which silently returns
+    # per-FEATURE sums whenever there are fewer features than samples -- e.g.
+    # the 13-feature x 50-sample tutorial table. The single caller (the pca
+    # visualizer) always passes samples x features, so guessing buys nothing.
+    depth = counts.sum(axis=1)
+    spread = depth.max() - depth.min()
+    if spread == 0:
+        # Constant depth: every sample gets the same colour rather than NaN.
+        return depth * 0.0
+    return (depth - depth.min()) / spread
 
 
 def get_range(lower_bound, upper_bound, n, scale: str = "log"):
@@ -508,8 +512,12 @@ def zero_imputation(df: pd.DataFrame, pseudo_count: int = 1):
     """
     X = df.copy()
     original_sum = X.sum(axis=0)  # sum in a sample (axis=0 if p, N matrix)
-    for col in X.columns:
-        X[col].replace(to_replace=0, value=pseudo_count, inplace=True)
+    # NB: this was previously a per-column `X[col].replace(..., inplace=True)`.
+    # That is chained assignment: under pandas Copy-on-Write it silently does
+    # NOTHING, so no pseudo count is ever added and the failure only surfaces
+    # much later as the "Add pseudo count before using clr" assertion in
+    # transform_features. A whole-frame replace is equivalent and CoW-safe.
+    X = X.replace(0, pseudo_count)
     shifted_sum = X.sum(axis=0)
     scaling_parameter = original_sum.div(
         shifted_sum

@@ -12,7 +12,11 @@ from itertools import chain
 from q2_gglasso.utils import flatten_array, pep_metric, reset_columns_and_index
 
 from bokeh.plotting import figure
-from bokeh.models import HoverTool, Panel, Tabs, ColorBar, LinearColorMapper
+# bokeh 3 renamed the tab child container Panel -> TabPanel. Note that
+# `from bokeh.models import Panel` still SUCCEEDS under bokeh 3 -- it resolves to
+# an unrelated Panel(Pane) class -- and only fails later at construction with a
+# confusing "unexpected attribute 'child'". Import TabPanel explicitly.
+from bokeh.models import HoverTool, TabPanel, Tabs, ColorBar, LinearColorMapper
 from bokeh.models import ColumnDataSource, TableColumn, DataTable
 from bokeh.embed import components
 from bokeh.resources import INLINE
@@ -140,7 +144,7 @@ def _make_heatmap(
     nlabels = len(labels_dict)
 
     df = data.iloc[::-1]  # rotate the diagonal
-    df = pd.DataFrame(df.stack(), columns=["covariance"]).reset_index()
+    df = pd.DataFrame(df.stack(future_stack=True), columns=["covariance"]).reset_index()
     df.columns = ["taxa_y", "taxa_x", "covariance"]
     # clustering is correct, check the labels
     df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
@@ -264,7 +268,7 @@ def _make_stats(solution: zarr.hierarchy.Group, labels_dict: dict = None):
     ]
     panels.append(DataTable(columns=columns_best, source=source_best))
 
-    df = pd.DataFrame(precision.stack(), columns=["covariance"]).reset_index()
+    df = pd.DataFrame(precision.stack(future_stack=True), columns=["covariance"]).reset_index()
     df.columns = ["taxa_y", "taxa_x", "covariance"]
     df = df[df["taxa_x"] != df["taxa_y"]]  # remove diagonal elements
     df = df.replace({"taxa_x": labels_dict, "taxa_y": labels_dict})
@@ -424,7 +428,7 @@ def _solution_plot(
         labels_dict=labels_dict,
         labels_dict_reversed=labels_dict_reversed,
     )
-    tab1 = Panel(child=row(p1), title="Sample covariance")
+    tab1 = TabPanel(child=row(p1), title="Sample covariance")
     tabs.append(tab1)
 
     # due to inversion we multiply the result by -1 to keep the original color scheme
@@ -437,7 +441,7 @@ def _solution_plot(
         height=height,
         label_size=label_size,
     )
-    tab2 = Panel(child=row(p2), title="Estimated inverse covariance")
+    tab2 = TabPanel(child=row(p2), title="Estimated inverse covariance")
     tabs.append(tab2)
 
     try:
@@ -447,8 +451,12 @@ def _solution_plot(
             clust_order = _get_order(
                 sample_covariance, method="average", metric="euclidean"
             )
+            # The keyword is `n_cov`, not `n_covariates`. Passing the wrong name
+            # raised TypeError, which the blanket handler below reported as
+            # "NO low-rank solution has been found" -- so the Low-rank tab was
+            # silently dropped from EVERY latent summarize.
             L = hierarchical_clustering(
-                low_rank, clust_order=clust_order, n_covariates=n_cov
+                low_rank, clust_order=clust_order, n_cov=n_cov
             )
             low_rank = reset_columns_and_index(L)
 
@@ -462,17 +470,23 @@ def _solution_plot(
             height=height,
             label_size=label_size,
         )
-        tab3 = Panel(child=row(p3), title="Low-rank")
+        tab3 = TabPanel(child=row(p3), title="Low-rank")
         tabs.append(tab3)
-    except BaseException:
+    except KeyError:
+        # Only a genuinely absent `solution/lowrank_` means "not a latent fit".
+        # Catching BaseException here masked programming errors as missing data.
         print("NO low-rank solution has been found.")
 
     p4 = _make_stats(solution=solution, labels_dict=labels_dict)
-    tab4 = Panel(child=p4, title="Statistics")
+    tab4 = TabPanel(child=p4, title="Statistics")
     tabs.append(tab4)
 
     p = Tabs(tabs=tabs)
-    script, div = components(p, INLINE)
+    # components() signature is (models, wrap_script=True, wrap_plot_info=True,
+    # theme=None) -- the old `components(p, INLINE)` was passing INLINE as
+    # wrap_script, which is merely truthy and never inlined anything. The bokeh
+    # JS is injected by the template instead (see summarize()).
+    script, div = components(p)
 
     return script, div
 
@@ -517,7 +531,13 @@ def summarize(
         n_cov=n_cov,
     )
 
-    output_from_parsed_template = template.render(plot_script=script, plot_div=div)
+    # Inject the bokeh JS whose version matches the installed library, rather
+    # than letting the template hardcode a CDN URL. INLINE (not CDN) because a
+    # .qzv is routinely opened offline and via `qiime tools view`; a CDN
+    # dependency would make the artifact non-self-contained.
+    output_from_parsed_template = template.render(
+        bokeh_resources=INLINE.render(), plot_script=script, plot_div=div
+    )
 
     with open(os.path.join(output_dir, "index.html"), "w") as fh:
         fh.write(output_from_parsed_template)

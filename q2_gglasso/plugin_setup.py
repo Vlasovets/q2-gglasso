@@ -227,9 +227,13 @@ plugin.methods.register_function(
         ),
         "rank": (
             "Explicit target rank for the low-rank component (SLR, latent=True). "
-            "Requires a GGLasso build that exposes explicit rank selection; if "
-            "unsupported, an informative error is raised. Otherwise size the "
-            "low-rank block via the mu1 penalty."
+            "NOT SUPPORTED by any released GGLasso (<= 0.3.0), which only exposes "
+            "the continuous mu1 penalty and reports the achieved rank as an "
+            "output; setting this raises NotImplementedError rather than being "
+            "silently ignored. Size the low-rank block via mu1 instead - a larger "
+            "mu1 yields a smaller rank, so scout mu1 to reach a target rank. "
+            "Support becomes available once GGLasso PR #50 (fix_latent_rank) is "
+            "merged and released."
         ),
         "weights": (
             "Array (p,p), non-negative, symmetric."
@@ -268,8 +272,12 @@ plugin.visualizers.register_function(
     description="Generate a scatter plot for PCA",
     input_descriptions={
         "table": (
-            "Matrix representing the microbiome data:"
-            "p x n matrix where OTUs - p rows, samples - n columns"
+            "The transformed table produced by transform-features, i.e. the "
+            "same table that calculate-covariance was run on. The projection is "
+            "a product of this table with the eigenvectors of the low-rank "
+            "component, so it must carry the same p features the solution was "
+            "fitted from, in the same order; a raw count table is not the right "
+            "input here."
         ),
         "solution": (
             "Solution artifact of Graphical Lasso problem with latent variables."

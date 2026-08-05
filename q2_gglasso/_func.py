@@ -452,20 +452,31 @@ def solve_non_conforming(
 
 
 def _gglasso_supports_rank() -> bool:
-    """Whether the installed GGLasso exposes an explicit low-rank rank.
+    """Whether the installed GGLasso can fix the rank of the low-rank component.
 
-    Explicit rank selection is a newer GGLasso capability. Older releases
-    (e.g. 0.2.1) only expose the continuous ``mu1`` low-rank penalty and infer
-    the rank as an output. Detect support by inspecting ``glasso_problem`` for
-    an explicit ``r``/``rank`` argument.
+    Released GGLasso (<= 0.3.0) only exposes the continuous ``mu1`` low-rank
+    penalty and reports the achieved rank as an output; there is no way to ask
+    for a specific rank. Callers should size the low-rank block via ``mu1``
+    instead (larger ``mu1`` -> smaller rank).
+
+    Upstream PR #50 ("Options to match SpiecEasi SLR", branch
+    ``f-spiec-easi-match``) adds the capability as a ``fix_latent_rank`` keyword
+    on ``ADMM_SGL`` -- reusing ``int(mu1)`` as the desired rank -- and threads it
+    through ``modelselect_params``. It does NOT add an ``r``/``rank`` argument to
+    ``glasso_problem.__init__``, so that is the wrong thing to probe for.
+
+    When PR #50 lands, this returns True and the wiring goes into the
+    ``reg_params`` / ``modelselect_params`` dict literals in ``solve_SGL``.
     """
     import inspect
 
     try:
-        params = inspect.signature(glasso_problem.__init__).parameters
-    except (TypeError, ValueError):
+        from gglasso.solver.single_admm_solver import ADMM_SGL
+
+        params = inspect.signature(ADMM_SGL).parameters
+    except (ImportError, TypeError, ValueError):
         return False
-    return ("r" in params) or ("rank" in params)
+    return "fix_latent_rank" in params
 
 
 def solve_problem(
