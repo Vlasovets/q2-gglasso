@@ -38,7 +38,11 @@ class TestSummarizeSingleFit(unittest.TestCase):
     def test_make_stats_multi_fit_regression(self):
         """If the packaged multi-fit fixture is available, ensure the
         model-selection path still summarizes (no regression)."""
-        fixture = os.path.join(os.path.dirname(__file__), "data", "test_solution.zip")
+        # This used to look in q2_gglasso/tests/data/, which does not exist, so
+        # the test always skipped. The fixture lives in the repo-root data/.
+        from ._paths import fixture as _fixture
+
+        fixture = _fixture("test_solution.zip")
         if not os.path.exists(fixture):
             self.skipTest("multi-fit fixture not available")
         sol = zarr.open(fixture, mode="r")
