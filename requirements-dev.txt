@@ -1,0 +1,10 @@
+# Development / CI dependencies. Install with:
+#   pip install -r requirements.txt -r requirements-dev.txt
+# or, equivalently, `pip install -e ".[dev]"`.
+
+-r requirements.txt
+
+pytest>=7.0.1
+ruff
+versioneer
+setuptools>=64

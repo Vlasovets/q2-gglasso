@@ -36,7 +36,7 @@ pip install gglasso
 Next to install the plugin:
 
 ```
-pip install git+https://github.com/bio-datascience/q2-gglasso.git
+pip install git+https://github.com/Vlasovets/q2-gglasso.git
 qiime dev refresh-cache
 ```
 

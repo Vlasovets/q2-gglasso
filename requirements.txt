@@ -1,19 +1,25 @@
-gglasso<=0.2.1
-numpy<=1.27
-numba>=0.46.0
-scipy>=0.11.0
-scikit-learn>=0.24.1
-setuptools>=59.8.0
-pytest>=7.0.1
-bokeh==2.4.3
-jupyterlab>=3.0.0
-zarr>=2.11.1
-versioneer
-jinja2
-pandas
-biom-format
+# Runtime dependencies for q2-gglasso.
+#
+# QIIME 2 itself, q2templates and q2-types come from the QIIME 2 distribution
+# (2026.7 = the `qiime2` distribution, formerly `amplicon`) and are deliberately
+# not pinned here.
+#
+# Documentation-build dependencies used to live in this file. They are gone on
+# purpose: jupyter-book drags an incompatible jinja2/nbclient chain into a
+# QIIME 2 environment. They belong in the q2-hdstats-docs repo.
 
-git+https://github.com/qiime2/sphinx-ext-qiime2
-calysto-bash
-sphinx-exercise
-jupyter-book
+gglasso>=0.3.0
+numpy>=2.0,<3
+scipy>=1.11
+scikit-learn>=1.3
+numba>=0.60
+pandas>=2.2,<3
+bokeh>=3.4,<4
+# zarr 3 removed zarr.hierarchy.Group (used in the transformer annotations), and
+# 2.18.3 is the first release whose __array__ accepts numpy 2's copy= keyword.
+# numcodecs<0.16 follows from the zarr 2.18.x requirement.
+zarr>=2.18.3,<3
+numcodecs>=0.13,<0.16
+jinja2>=3.1
+biom-format>=2.1.16
+seaborn>=0.13
