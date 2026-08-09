@@ -1,13 +1,22 @@
-version: '3'
+# `version:` is obsolete in Compose v2 and only emits a warning -- removed.
+#
+# The build context is `..` because the Dockerfile lives at the repo root while
+# this file lives in environment-files/ (Compose resolves paths relative to the
+# compose file). The previous `context: .` could never have built.
+#
+# The default command is an interactive shell rather than `jupyter lab`:
+# jupyterlab is no longer a runtime dependency of the plugin.
 services:
   q2-gglasso:
-    image: q2-gglasso:2025.4
+    image: q2-gglasso:2026.7
     build:
-      context: .
+      context: ..
       dockerfile: Dockerfile
-    ports:
-      - "8888:8888"
+      args:
+        QIIME2_RELEASE: "2026.7"
     volumes:
-      - .:/data
+      - ..:/data
     working_dir: /data
-    command: bash -c "jupyter lab --ip 0.0.0.0 --no-browser --allow-root"
+    stdin_open: true
+    tty: true
+    command: bash

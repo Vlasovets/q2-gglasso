@@ -4,6 +4,8 @@ This module tests the Zarr storage and retrieval functionality of the q2-gglasso
 ensuring that solution objects can be properly serialized and deserialized.
 """
 
+import os
+import tempfile
 import unittest
 import zarr
 import q2_gglasso as q2g
@@ -50,32 +52,49 @@ class TestUtil(unittest.TestCase):
         # save GGLasso solution
         solution = P.__dict__["solution"]
 
-        # write GGLasso solution to zarr forma
-        zipfile = str("data/problem.zip")
-        store = zarr.ZipStore(zipfile, mode="w")
-        root = zarr.open(store=store)
-        q2g.to_zarr(P.__dict__, "problem", root)
-        store.close()
+        # Write to a temporary directory. This used to write into the tracked
+        # `data/problem.zip`, mutating repo state on every test run, and only
+        # worked when pytest was invoked from the repository root.
+        with tempfile.TemporaryDirectory() as tmp:
+            zipfile = os.path.join(tmp, "problem.zip")
 
-        # read GGLasso solution from zarr forma
-        store_new = zarr.ZipStore(str("data/problem.zip"), mode="r")
-        root_new = zarr.open(store=store_new)
+            # write GGLasso solution to zarr format
+            store = zarr.ZipStore(zipfile, mode="w")
+            root = zarr.open(store=store)
+            q2g.to_zarr(P.__dict__, "problem", root)
+            store.close()
 
-        # check if these solutions are equal
-        if "solution" in root_new:
+            # read GGLasso solution from zarr format
+            store_new = zarr.ZipStore(zipfile, mode="r")
+            root_new = zarr.open(store=store_new)
 
+            # If "solution" were missing from the archive, the loop below would
+            # silently check nothing, so assert the group is there first.
+            self.assertIn(
+                "solution", root_new, msg="zarr archive has no 'solution' group."
+            )
+
+            checked_keys = []
             for key, value in solution.__dict__.items():
                 if key in root_new["solution/"]:
                     zarr_value = np.array(root_new["solution/" + key])
 
-                    x = True
-                    if zarr_value.all() == np.array(value).all():
-                        continue
-                    else:
-                        x = False
+                    # Compare element-wise. This used to be
+                    # `zarr_value.all() == np.array(value).all()`, which
+                    # compares two scalars, so unrelated arrays looked equal.
+                    np.testing.assert_allclose(
+                        zarr_value,
+                        np.asarray(value),
+                        err_msg="The content of zarr file is not equal to "
+                        "GGLasso solution for key '{}'.".format(key),
+                    )
+                    checked_keys.append(key)
+
+            store_new.close()
 
         self.assertTrue(
-            x, msg="The content of zarr file is not equal to GGLasso solution."
+            checked_keys,
+            msg="No GGLasso solution keys were found in the zarr archive.",
         )
 
 

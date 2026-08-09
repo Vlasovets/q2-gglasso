@@ -37,6 +37,7 @@ def transform_features(
     pseudo_count: int = 1,
     scale_metadata: bool = True,
     add_metadata: bool = False,
+    keep_original_id: bool = True,
 ) -> pd.DataFrame:
     """Project compositional data to Euclidean space.
 
@@ -67,7 +68,7 @@ def transform_features(
     X = table.to_dataframe()  # p, N
     X = X.sparse.to_dense()
 
-    X = rename_index_with_sum(X)
+    X = rename_index_with_sum(X, keep_original_id=keep_original_id)
 
     if transformation == "clr":
         X = zero_imputation(X, pseudo_count=pseudo_count)
@@ -105,8 +106,20 @@ def transform_features(
     else:
         result = X
 
-    result = result.T  # p, N
-
+    # Return samples x features, which is what QIIME 2's DataFrame ->
+    # FeatureTable transformer expects.
+    #
+    # This used to end with `result = result.T  # p, N`, restoring the (p, N)
+    # convention the rest of the plugin reasons in. But the transformer stores a
+    # DataFrame's INDEX as samples, so that transposed frame was written to disk
+    # with feature IDs recorded as sample IDs -- a FeatureTable that lies about
+    # its own axes. `calculate_covariance` compensated (np.cov defaults to
+    # rows-as-variables), so the gglasso pipeline worked and nothing surfaced,
+    # but the artifact was unusable by anything else: `qiime classo regress`
+    # aligns on the sample index, matched zero, and died inside c-lasso with
+    #     IndexError: index 0 is out of bounds for axis 0 with size 0
+    # Verified with an unambiguously-labelled round-trip; see
+    # q2-hdstats-recompute/reports/ORIENTATION_FINDING.md.
     return result
 
 
@@ -134,7 +147,16 @@ def calculate_covariance(
         A squared positive semi-definite matrix required for solving Graphical Lasso problem.
 
     """
-    S = np.cov(table.values, bias=bias)
+    # `rowvar=False`: the input is a FeatureTable viewed as a DataFrame, i.e.
+    # samples x features, so the VARIABLES are the columns.
+    #
+    # This used to be `np.cov(table.values, bias=bias)` -- rowvar defaults to
+    # True, i.e. rows-as-variables -- and it worked only because the clr table it
+    # was fed had its axes swapped by transform_features (which transposed back
+    # to (p, N) before returning, and QIIME 2 stores a DataFrame's index as
+    # samples). Two bugs cancelling. transform_features is fixed, so this must be
+    # too; changing either one alone silently produces an N x N matrix.
+    S = np.cov(table.values, rowvar=False, bias=bias)
 
     if method == "unscaled":
         print("Calculate {0} covariance matrices S".format(method))
@@ -147,7 +169,9 @@ def calculate_covariance(
     else:
         raise ValueError("Given covariance calculation method is not supported.")
 
-    result = pd.DataFrame(result, index=table.index, columns=table.index)
+    # Features label both axes, and features are the COLUMNS of a samples x
+    # features table.
+    result = pd.DataFrame(result, index=table.columns, columns=table.columns)
 
     return result.round(10)
 
@@ -450,10 +474,39 @@ def solve_non_conforming(
     return P
 
 
+def _gglasso_supports_rank() -> bool:
+    """Whether the installed GGLasso can fix the rank of the low-rank component.
+
+    Released GGLasso (<= 0.3.0) only exposes the continuous ``mu1`` low-rank
+    penalty and reports the achieved rank as an output; there is no way to ask
+    for a specific rank. Callers should size the low-rank block via ``mu1``
+    instead (larger ``mu1`` -> smaller rank).
+
+    Upstream PR #50 ("Options to match SpiecEasi SLR", branch
+    ``f-spiec-easi-match``) adds the capability as a ``fix_latent_rank`` keyword
+    on ``ADMM_SGL`` -- reusing ``int(mu1)`` as the desired rank -- and threads it
+    through ``modelselect_params``. It does NOT add an ``r``/``rank`` argument to
+    ``glasso_problem.__init__``, so that is the wrong thing to probe for.
+
+    When PR #50 lands, this returns True and the wiring goes into the
+    ``reg_params`` / ``modelselect_params`` dict literals in ``solve_SGL``.
+    """
+    import inspect
+
+    try:
+        from gglasso.solver.single_admm_solver import ADMM_SGL
+
+        params = inspect.signature(ADMM_SGL).parameters
+    except (ImportError, TypeError, ValueError):
+        return False
+    return "fix_latent_rank" in params
+
+
 def solve_problem(
     covariance_matrix: pd.DataFrame,
     n_samples: list | int | float,
     latent: bool = None,
+    rank: int = None,
     lambda1_min: float = None,
     lambda1_max: float = None,
     n_lambda1: int = 1,
@@ -463,6 +516,9 @@ def solve_problem(
     mu1_min: float = None,
     mu1_max: float = None,
     n_mu1: int = 1,
+    lambda1_path: list = None,
+    mu1_path: list = None,
+    path_scale: str = "log",
     weights: list = None,
     non_conforming: bool = None,
     gamma: float = 0.01,
@@ -533,6 +589,26 @@ def solve_problem(
 
     n_samples = list_to_array(n_samples)
 
+    # Explicit rank selection (SLR) is only meaningful with latent variables and
+    # requires a GGLasso build that exposes the rank parameter. Guard so the
+    # option is registered but never silently ignored (see B4 in the plan).
+    if rank is not None:
+        if not latent:
+            raise ValueError(
+                "The 'rank' parameter is only meaningful for the sparse + "
+                "low-rank model; set latent=True."
+            )
+        if not _gglasso_supports_rank():
+            raise NotImplementedError(
+                "Explicit rank selection requires a GGLasso version that exposes "
+                "an explicit low-rank rank parameter; the installed GGLasso does "
+                "not. Until then, size the low-rank block via the 'mu1' penalty "
+                "(a larger mu1 yields a smaller rank; scout mu1 to reach the "
+                "target rank)."
+            )
+        # Hook: when GGLasso supports it, thread `r=rank` into the solver's
+        # reg_params inside solve_SGL below.
+
     h_params = get_hyperparameters(
         lambda1_min=lambda1_min,
         lambda1_max=lambda1_max,
@@ -544,6 +620,9 @@ def solve_problem(
         mu1_max=mu1_max,
         n_mu1=n_mu1,
         latent=latent,
+        lambda1_path=lambda1_path,
+        mu1_path=mu1_path,
+        path_scale=path_scale,
     )
 
     model_selection = h_params["model_selection"]

@@ -10,6 +10,8 @@ import zarr
 from bokeh.embed import file_html
 from bokeh.resources import CDN
 
+from ._paths import fixture
+
 try:
     from q2_gglasso._summarize._visualizer import (
         _make_heatmap,
@@ -25,7 +27,7 @@ class TestHeatmap(unittest.TestCase):
 
     def test_heatmap_generation(self):
         """Test that heatmaps are correctly generated."""
-        sol = zarr.load(store="data/test_solution.zip")
+        sol = zarr.load(store=fixture("test_solution.zip"))
         S = pd.DataFrame(sol["covariance"])
 
         labels_dict, _ = _get_labels(solution=sol, clustered=False)

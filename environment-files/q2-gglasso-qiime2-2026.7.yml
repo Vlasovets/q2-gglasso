@@ -1,0 +1,33 @@
+# q2-gglasso on QIIME 2 2026.7.
+#
+# Two renames landed upstream in 2026.4 and are baked into this file:
+#   * the `amplicon` distribution is now called `qiime2`, so the channel path is
+#     .../2026.7/qiime2/released (not .../amplicon/passed)
+#   * the distribution metapackage is `rachis-qiime2` (verified against the
+#     channel repodata), not `qiime2-amplicon`
+#
+# The 2025.4 file installed q2-gglasso and GGLasso from git branches. Those pip
+# lines are gone deliberately: pinning an upstream branch is how a numpy<2-capped
+# GGLasso silently reappears. GGLasso now comes from conda-forge at a real
+# release, and the plugin is installed separately (`pip install -e .`).
+#
+# For a fully reproducible build use the generated lockfile instead:
+#   q2-hdstats-recompute/envs/q2-slr-qiime2-2026.7-lock.yml
+
+name: q2-gglasso-qiime2-2026.7
+
+channels:
+  - https://packages.qiime2.org/qiime2/2026.7/qiime2/released
+  - conda-forge
+  - bioconda
+
+dependencies:
+  - rachis-qiime2
+  # Not shipped by the distribution -- these are ours.
+  - gglasso=0.3.0
+  - bokeh>=3.4,<4
+  # zarr 3 removed zarr.hierarchy.Group (used in the transformer annotations);
+  # 2.18.3 is the first release whose __array__ accepts numpy 2's copy= keyword.
+  - zarr>=2.18.3,<3
+  - numcodecs>=0.13,<0.16
+  - pip

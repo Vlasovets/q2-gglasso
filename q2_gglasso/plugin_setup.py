@@ -70,6 +70,7 @@ plugin.methods.register_function(
         "pseudo_count": Int,
         "scale_metadata": Bool,
         "add_metadata": Bool,
+        "keep_original_id": Bool,
     },
     outputs=[("transformed_table", FeatureTable[Frequency])],
     input_descriptions={
@@ -86,6 +87,11 @@ plugin.methods.register_function(
             "String representing the name of the " "transformation we will use "
         ),
         "pseudo_count": ("Add pseudo count, only necessary for clr-transformation."),
+        "keep_original_id": (
+            "Keep the original feature identifiers as the index (default). "
+            "If False, features are relabelled to sequential ASV-{rank} labels "
+            "ordered by total abundance."
+        ),
     },
     output_descriptions={
         "transformed_table": "Matrix representing the data of the problem"
@@ -204,6 +210,31 @@ plugin.methods.register_function(
             "Low-rank regularization parameter."
             "Only needs to be specified if latent=True."
         ),
+        "lambda1_path": (
+            "Explicit, user-defined lambda1 path (a list of values). "
+            "When provided, it overrides lambda1_min/lambda1_max/n_lambda1 and "
+            "path_scale, and the given values are used verbatim."
+        ),
+        "mu1_path": (
+            "Explicit, user-defined mu1 path (a list of values). "
+            "When provided, it overrides mu1_min/mu1_max/n_mu1 and path_scale. "
+            "Only used if latent=True."
+        ),
+        "path_scale": (
+            "Spacing used when building the regularization grid from "
+            "min/max/count: 'log' (default) for log-spaced values or 'linear' "
+            "for evenly-spaced values. Ignored when an explicit path is given."
+        ),
+        "rank": (
+            "Explicit target rank for the low-rank component (SLR, latent=True). "
+            "NOT SUPPORTED by any released GGLasso (<= 0.3.0), which only exposes "
+            "the continuous mu1 penalty and reports the achieved rank as an "
+            "output; setting this raises NotImplementedError rather than being "
+            "silently ignored. Size the low-rank block via mu1 instead - a larger "
+            "mu1 yields a smaller rank, so scout mu1 to reach a target rank. "
+            "Support becomes available once GGLasso PR #50 (fix_latent_rank) is "
+            "merged and released."
+        ),
         "weights": (
             "Array (p,p), non-negative, symmetric."
             "The lambda1 parameter is multiplied element-wise with this array, thus lambda1 has to be provided."
@@ -241,8 +272,12 @@ plugin.visualizers.register_function(
     description="Generate a scatter plot for PCA",
     input_descriptions={
         "table": (
-            "Matrix representing the microbiome data:"
-            "p x n matrix where OTUs - p rows, samples - n columns"
+            "The transformed table produced by transform-features, i.e. the "
+            "same table that calculate-covariance was run on. The projection is "
+            "a product of this table with the eigenvectors of the low-rank "
+            "component, so it must carry the same p features the solution was "
+            "fitted from, in the same order; a raw count table is not the right "
+            "input here."
         ),
         "solution": (
             "Solution artifact of Graphical Lasso problem with latent variables."

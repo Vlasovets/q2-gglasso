@@ -1,48 +1,130 @@
 name: CI/CD
 
+# Previously this only fired on push to dev/main, so PRs and working branches
+# got zero coverage.
 on:
   push:
     branches: ["dev", "main"]
+  pull_request:
+    branches: ["dev", "main"]
+  workflow_dispatch:
 
 jobs:
-  build-and-test-qiime2-2025-4:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-13]
+  build-and-test:
+    name: QIIME 2 2026.7 (linux-64)
+    # macos-13 dropped: GitHub is retiring it, and the 2026.7 distribution has
+    # no osx-arm64 environment file.
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
+
+    - name: Free up disk space
+      run: |
+        sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost
+        df -h /
 
     - name: Set up Conda
       uses: conda-incubator/setup-miniconda@v3
       with:
-        activate-environment: q2-gglasso-qiime2-amplicon-2025.4
-        environment-file: environment-files/q2-gglasso-qiime2-amplicon-2025.4.yml
+        activate-environment: q2-gglasso-qiime2-2026.7
+        environment-file: environment-files/q2-gglasso-qiime2-2026.7.yml
+        miniforge-version: latest
+        conda-remove-defaults: true
         auto-activate-base: false
 
     - name: Install plugin
       shell: bash -l {0}
-      run: make install
+      run: pip install --no-deps -e .
+
+    - name: Verify the conda solve did not drift the distribution pins
+      shell: bash -l {0}
+      run: |
+        python - <<'PY'
+        import sys, importlib.metadata as md
+        expect = {"numpy": "2", "pandas": "2", "scipy": "1"}
+        for pkg, major in expect.items():
+            got = md.version(pkg)
+            print(f"{pkg}={got}")
+            if not got.startswith(major):
+                sys.exit(f"unexpected major version for {pkg}: {got}")
+        PY
+
+    # Plugin registration failures (a bad q2_types import, a signature/description
+    # mismatch) do not surface in the unit tests -- test_plugin_setup.py only
+    # asserts the plugin name. This catches them in seconds.
+    - name: Smoke test - plugin registers
+      shell: bash -l {0}
+      run: |
+        qiime dev refresh-cache
+        qiime gglasso --help
+        qiime gglasso solve-problem --help
+
+    # The job used to be called "build-and-test" but ran only `make install`.
+    - name: Run tests
+      shell: bash -l {0}
+      working-directory: ${{ github.workspace }}
+      run: pytest q2_gglasso/tests -v --durations=20
+
+    # Template hygiene only: the bokeh runtime is injected at render time from
+    # INLINE.render(), so a template must not also pull one from a CDN. This
+    # guards against someone reintroducing a hardcoded
+    # <script src=".../bokeh-2.x.min.js"> tag, which would load a runtime that
+    # cannot render a bokeh 3 document -- a blank .qzv with no Python traceback.
+    #
+    # It does NOT render a visualization; the CLI round-trip that unzips a .qzv
+    # and checks the embedded runtime lives in the recompute repo's test job.
+    #
+    # Jinja comments are stripped first: the templates explain this very trap in
+    # prose, and scanning raw text made the check fail on the commit that added
+    # the explanation.
+    - name: Assert templates do not load bokeh from a CDN
+      shell: bash -l {0}
+      run: |
+        python - <<'PY'
+        import pathlib, re, sys
+        bad = []
+        for tpl in pathlib.Path("q2_gglasso").rglob("assets/index.html"):
+            text = re.sub(r"\{#.*?#\}", "", tpl.read_text(), flags=re.S)
+            if "bokeh-2." in text or "cdn.bokeh.org" in text:
+                bad.append(str(tpl))
+        if bad:
+            sys.exit("stale bokeh 2 / CDN reference in: " + ", ".join(bad))
+        print("templates clean")
+        PY
 
   lint:
     runs-on: ubuntu-latest
     steps:
     - name: checkout source
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: set up python 3.11
-      uses: actions/setup-python@v4
+    - name: set up python 3.12
+      uses: actions/setup-python@v5
       with:
-        python-version: 3.11
+        python-version: "3.12"
 
     - name: install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -q https://github.com/qiime2/q2lint/archive/master.zip
-        pip install -q ruff
+        pip install -q 'ruff==0.16.2'
+
+    # --select=F is the real-bug gate: undefined names, unused variables, broken
+    # imports. Bare `ruff check .` enables pyupgrade/isort/flake8-comprehensions
+    # too, which reports 286 findings on this codebase -- 95 printf-style format
+    # strings, 44 implicit Optionals, 20 import orderings, and 30 F401s that are
+    # deliberate re-exports in __init__.py. None is a defect; all of it predates
+    # this branch. A gate that fails on a year of accumulated style is a gate
+    # people learn to ignore, so it is narrowed here rather than left red.
+    #
+    # ruff is pinned because it was installed unpinned: main last went green in
+    # September 2025 against an older, narrower default rule set, and the job
+    # started failing on untouched code purely because ruff released.
+    #
+    # Widening this back out is a good idea -- as its own PR, with the fixes.
     - name: run ruff
-      run: ruff check .
+      run: ruff check . --select=F
 
     - name: run q2lint
       run: q2lint

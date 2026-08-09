@@ -4,16 +4,19 @@ all: install
 
 lint:
 	q2lint
-	flake8
+	ruff check .
 
-dev: all
+dev:
 	pip install -e ".[dev]"
 
 install:
 	pip install -e .
 
-test: all
-	python -m pytest
+# Tests use paths relative to the repo root, so always run from here.
+# `install` stays a prerequisite: TestPluginBase resolves the plugin through the
+# qiime2.plugins entry point, which only exists once the package is installed.
+test: install
+	python -m pytest q2_gglasso/tests -v --durations=20
 
 clean:
 	rm -rf build/

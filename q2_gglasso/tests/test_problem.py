@@ -92,6 +92,13 @@ class TestUtil(unittest.TestCase):
     mu1_max = 10
     n_mu1 = 1
 
+    # q2_gglasso.solve_problem defaults to gamma=0.01, while GGLasso's
+    # glasso_problem.model_selection defaults to gamma=0.1. Comparing the two
+    # without pinning gamma compares DIFFERENT eBIC criteria, which select
+    # different lambdas and produce wildly different precision matrices --
+    # no rtol/atol can bridge that. Pin it on both sides.
+    gamma = 0.01
+
     rtol = 1e-1
     atol = 1e-1
     ebic_diff = 10
@@ -697,7 +704,9 @@ class TestUtil(unittest.TestCase):
 
         modelselect_params = {"lambda1_range": P_q2.modelselect_params["lambda1_range"]}
         P_org = glasso_problem(S=S, reg_params=modelselect_params, N=N, latent=False)
-        P_org.model_selection(modelselect_params=modelselect_params, method="eBIC")
+        P_org.model_selection(
+            modelselect_params=modelselect_params, method="eBIC", gamma=self.gamma
+        )
 
         self.assertTrue(
             np.allclose(
@@ -741,7 +750,9 @@ class TestUtil(unittest.TestCase):
             "mu1_range": P_q2.modelselect_params["mu1_range"],
         }
         P_org = glasso_problem(S=S, reg_params=modelselect_params, N=N, latent=True)
-        P_org.model_selection(modelselect_params=modelselect_params, method="eBIC")
+        P_org.model_selection(
+            modelselect_params=modelselect_params, method="eBIC", gamma=self.gamma
+        )
 
         self.assertTrue(
             np.allclose(
@@ -790,7 +801,9 @@ class TestUtil(unittest.TestCase):
         P_org = glasso_problem(
             S=S, reg_params=modelselect_params, N=N, latent=False, reg="GGL"
         )
-        P_org.model_selection(modelselect_params=modelselect_params, method="eBIC")
+        P_org.model_selection(
+            modelselect_params=modelselect_params, method="eBIC", gamma=self.gamma
+        )
 
         self.assertTrue(
             np.allclose(
@@ -847,7 +860,9 @@ class TestUtil(unittest.TestCase):
         P_org = glasso_problem(
             S=S, reg_params=modelselect_params, N=N, latent=True, reg="GGL"
         )
-        P_org.model_selection(modelselect_params=modelselect_params, method="eBIC")
+        P_org.model_selection(
+            modelselect_params=modelselect_params, method="eBIC", gamma=self.gamma
+        )
 
         self.assertTrue(
             np.allclose(
@@ -897,7 +912,9 @@ class TestUtil(unittest.TestCase):
         P_org = glasso_problem(
             S=S, reg_params=modelselect_params, N=N, latent=False, reg="FGL"
         )
-        P_org.model_selection(modelselect_params=modelselect_params, method="eBIC")
+        P_org.model_selection(
+            modelselect_params=modelselect_params, method="eBIC", gamma=self.gamma
+        )
 
         self.assertTrue(
             np.allclose(
@@ -955,7 +972,9 @@ class TestUtil(unittest.TestCase):
             latent=True,
             reg="FGL",
         )
-        P_org.model_selection(modelselect_params=modelselect_params, method="eBIC")
+        P_org.model_selection(
+            modelselect_params=modelselect_params, method="eBIC", gamma=self.gamma
+        )
 
         self.assertTrue(
             np.allclose(
@@ -1116,7 +1135,9 @@ class TestUtil(unittest.TestCase):
         }
 
         P_org = glasso_problem(S=S, reg_params=modelselect_params, N=N, latent=False)
-        P_org.model_selection(modelselect_params=modelselect_params, method="eBIC")
+        P_org.model_selection(
+            modelselect_params=modelselect_params, method="eBIC", gamma=self.gamma
+        )
 
         self.assertTrue(
             np.allclose(
@@ -1163,7 +1184,9 @@ class TestUtil(unittest.TestCase):
         }
 
         P_org = glasso_problem(S=S, reg_params=modelselect_params, N=N, latent=True)
-        P_org.model_selection(modelselect_params=modelselect_params, method="eBIC")
+        P_org.model_selection(
+            modelselect_params=modelselect_params, method="eBIC", gamma=self.gamma
+        )
 
         self.assertTrue(
             np.allclose(

@@ -2,10 +2,17 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Bokeh Plot</title>
-    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.min.js"></script>
-    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.3.min.js"></script>
-    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.3.min.js"></script>
+    <title>q2-gglasso PCA</title>
+    {#
+      bokeh JS/CSS is injected by the visualizer via bokeh.resources.INLINE, so
+      the version always matches the installed library. This replaced three
+      hardcoded cdn.bokeh.org bokeh-2.4.3 <script> tags: a 2.4.3 runtime cannot
+      render a bokeh-3 embed, and the failure mode is a blank white page with no
+      Python traceback. INLINE rather than CDN keeps the .qzv self-contained,
+      which matters because these are routinely opened offline and through
+      `qiime tools view`.
+    #}
+    {{ bokeh_resources|safe }}
     <script type="text/javascript">
         Bokeh.set_log_level("info");
     </script>

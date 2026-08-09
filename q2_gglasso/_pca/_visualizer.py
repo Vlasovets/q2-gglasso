@@ -11,13 +11,16 @@ from biom.table import Table
 from q2_gglasso.utils import PCA, get_seq_depth
 
 from bokeh.plotting import figure
+# bokeh 3 renamed the tab child container Panel -> TabPanel. `Panel` still
+# imports successfully under bokeh 3 but resolves to an unrelated Panel(Pane)
+# class, failing only later at construction -- so import TabPanel explicitly.
 from bokeh.models import (
     ColumnDataSource,
     LinearColorMapper,
     ColorBar,
     Select,
     CustomJS,
-    Panel,
+    TabPanel,
     Tabs,
 )
 from bokeh.layouts import gridplot, row
@@ -68,8 +71,9 @@ def project_covariates(
 
     p0 = figure(
         tools="save, zoom_in, zoom_out, wheel_zoom, box_zoom, reset",
-        plot_width=800,
-        plot_height=800,
+        # bokeh 3 removed plot_width/plot_height in favour of width/height.
+        width=800,
+        height=800,
         active_scroll="wheel_zoom",
         x_axis_label=varName1,
         y_axis_label=varName2,
@@ -82,7 +86,8 @@ def project_covariates(
         low=min(df[color_by].values),
         high=max(df[color_by].values),
     )
-    p0.circle(
+    # figure.circle(size=...) is deprecated since bokeh 3.4 in favour of scatter().
+    p0.scatter(
         "x",
         "y",
         source=source,
@@ -229,7 +234,8 @@ def make_plots(
             high=max(df[col_name].values),
         )
 
-        p.circle(
+        # circle(size=...) deprecated since bokeh 3.4 in favour of scatter().
+        p.scatter(
             "x",
             "y",
             size=5,
@@ -291,9 +297,14 @@ def pair_plot(
         proj, loadings, eigv = PCA(plot_df.iloc[:, :-1], L, inverse=True)
         r = np.linalg.matrix_rank(L)
 
-        assert (
-            n_components < r
-        ), f"n_components is greater than the rank, got: {n_components}"
+        # `<=`, not `<`: requesting exactly as many components as the achieved
+        # rank is legitimate. pca() validates this up front too, so by here it
+        # should already hold -- this stays as a defensive check for direct
+        # callers of pair_plot().
+        assert n_components <= r, (
+            f"n_components ({n_components}) is greater than the rank of the "
+            f"low-rank component ({r})"
+        )
 
         plot_dict[col] = make_plots(
             df=plot_df,
@@ -347,7 +358,70 @@ def pca(
     J_ENV = jinja2.Environment(loader=jinja2.PackageLoader("q2_gglasso._pca", "assets"))
     template = J_ENV.get_template("index.html")
     df = table.to_dataframe()
-    L = solution["solution/lowrank_"]
+    # Materialise as an ndarray: this is handed to np.linalg.eigh / matrix_rank,
+    # and numpy 2 calls __array__(dtype, copy=...) which older zarr versions
+    # reject. Being explicit here removes the dependency on zarr's __array__.
+    L = np.asarray(solution["solution/lowrank_"])
+
+    # Validate the low-rank component BEFORE any plotting. Without this, a
+    # rank-0 L reaches np.linalg inside PCA() and surfaces as
+    #   "matmul: Input operand 1 has a mismatch in its core dimension 0
+    #    (size 0 is different from 1)"
+    # which says nothing about the actual problem. The only pre-existing guard
+    # lived inside pair_plot(), i.e. after project_covariates() had already
+    # crashed, so it could never fire.
+    rank = int(np.linalg.matrix_rank(L))
+    if rank == 0:
+        raise ValueError(
+            "The low-rank component of this solution has rank 0, so there is "
+            "no latent subspace to project onto. Model selection chose a mu1 "
+            "large enough to shrink the low-rank block away entirely, which "
+            "means no latent structure was detected. Re-solve with a smaller "
+            "mu1 (smaller mu1 permits a larger rank) and check the achieved "
+            "rank before running pca."
+        )
+    # Rank 1 is not just "one component fewer": utils.PCA squeezes a single
+    # eigenvalue to a 0-d array, so sorted(eigv) in project_covariates() raises
+    # "'numpy.float64' object is not iterable", and both tabs plot PC1 against
+    # PC2, which a one-dimensional subspace cannot supply. Lowering
+    # n_components does not help, so say so instead of advising it below.
+    if rank == 1:
+        raise ValueError(
+            "The low-rank component of this solution has rank 1, so the latent "
+            "subspace is a single direction. Both tabs of this visualizer plot "
+            "PC1 against PC2 and a rank-1 block spans no such plane, so "
+            "lowering --p-n-components will not make this run: rank 2 is the "
+            "smallest rank that can be projected. Re-solve with a smaller mu1 "
+            "if you need the projection."
+        )
+    if n_components > rank:
+        raise ValueError(
+            f"n_components ({n_components}) exceeds the rank of the low-rank "
+            f"component ({rank}). Pass --p-n-components {rank} or lower."
+        )
+
+    # Orient the table against L rather than assuming a convention. The two
+    # tables a user might reasonably pass here disagree:
+    #   * a raw FeatureTable          -> to_dataframe() is features x samples
+    #   * the output of transform-features -> samples x features
+    # (transform_features returns a (p, N) frame, which QIIME 2's DataFrame
+    # transformer then stores as if it were samples x features, swapping the
+    # axes -- see the note in its docstring.)
+    # PCA projects samples onto the latent subspace, so we need (N, p) to line
+    # up with L's (p, p). Match on shape and fail loudly if neither axis fits.
+    # (A square table -- as many samples as features -- is genuinely ambiguous;
+    # it is taken as already being samples x features.)
+    p = L.shape[0]
+    if df.shape[1] != p:
+        if df.shape[0] == p:
+            df = df.T
+        else:
+            raise ValueError(
+                f"The feature table {df.shape} does not line up with the "
+                f"low-rank component ({p} x {p}). Neither axis has {p} "
+                "entries, so this table is not the one the solution was fitted "
+                "from. Pass the same table you used for calculate-covariance."
+            )
 
     numeric_md_cols = sample_metadata.filter_columns(column_type="numeric")
     md = numeric_md_cols.to_dataframe()
@@ -368,14 +442,21 @@ def pca(
         color_by=color_by,
     )
 
-    tab1 = Panel(child=p1, title="Single plot")
-    tab2 = Panel(child=p2, title="Pair-plot")
+    tab1 = TabPanel(child=p1, title="Single plot")
+    tab2 = TabPanel(child=p2, title="Pair-plot")
 
     tabs = [tab1, tab2]
     p = Tabs(tabs=tabs)
 
-    script, div = components(p, INLINE)
-    output_from_parsed_template = template.render(plot_script=script, plot_div=div)
+    # components() takes (models, wrap_script, wrap_plot_info, theme) -- the old
+    # `components(p, INLINE)` passed INLINE as wrap_script and never inlined
+    # anything. The bokeh JS is injected into the template instead, at a version
+    # that matches the installed library. INLINE rather than CDN keeps the .qzv
+    # self-contained for offline viewing.
+    script, div = components(p)
+    output_from_parsed_template = template.render(
+        bokeh_resources=INLINE.render(), plot_script=script, plot_div=div
+    )
 
     with open(os.path.join(output_dir, "index.html"), "w") as fh:
         fh.write(output_from_parsed_template)
