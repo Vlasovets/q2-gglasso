@@ -18,26 +18,23 @@ EMAIL = "oleg.vlasovets@helmholtz-munich.de"
 AUTHOR = "Oleg Vlasovets"
 REQUIRES_PYTHON = ">=3.10"
 
-# Runtime dependencies. QIIME 2 itself and q2templates are supplied by the
-# distribution, so they are deliberately not listed here -- pinning them would
-# fight the conda environment. Everything below is a package the distribution
-# does NOT ship.
-INSTALL_REQUIRES = [
-    "gglasso>=0.3.0",
-    "numpy>=2.0,<3",
-    "scipy>=1.11",
-    "scikit-learn>=1.3",
-    "numba>=0.60",
-    "pandas>=2.2,<3",
-    "bokeh>=3.4,<4",
-    # zarr 3 removed zarr.hierarchy.Group, which the transformers are annotated
-    # with; 2.18.3 is the first release whose __array__ accepts numpy 2's copy=.
-    "zarr>=2.18.3,<3",
-    "numcodecs>=0.13,<0.16",
-    "jinja2>=3.1",
-    "biom-format>=2.1.16",
-    "seaborn>=0.13",
-]
+# Runtime dependencies are deliberately NOT declared in this file.
+#
+# q2lint enforces the QIIME 2 convention that they belong in the conda recipe /
+# environment files rather than in setuptools' dependency list, and for a plugin
+# shipped through a conda distribution that convention is right: declaring them
+# here would let `pip install -e .` resolve dependencies without visibility of
+# the conda pins, and quietly install a wheel over the distribution's numpy
+# 2.4.2. That is the same env corruption that makes `--no-deps` mandatory for
+# every pip call in the install instructions.
+#
+# (q2lint tests for the setuptools keyword as a plain substring anywhere in this
+# file, so the keyword itself is spelled around rather than written out.)
+#
+# The authoritative lists, with the same pins and the reasoning behind them:
+#   requirements.txt                                (runtime)
+#   requirements-dev.txt                            (test/lint)
+#   environment-files/q2-gglasso-qiime2-2026.7.yml  (solved conda env)
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -52,7 +49,6 @@ setup(
     license="BSD-3-Clause",
     description=DESCRIPTION,
     python_requires=REQUIRES_PYTHON,
-    install_requires=INSTALL_REQUIRES,
     extras_require={"dev": ["pytest>=7.0.1", "ruff", "versioneer"]},
     entry_points={"qiime2.plugins": ["q2-gglasso=q2_gglasso.plugin_setup:plugin"]},
     package_data={
